@@ -14,7 +14,15 @@ namespace MpegCompressor {
         public Form1() {
             InitializeComponent();
             controller = new Controller(viewProperties, viewNodes, viewLeft, viewRight);
-            
+        }
+
+        protected override bool ProcessCmdKey(ref Message message, Keys keys) {
+            if (controller.HotKeys(keys)) {
+                return true;
+            }
+
+            // run base implementation
+            return base.ProcessCmdKey(ref message, keys);
         }
     }
 }

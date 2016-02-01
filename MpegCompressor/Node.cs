@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MpegCompressor {
+    //TODO: have node not extend panel, and be drawn purely by NodeView.
     public class Node : Panel, IViewable, IProperties {
         private bool isSelected;
         protected Label name;
@@ -37,6 +38,10 @@ namespace MpegCompressor {
         }
 
         public void view(PaintEventArgs pe) {
+            //if there is input, 
+            //   delegate to upstream
+            //else
+            //   draw nothing
             throw new NotImplementedException();
         }
 

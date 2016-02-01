@@ -22,16 +22,6 @@ namespace MpegCompressor {
             viewNodes = nodes;
             viewNodes.eSelectionChanged += OnSelectionChange;
 
-            Property p1 = new Property();
-            Property p2 = new Property();
-            Property p3 = new Property();
-            p1.setInt(52, 50, 100, "Number of pigeons");
-            p2.setInt(30, 0, 1000, "length of coastline (km)");
-            p3.setInt(10, -40, 60, "ambient temperature (C)");
-            viewProps.addProperty(p1);
-            viewProps.addProperty(p3);
-            viewProps.addProperty(p2);
-
             Node n1 = new Node();
             Node n2 = new Node();
             viewNodes.addNode(n1);
@@ -44,6 +34,32 @@ namespace MpegCompressor {
             if (selection != null) {
                 viewProps.addProperties(selection.getProperties());
             }
+        }
+
+        public bool HotKeys(Keys keys) {
+            Node n;
+            if (keys == Keys.D1) {
+                n = viewNodes.getSelection();
+                if (n != null) {
+                    //load left view with selected node
+                }
+                return true;
+            } else if (keys == Keys.D2) {
+                n = viewNodes.getSelection();
+                if (n != null) {
+                    //load right view with selected node
+                }
+                return true;
+            }
+
+            /*  Also available:
+            switch (keys) {
+                case Keys.C | Keys.Control:
+                    doStuff();
+                    return true;
+            }
+            */
+            return false;
         }
     }
 }

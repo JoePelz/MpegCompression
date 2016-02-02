@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,19 +31,21 @@ namespace MpegCompressor {
             createProperties();
         }
 
-        public void createProperties() {
+        protected virtual void createProperties() {
             Property p = new Property();
-            p.setString("NoOp", "Name of the control");
+            p.createString("NoOp", "Name of the control");
             p.eValueChanged += (s, e) => name.Text = (s as Property).getString();
             properties.Add("name", p);
         }
 
-        public void view(PaintEventArgs pe) {
+        public virtual void view(PaintEventArgs pe) {
             //if there is input, 
             //   delegate to upstream
             //else
             //   draw nothing
-            throw new NotImplementedException();
+            Graphics g = pe.Graphics;
+            g.DrawLine(SystemPens.ControlDarkDark, 1, 3, 10, 30);
+            g.DrawLine(SystemPens.ControlDarkDark, 10, 3, 1, 30);
         }
 
         public Dictionary<string, Property> getProperties() {

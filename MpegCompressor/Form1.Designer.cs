@@ -26,9 +26,9 @@
             this.components = new System.ComponentModel.Container();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.viewLeft = new MpegCompressor.Viewport(this.components);
             this.viewRight = new MpegCompressor.Viewport(this.components);
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.viewNodes = new MpegCompressor.NodeView(this.components);
             this.viewProperties = new MpegCompressor.PropertyPage(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -80,23 +80,6 @@
             this.splitContainer2.SplitterDistance = 576;
             this.splitContainer2.TabIndex = 0;
             // 
-            // splitContainer3
-            // 
-            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer3.Name = "splitContainer3";
-            // 
-            // splitContainer3.Panel1
-            // 
-            this.splitContainer3.Panel1.Controls.Add(this.viewNodes);
-            // 
-            // splitContainer3.Panel2
-            // 
-            this.splitContainer3.Panel2.Controls.Add(this.viewProperties);
-            this.splitContainer3.Size = new System.Drawing.Size(1181, 206);
-            this.splitContainer3.SplitterDistance = 819;
-            this.splitContainer3.TabIndex = 0;
-            // 
             // viewLeft
             // 
             this.viewLeft.BackColor = System.Drawing.SystemColors.AppWorkspace;
@@ -114,6 +97,23 @@
             this.viewRight.Name = "viewRight";
             this.viewRight.Size = new System.Drawing.Size(601, 393);
             this.viewRight.TabIndex = 0;
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Name = "splitContainer3";
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.viewNodes);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.viewProperties);
+            this.splitContainer3.Size = new System.Drawing.Size(1181, 206);
+            this.splitContainer3.SplitterDistance = 819;
+            this.splitContainer3.TabIndex = 0;
             // 
             // viewNodes
             // 

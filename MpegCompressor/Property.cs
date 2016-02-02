@@ -35,7 +35,7 @@ namespace MpegCompressor {
             Dock = DockStyle.Fill;
         }
 
-        public void setInt(int val, int min, int max, string label) {
+        public void createInt(int val, int min, int max, string label) {
             sLabel = label;
             nVal = val;
             nMin = min;
@@ -44,7 +44,7 @@ namespace MpegCompressor {
             updateLayout();
         }
 
-        public void setFloat(float val, float min, float max, string label) {
+        public void createFloat(float val, float min, float max, string label) {
             sLabel = label;
             fVal = val;
             fMin = min;
@@ -53,11 +53,21 @@ namespace MpegCompressor {
             updateLayout();
         }
 
-        public void setString(string value, string label) {
+        public void createString(string value, string label) {
             sVal = value;
             sLabel = label;
             type = PROP_TYPE.STRING;
             updateLayout();
+        }
+
+        public void setFloat(float f) {
+            nUpDown.Value = (decimal)f;
+        }
+        public void setInt(int n) {
+            nUpDown.Value = n;
+        }
+        public void setString(string s) {
+            sTextBox.Text = s;
         }
 
         public float getFloat() {

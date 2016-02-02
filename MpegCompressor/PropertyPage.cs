@@ -36,7 +36,7 @@ namespace MpegCompressor {
             RowCount++;
             RowStyles.Clear();
             for (int i=0; i < RowCount; i++) {
-                RowStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 1.0f / RowCount));
+                RowStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0f / RowCount));
             }
             Controls.Add(p, 0, RowCount - 1);
             ResumeLayout(false);
@@ -47,6 +47,11 @@ namespace MpegCompressor {
             foreach (Property p in props.Values) {
                 addProperty(p);
             }
+        }
+
+        public void showProperties(IProperties hasProperties) {
+            clearProperties();
+            addProperties(hasProperties.getProperties());
         }
     }
 }

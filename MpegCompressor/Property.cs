@@ -17,6 +17,7 @@ namespace MpegCompressor {
         private Label lblName;
         private NumericUpDown nUpDown;
         private TextBox sTextBox;
+        private ComboBox comboBox;
         private int nVal;
         private int nMin;
         private int nMax;
@@ -26,6 +27,7 @@ namespace MpegCompressor {
         private string sVal;
         private PROP_TYPE type;
         private string sLabel;
+        private string[] choices;
 
         public event EventHandler eValueChanged;
 
@@ -60,6 +62,14 @@ namespace MpegCompressor {
             updateLayout();
         }
 
+        public void createChoices(string[] choices, int defChoice, string label) {
+            nVal = defChoice;
+            this.choices = choices;
+            sLabel = label;
+            type = PROP_TYPE.SELECTION;
+            updateLayout();
+        }
+
         public void setFloat(float f) {
             nUpDown.Value = (decimal)f;
         }
@@ -69,17 +79,22 @@ namespace MpegCompressor {
         public void setString(string s) {
             sTextBox.Text = s;
         }
+        public void setSelection(int sel) {
+            nVal = sel;
+            comboBox.SelectedIndex = sel;
+        }
 
         public float getFloat() {
             return fVal;
         }
-
         public int getInt() {
             return nVal;
         }
-
         public string getString() {
             return sVal;
+        }
+        public int getSelection() {
+            return nVal;
         }
 
         void resetLayout() {
@@ -102,6 +117,9 @@ namespace MpegCompressor {
                     break;
                 case PROP_TYPE.STRING:
                     layoutString();
+                    break;
+                case PROP_TYPE.SELECTION:
+                    layoutSelection();
                     break;
                 default:
                     break;
@@ -171,6 +189,27 @@ namespace MpegCompressor {
 
             Controls.Add(sTextBox, 0, 0);
             Controls.Add(lblName, 1, 0);
+        }
+
+        private void layoutSelection() {
+            lblName = new Label();
+            lblName.Text = sLabel;
+            lblName.Name = "lblName";
+            lblName.AutoSize = true;
+            lblName.Dock = DockStyle.Fill;
+            lblName.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
+
+            comboBox = new ComboBox();
+            foreach (string option in choices) {
+                comboBox.Items.Add(option);
+            }
+            comboBox.SelectedIndex = nVal;
+            comboBox.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+        }
+
+        private void ComboBox_SelectedIndexChanged(object sender, EventArgs e) {
+            nVal = comboBox.SelectedIndex;
+            fireEvent(e);
         }
 
         private void STextBox_TextChanged(object sender, EventArgs e) {

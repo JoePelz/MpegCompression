@@ -8,17 +8,31 @@ using System.Windows.Forms;
 
 namespace MpegCompressor {
     //TODO: have node not extend panel, and be drawn purely by NodeView.
-    public class Node : Panel, IViewable, IProperties {
+    public abstract class Node : Panel, IViewable, IProperties {
+        public class Address {
+            public Node node;
+            public string port;
+            public Address(Node n, string s) {
+                node = n;
+                port = s;
+            }
+            public bool Equals(Address other) {
+                return node == other.node && port.Equals(other.port);
+            }
+        }
+
         private bool isSelected, isDirty;
         protected Label name;
         protected Dictionary<string, Property> properties;
+        protected Dictionary<string, Address> inputs;
+        protected Dictionary<string, HashSet<Address>> outputs;
 
         public event EventHandler eViewChanged;
 
         public Node() {
             SuspendLayout();
             name = new Label();
-            name.Text = "NoOp";
+            name.Text = "default";
             name.AutoSize = true;
             name.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(name);
@@ -30,27 +44,98 @@ namespace MpegCompressor {
             ResumeLayout();
 
             properties = new Dictionary<string, Property>();
-            createProperties();
-        }
-
-        protected virtual void createProperties() {
+            inputs = new Dictionary<string, Address>();
+            outputs = new Dictionary<string, HashSet<Address>>();
+            
             Property p = new Property();
-            p.createString("NoOp", "Name of the control");
+            p.createString("default", "Name of the control");
             p.eValueChanged += (s, e) => name.Text = (s as Property).getString();
             properties.Add("name", p);
+
+            createProperties();
+            createInputs();
+            createOutputs();
+        }
+
+        protected abstract void createProperties();
+
+        protected abstract void createInputs();
+
+        protected abstract void createOutputs();
+
+        public static void connect(Node from, string fromPort, Node to, string toPort) {
+            from.addOutput(fromPort, to, toPort);
+            to.addInput(toPort, from, fromPort);
+        }
+
+        public static void disconnect(Node from, string fromPort, Node to, string toPort) {
+            from.removeOutput(fromPort, to, toPort);
+            to.removeInput(toPort);
+        }
+
+        protected virtual bool addInput(string port, Node from, string fromPort) {
+            //if the port is valid
+            if (inputs.ContainsKey(port)) {
+                //if there's an old connection, disconnect both ends
+                if (inputs[port] != null) {
+                    inputs[port].node.removeOutput(inputs[port].port, this, port);
+                    inputs[port] = null;
+                }
+                //place the new connection
+                inputs[port] = new Address(from, fromPort);
+                soil();
+                return true;
+            }
+            //else fail
+            return false;
+        }
+
+        protected virtual bool addOutput(string port, Node to, string toPort) {
+            //if there's an old connection, doesn't matter. Output can be 1..*
+            HashSet<Address> cnx;
+            if (outputs.ContainsKey(port)) {
+                cnx = outputs[port];
+                cnx.Add(new Address(to, toPort));
+                return true;
+            }
+            return false;
+        }
+
+        protected virtual void removeInput(string port) {
+            //Note: only breaks this end of the connection.
+            if (inputs.ContainsKey(port)) {
+                inputs[port] = null;
+            }
+            soil();
+        }
+
+        protected virtual void removeOutput(string port, Node to, string toPort) {
+            //Note: only breaks this end of the connection.
+            Address match = new Address(to, toPort);
+            if (inputs.ContainsKey(port)) {
+                //TODO: test this. It uses .Equals() to find the match right?
+                outputs[port].Remove(match);  //returns false if item not found.
+            }
+        }
+
+        public virtual DataBlob getData(string port) {
+            if (isDirty) {
+                clean();
+            }
+            return null;
         }
 
         public Dictionary<string, Property> getProperties() {
             return properties;
         }
 
-        protected virtual void calculate() {
-            isDirty = false;
-        }
-
         protected void soil() {
             isDirty = true;
             fireOutputChanged(new EventArgs());
+        }
+
+        protected virtual void clean() {
+            isDirty = false;
         }
 
         private void updateNodeDisplay() {
@@ -76,17 +161,11 @@ namespace MpegCompressor {
 
 
         public virtual void view(PaintEventArgs pe) {
-            //if there is input, 
-            //   delegate to upstream
-            //else
-            //   draw nothing
-            Graphics g = pe.Graphics;
-            g.DrawLine(SystemPens.ControlDarkDark, -5, -15, 5, 15);
-            g.DrawLine(SystemPens.ControlDarkDark, 5, -15, -5, 15);
+            if (isDirty) {
+                clean();
+            }
         }
 
-        public virtual Rectangle getExtents() {
-            return new Rectangle(-5, -15, 10, 30);
-        }
+        public abstract Rectangle getExtents();
     }
 }

@@ -16,10 +16,8 @@ namespace MpegCompressor {
         }
 
         protected override void createProperties() {
-            base.createProperties();
-            //change name to read
             Property p = properties["name"];
-            p.setString("Read");
+            p.setString("ReadImage");
 
             //create filepath property
             p = new Property();
@@ -28,17 +26,24 @@ namespace MpegCompressor {
             properties.Add("path", p);
         }
 
+        protected override void createInputs() {
+            //no inputs for ReadImage. Only string property.
+        }
+
+        protected override void createOutputs() {
+            outputs.Add("outColor", new HashSet<Address>());
+        }
+
+        public override DataBlob getData(string port) {
+            DataBlob d = new DataBlob();
+            d.type = DataBlob.Type.Image;
+            d.img = img;
+            return d;
+        }
+
         private void setPath(string path) {
             filepath = path;
             properties["path"].setString(path);
-            //load image from path, if it exists
-            try {
-                img = Image.FromFile(filepath);
-            } catch (Exception x) {
-                string temp = x.Message;
-                //silently fail.
-                img = null;
-            }
             soil();
         }
 
@@ -46,12 +51,24 @@ namespace MpegCompressor {
             setPath(properties["path"].getString());
         }
 
+        protected override void clean() {
+            base.clean();
+            //load image from path, if it exists
+            try {
+                img = Image.FromFile(filepath);
+            } catch (Exception) {
+                //silently fail. 
+                img = null;
+            }
+        }
+
         public override void view(PaintEventArgs pe) {
+            base.view(pe);
             if (img == null) {
                 return;
             }
             Graphics g = pe.Graphics;
-            //g.DrawImageUnscaled(img, -img.Width, 0);
+
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
         }

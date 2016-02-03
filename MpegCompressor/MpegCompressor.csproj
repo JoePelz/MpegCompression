@@ -61,7 +61,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColorSpace.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controller.cs" />
+    <Compile Include="DataBlob.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
     <Compile Include="Node.cs">
@@ -72,6 +76,9 @@
     </Compile>
     <Compile Include="NodeView.Designer.cs">
       <DependentUpon>NodeView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NoOp.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Project.cs" />
     <Compile Include="Property.cs">
@@ -136,6 +143,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nodeTemplate.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

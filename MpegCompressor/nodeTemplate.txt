@@ -1,0 +1,49 @@
+﻿new node template:
+
+
+public class MyNode : Node {
+
+	public MyNode() {
+		//default setup
+	}
+
+	protected override void createProperties() {
+        base.createProperties();
+        Property p = properties["name"];
+        //set custom name
+        p.setString("MyNode");
+	}
+
+	protected override void createInputs() {
+        //no inputs for ReadImage. Only string property.
+		inputs.Add("myInput", null);
+    }
+
+    protected override void createOutputs() {
+        outputs.Add("myOutput", new HashSet<Address>());
+    }
+
+	protected override DataBlob getData(string port) {
+        DataBlob d = new DataBlob();
+        d.type = DataBlob.Type.*;
+        d.* = myData;
+        return d;
+    }
+
+	protected override void clean() {
+		//read inputs and update output...
+	}
+
+	public override void view(PaintEventArgs pe) {
+        if (img == null) {
+            return;
+        }
+        Graphics g = pe.Graphics;
+
+        g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
+	}
+	
+    public override Rectangle getExtents() {
+        return new Rectangle(-img.Width / 2, -img.Height / 2, img.Width, img.Height);
+    }
+}

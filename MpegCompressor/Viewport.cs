@@ -44,13 +44,13 @@ namespace MpegCompressor {
             base.OnPaint(pe);
             Graphics g = pe.Graphics;
             g.Transform = xform;
-            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor; //I wanna see the PIXELS, dammit!
             if (content != null) {
                 content.view(pe);
             }
-            g.InterpolationMode = InterpolationMode.Default;
-            //Draw Origin (0, 0)
+
             /*
+            //Draw Origin (0, 0)
             g.DrawEllipse(Pens.Black, -5, -5, 10, 10);
             g.DrawEllipse(Pens.Black, -2, -2, 4, 4);
             g.DrawLine(Pens.Black, 0, -50, 0, 50);

@@ -44,8 +44,8 @@ namespace MpegCompressor {
             //else
             //   draw nothing
             Graphics g = pe.Graphics;
-            g.DrawLine(SystemPens.ControlDarkDark, 1, 3, 10, 30);
-            g.DrawLine(SystemPens.ControlDarkDark, 10, 3, 1, 30);
+            g.DrawLine(SystemPens.ControlDarkDark, -5, -15, 5, 15);
+            g.DrawLine(SystemPens.ControlDarkDark, 5, -15, -5, 15);
         }
 
         public Dictionary<string, Property> getProperties() {

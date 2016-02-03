@@ -11,27 +11,34 @@ using System.Drawing.Drawing2D;
 
 namespace MpegCompressor {
     public partial class Viewport : Panel {
+        //private static float ZOOM_FACTOR = 1.2f;
+        private static float ZOOM_FACTOR = 2.0f;
         Matrix xform;
-        float scale;
+        Point translate;
         Point mDown;
+        float scale;
         bool bMDown;
 
         private IViewable content;
 
         public Viewport() {
             InitializeComponent();
-            xform = new Matrix();
-            DoubleBuffered = true;
-            scale = 1;
+            init();
         }
 
         public Viewport(IContainer container) {
             container.Add(this);
 
             InitializeComponent();
-            xform = new Matrix();
+            init();
+        }
+
+        private void init() {
             DoubleBuffered = true;
             scale = 1;
+            xform = new Matrix();
+            translate = new Point();
+            mDown = new Point();
         }
 
         protected override void OnPaint(PaintEventArgs pe) {
@@ -47,6 +54,13 @@ namespace MpegCompressor {
             content = view;
         }
 
+        private void updateTransform() {
+            xform.Reset();
+            xform.Translate(translate.X, translate.Y);
+            xform.Scale(scale, scale);
+            Invalidate();
+        }
+
         protected override void OnMouseDown(MouseEventArgs e) {
             base.OnMouseDown(e);
             mDown.X = e.X;
@@ -57,10 +71,11 @@ namespace MpegCompressor {
         protected override void OnMouseMove(MouseEventArgs e) {
             base.OnMouseMove(e);
             if (bMDown) {
-                xform.Translate(e.X - mDown.X, e.Y - mDown.Y);
+                translate.X += e.X - mDown.X;
+                translate.Y += e.Y - mDown.Y;
                 mDown.X = e.X;
                 mDown.Y = e.Y;
-                Invalidate();
+                updateTransform();
             }
         }
 
@@ -68,25 +83,22 @@ namespace MpegCompressor {
             base.OnMouseUp(e);
             bMDown = false;
         }
-
+        
         protected override void OnMouseWheel(MouseEventArgs e) {
+            //e is in screen space.
             base.OnMouseWheel(e);
-            PointF[] center = new PointF[1];
-            center[0] = new PointF();
-            center[0].X = e.X;
-            center[0].Y = e.Y;
-            xform.TransformPoints(center);
-            xform.Translate(center[0].X, center[0].Y);
             float scroll = e.Delta / 120.0f;
             if (scroll > 0) {
-                xform.Scale(1.2f, 1.2f);
-                scale *= 1.2f;
+                //translate.X = (int)((translate.X - e.X) * ZOOM_FACTOR) + e.X;
+                //translate.Y = (int)((translate.Y - e.Y) * ZOOM_FACTOR) + e.Y;
+                scale *= ZOOM_FACTOR;
             } else if (scroll < 0) {
-                xform.Scale(1 / 1.2f, 1 / 1.2f);
-                scale /= 1.2f;
+                //translate.X = (int)((translate.X - e.X) / ZOOM_FACTOR) + e.X;
+                //translate.Y = (int)((translate.Y - e.Y) / ZOOM_FACTOR) + e.Y;
+                scale /= ZOOM_FACTOR;
             }
-            xform.Translate(-center[0].X, -center[0].Y);
-            Invalidate();
+            updateTransform();
         }
+        
     }
 }

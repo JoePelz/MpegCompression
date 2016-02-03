@@ -50,7 +50,7 @@ namespace MpegCompressor {
                 return;
             }
             Graphics g = pe.Graphics;
-            g.DrawImageUnscaled(img, 50, 10);
+            g.DrawImageUnscaled(img, -img.Width / 2, -img.Height / 2);
         }
     }
 }

@@ -9,9 +9,11 @@ using System.Windows.Forms;
 namespace MpegCompressor {
     //TODO: have node not extend panel, and be drawn purely by NodeView.
     public class Node : Panel, IViewable, IProperties {
-        private bool isSelected;
+        private bool isSelected, isDirty;
         protected Label name;
         protected Dictionary<string, Property> properties;
+
+        public event EventHandler eViewChanged;
 
         public Node() {
             SuspendLayout();
@@ -38,18 +40,17 @@ namespace MpegCompressor {
             properties.Add("name", p);
         }
 
-        public virtual void view(PaintEventArgs pe) {
-            //if there is input, 
-            //   delegate to upstream
-            //else
-            //   draw nothing
-            Graphics g = pe.Graphics;
-            g.DrawLine(SystemPens.ControlDarkDark, -5, -15, 5, 15);
-            g.DrawLine(SystemPens.ControlDarkDark, 5, -15, -5, 15);
-        }
-
         public Dictionary<string, Property> getProperties() {
             return properties;
+        }
+
+        protected virtual void calculate() {
+            isDirty = false;
+        }
+
+        protected void soil() {
+            isDirty = true;
+            fireOutputChanged(new EventArgs());
         }
 
         private void updateNodeDisplay() {
@@ -64,6 +65,28 @@ namespace MpegCompressor {
         }
         public bool getSelected() {
             return isSelected;
+        }
+        
+        private void fireOutputChanged(EventArgs e) {
+            EventHandler handler = eViewChanged;
+            if (handler != null) {
+                handler(this, e);
+            }
+        }
+
+
+        public virtual void view(PaintEventArgs pe) {
+            //if there is input, 
+            //   delegate to upstream
+            //else
+            //   draw nothing
+            Graphics g = pe.Graphics;
+            g.DrawLine(SystemPens.ControlDarkDark, -5, -15, 5, 15);
+            g.DrawLine(SystemPens.ControlDarkDark, 5, -15, -5, 15);
+        }
+
+        public virtual Rectangle getExtents() {
+            return new Rectangle(-5, -15, 10, 30);
         }
     }
 }

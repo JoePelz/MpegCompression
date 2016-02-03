@@ -12,7 +12,7 @@ namespace MpegCompressor {
         private Image img;
 
         public ReadImage() {
-            setPath("C:\\temp\\sunrise.jpg");
+            setPath("C:\\temp\\uv.jpg");
         }
 
         protected override void createProperties() {
@@ -39,6 +39,7 @@ namespace MpegCompressor {
                 //silently fail.
                 img = null;
             }
+            soil();
         }
 
         private void OnPathChange(object sender, EventArgs e) {
@@ -50,7 +51,13 @@ namespace MpegCompressor {
                 return;
             }
             Graphics g = pe.Graphics;
-            g.DrawImageUnscaled(img, -img.Width / 2, -img.Height / 2);
+            //g.DrawImageUnscaled(img, -img.Width, 0);
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
+        }
+
+        public override Rectangle getExtents() {
+            return new Rectangle(-img.Width / 2, -img.Height / 2, img.Width, img.Height);
         }
     }
 }

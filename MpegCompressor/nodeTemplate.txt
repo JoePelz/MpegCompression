@@ -24,6 +24,7 @@ public class MyNode : Node {
     }
 
 	protected override DataBlob getData(string port) {
+		base.getData(port);
         DataBlob d = new DataBlob();
         d.type = DataBlob.Type.*;
         d.* = myData;
@@ -31,19 +32,20 @@ public class MyNode : Node {
     }
 
 	protected override void clean() {
+        base.clean();
 		//read inputs and update output...
 	}
 
-	public override void view(PaintEventArgs pe) {
-        if (img == null) {
+	public override Bitmap view() {
+        base.view();
+        if (data == null) {
             return;
         }
-        Graphics g = pe.Graphics;
-
-        g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
+        //create bitmap from data
+		return bmp;
 	}
 	
     public override Rectangle getExtents() {
-        return new Rectangle(-img.Width / 2, -img.Height / 2, img.Width, img.Height);
+        return new Rectangle(-bmp.Width / 2, -bmp.Height / 2, bmp.Width, bmp.Height);
     }
 }

@@ -80,19 +80,28 @@ namespace MpegCompressor {
             float r, g, b;
             byte Y, Cr, Cb;
 
-            for (int counter = 0; counter < rgbValues.Length; counter += 3) {
+            int pixel;
+            //It is necessary to do width and height separately because
+            //  there may be padding bytes at the edge of the image to
+            //  make each row fit into a multiple of 4 bytes
+            //  e.g. image is 3 pixels wide, 24bpp. 
+            //       that's 9 bytes per row, but stride would be 12
+            for (int y = 0; y < bmpData.Height; y++) {
+                for (int x = 0; x < bmpData.Width; x++) {
+                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
 
-                b = rgbValues[counter];
-                g = rgbValues[counter + 1];
-                r = rgbValues[counter + 2];
+                    b = rgbValues[pixel];
+                    g = rgbValues[pixel + 1];
+                    r = rgbValues[pixel + 2];
 
-                Y =  (byte)((0.299 * r) + (0.587 * g) + (0.114 * b));
-                Cb = (byte)(128 - (0.168736 * r) - (0.331264 * g) + (0.500000 * b));
-                Cr = (byte)(128 + (0.500000 * r) - (0.418688 * g) - (0.081312 * b));
+                    Y = (byte)((0.299 * r) + (0.587 * g) + (0.114 * b));
+                    Cb = (byte)(128 - (0.168736 * r) - (0.331264 * g) + (0.500000 * b));
+                    Cr = (byte)(128 + (0.500000 * r) - (0.418688 * g) - (0.081312 * b));
 
-                rgbValues[counter] = Cb;
-                rgbValues[counter + 1] = Cr;
-                rgbValues[counter + 2] = Y;
+                    rgbValues[pixel] = Cb;
+                    rgbValues[pixel + 1] = Cr;
+                    rgbValues[pixel + 2] = Y;
+                }
             }
 
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
@@ -116,24 +125,26 @@ namespace MpegCompressor {
 
             float Y, Cr, Cb;
             int r, g, b;
+            int pixel;
+            for (int y = 0; y < bmpData.Height; y++) {
+                for (int x = 0; x < bmpData.Width; x++) {
+                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
 
-            for (int counter = 0; counter < rgbValues.Length; counter += 3) {
+                    Cb = rgbValues[pixel] - 128;
+                    Cr = rgbValues[pixel + 1] - 128;
+                    Y = rgbValues[pixel + 2];
 
-                Cb = rgbValues[counter] - 128;
-                Cr = rgbValues[counter + 1] - 128;
-                Y = rgbValues[counter + 2];
-
-                r = (int)(Y + 1.40200 * Cr);
-                g = (int)(Y - 0.34414 * Cb - 0.71414 * Cr);
-                b = (int)(Y + 1.77200 * Cb);
-                r = r < 0 ? 0 : r > 255 ? 255 : r;
-                g = g < 0 ? 0 : g > 255 ? 255 : g;
-                b = b < 0 ? 0 : b > 255 ? 255 : b;
-
-
-                rgbValues[counter] = (byte)b;
-                rgbValues[counter + 1] = (byte)g;
-                rgbValues[counter + 2] = (byte)r;
+                    r = (int)(Y + 1.40200 * Cr);
+                    g = (int)(Y - 0.34414 * Cb - 0.71414 * Cr);
+                    b = (int)(Y + 1.77200 * Cb);
+                    r = r < 0 ? 0 : r > 255 ? 255 : r;
+                    g = g < 0 ? 0 : g > 255 ? 255 : g;
+                    b = b < 0 ? 0 : b > 255 ? 255 : b;
+                    
+                    rgbValues[pixel] = (byte)b;
+                    rgbValues[pixel + 1] = (byte)g;
+                    rgbValues[pixel + 2] = (byte)r;
+                }
             }
 
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);

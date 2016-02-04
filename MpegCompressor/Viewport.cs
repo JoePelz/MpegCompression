@@ -90,23 +90,34 @@ namespace MpegCompressor {
             //copy bytes
             int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
             byte[] rgbValues = new byte[nBytes];
+            int pixel;
+            int Bpp = 3;
 
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
 
             if (viewChannel == 'r') {
-                for (int counter = 0; counter < rgbValues.Length; counter += 3) {
-                    rgbValues[counter] = rgbValues[counter + 2];
-                    rgbValues[counter + 1] = rgbValues[counter + 2];
+                for (int y = 0; y < bmpData.Height; y++) {
+                    for (int x = 0; x < bmpData.Width; x++) {
+                        pixel = y * bmpData.Stride + x * Bpp;
+                        rgbValues[pixel] = rgbValues[pixel + 2];
+                        rgbValues[pixel + 1] = rgbValues[pixel + 2];
+                    }
                 }
             } else if (viewChannel == 'g') {
-                for (int counter = 0; counter < rgbValues.Length; counter += 3) {
-                    rgbValues[counter] = rgbValues[counter + 1];
-                    rgbValues[counter + 2] = rgbValues[counter + 1];
+                for (int y = 0; y < bmpData.Height; y++) {
+                    for (int x = 0; x < bmpData.Width; x++) {
+                        pixel = y * bmpData.Stride + x * Bpp;
+                        rgbValues[pixel] = rgbValues[pixel + 1];
+                        rgbValues[pixel + 2] = rgbValues[pixel + 1];
+                    }
                 }
             } else if (viewChannel == 'b') {
-                for (int counter = 0; counter < rgbValues.Length; counter += 3) {
-                    rgbValues[counter + 1] = rgbValues[counter];
-                    rgbValues[counter + 2] = rgbValues[counter];
+                for (int y = 0; y < bmpData.Height; y++) {
+                    for (int x = 0; x < bmpData.Width; x++) {
+                        pixel = y * bmpData.Stride + x * Bpp;
+                        rgbValues[pixel + 1] = rgbValues[pixel];
+                        rgbValues[pixel + 2] = rgbValues[pixel];
+                    }
                 }
             }
 

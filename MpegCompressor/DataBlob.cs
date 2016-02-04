@@ -8,10 +8,12 @@ using System.Drawing;
 namespace MpegCompressor {
     public class DataBlob {
         public enum Type {
-            Image
+            Image,
+            Channels
         };
 
         public Type type;
         public Bitmap img;
+        public byte[][] channels;
     }
 }

@@ -12,6 +12,6 @@ namespace MpegCompressor {
         };
 
         public Type type;
-        public Image img;
+        public Bitmap img;
     }
 }

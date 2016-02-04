@@ -27,9 +27,10 @@ namespace MpegCompressor {
 
         public void buildGraph() {
             Node n1 = new ReadImage();
-            Node n2 = new NoOp();
-            Node n3 = new NoOp();
+            Node n2 = new ColorSpace();
+            Node n3 = new ColorSpace();
             Node.connect(n1, "outColor", n2, "inColor");
+            Node.connect(n2, "outColor", n3, "inColor");
             viewNodes.addNode(n1);
             viewNodes.addNode(n2);
             viewNodes.addNode(n3);

@@ -11,12 +11,22 @@ namespace MpegCompressor {
     public partial class PropertyPage : TableLayoutPanel {
         public PropertyPage() {
             InitializeComponent();
+            this.SetStyle(ControlStyles.Selectable, true);
+            this.TabStop = true;
         }
 
         public PropertyPage(IContainer container) {
             container.Add(this);
 
             InitializeComponent();
+            this.SetStyle(ControlStyles.Selectable, true);
+            this.TabStop = true;
+
+        }
+
+        protected override void OnMouseEnter(EventArgs e) {
+            this.Focus();
+            base.OnMouseEnter(e);
         }
 
         public void clearProperties() {
@@ -31,22 +41,21 @@ namespace MpegCompressor {
             ResumeLayout();
         }
 
-        public void addProperty(Property p) {
-            SuspendLayout();
+        private void addProperty(Property p) {
             RowCount++;
             RowStyles.Clear();
             for (int i=0; i < RowCount; i++) {
                 RowStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0f / RowCount));
             }
             Controls.Add(p, 0, RowCount - 1);
-            ResumeLayout(false);
-            PerformLayout();
         }
 
         public void addProperties(Dictionary<string, Property> props) {
+            SuspendLayout();
             foreach (Property p in props.Values) {
                 addProperty(p);
             }
+            ResumeLayout();
         }
 
         public void showProperties(IProperties hasProperties) {

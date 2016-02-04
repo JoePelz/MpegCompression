@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,17 +37,15 @@ namespace MpegCompressor {
         }
 
         protected override void clean() {
-            //read inputs and update output...
+            base.clean();
         }
 
-        public override void view(PaintEventArgs pe) {
-            base.view(pe);
+        public override Bitmap view() {
+            base.view();
             if (inputs.ContainsKey("inColor") && inputs["inColor"] != null) {
-                inputs["inColor"].node.view(pe);
+                return inputs["inColor"].node.view();
             } else {
-                Graphics g = pe.Graphics;
-                g.DrawLine(SystemPens.ControlDarkDark, -15, -15, 15, 15);
-                g.DrawLine(SystemPens.ControlDarkDark, 15, -15, -15, 15);
+                return null;
             }
         }
 
@@ -54,7 +53,7 @@ namespace MpegCompressor {
             if (inputs.ContainsKey("inColor") && inputs["inColor"] != null) {
                 return inputs["inColor"].node.getExtents();
             }
-            return new Rectangle(-15, -15, 31, 31);
+            return new Rectangle(-64, -64, 128, 128);
         }
     }
 }

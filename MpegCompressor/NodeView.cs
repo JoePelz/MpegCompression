@@ -15,12 +15,16 @@ namespace MpegCompressor {
 
         public NodeView() {
             InitializeComponent();
+            this.SetStyle(ControlStyles.Selectable, true);
+            this.TabStop = true;
         }
 
         public NodeView(IContainer container) {
             container.Add(this);
 
             InitializeComponent();
+            this.SetStyle(ControlStyles.Selectable, true);
+            this.TabStop = true;
         }
 
         public void clearNodes() {
@@ -57,6 +61,11 @@ namespace MpegCompressor {
 
         private void onNodeClicked(object sender, MouseEventArgs e) {
             select(sender as Node);
+        }
+
+        protected override void OnMouseEnter(EventArgs e) {
+            this.Focus();
+            base.OnMouseEnter(e);
         }
 
         protected override void OnMouseDown(MouseEventArgs e) {

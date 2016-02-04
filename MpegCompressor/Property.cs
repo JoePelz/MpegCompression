@@ -205,6 +205,9 @@ namespace MpegCompressor {
             }
             comboBox.SelectedIndex = nVal;
             comboBox.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+
+            Controls.Add(comboBox, 0, 0);
+            Controls.Add(lblName, 1, 0);
         }
 
         private void ComboBox_SelectedIndexChanged(object sender, EventArgs e) {

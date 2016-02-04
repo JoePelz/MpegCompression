@@ -9,7 +9,7 @@ using System.Drawing;
 namespace MpegCompressor {
     public class ReadImage : Node {
         private string filepath;
-        private Image img;
+        private Bitmap img;
 
         public ReadImage() {
             setPath("C:\\temp\\uv.jpg");
@@ -55,22 +55,19 @@ namespace MpegCompressor {
             base.clean();
             //load image from path, if it exists
             try {
-                img = Image.FromFile(filepath);
+                img = new Bitmap(filepath);
             } catch (Exception) {
                 //silently fail. 
                 img = null;
             }
         }
 
-        public override void view(PaintEventArgs pe) {
-            base.view(pe);
+        public override Bitmap view() {
+            base.view();
             if (img == null) {
-                return;
+                return null;
             }
-            Graphics g = pe.Graphics;
-
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
+            return img.Clone(new Rectangle(0, 0, img.Width, img.Height), img.PixelFormat);
         }
 
         public override Rectangle getExtents() {

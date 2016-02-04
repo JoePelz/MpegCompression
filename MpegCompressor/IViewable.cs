@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace MpegCompressor {
     public interface IViewable {
 
         event EventHandler eViewChanged;
-
-        void view(PaintEventArgs pe);
+        
+        Bitmap view();
 
         System.Drawing.Rectangle getExtents();
     }

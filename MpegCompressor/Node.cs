@@ -26,6 +26,7 @@ namespace MpegCompressor {
         protected Dictionary<string, Property> properties;
         protected Dictionary<string, Address> inputs;
         protected Dictionary<string, HashSet<Address>> outputs;
+        protected char viewChannel;
 
         public event EventHandler eViewChanged;
 
@@ -131,6 +132,11 @@ namespace MpegCompressor {
 
         protected void soil() {
             isDirty = true;
+            foreach (KeyValuePair<string, HashSet<Address>> kvp in outputs) {
+                foreach (Address a in kvp.Value) {
+                    a.node.soil();
+                }
+            }
             fireOutputChanged(new EventArgs());
         }
 
@@ -160,10 +166,15 @@ namespace MpegCompressor {
         }
 
 
-        public virtual void view(PaintEventArgs pe) {
+        public virtual Bitmap view() {
             if (isDirty) {
                 clean();
             }
+            return null;
+        }
+
+        public virtual void channel(char ch) {
+            viewChannel = ch;
         }
 
         public abstract Rectangle getExtents();

@@ -42,6 +42,7 @@ namespace MpegCompressor {
         }
 
         public override DataBlob getData(string port) {
+            base.getData(port);
             DataBlob d = new DataBlob();
             d.type = DataBlob.Type.Image;
             d.img = bmp;

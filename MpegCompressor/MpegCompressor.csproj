@@ -101,6 +101,9 @@
     <Compile Include="ReadImage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Subsample.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Viewport.cs">
       <SubType>Component</SubType>
     </Compile>

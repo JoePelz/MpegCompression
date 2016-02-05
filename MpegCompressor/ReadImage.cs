@@ -72,6 +72,9 @@ namespace MpegCompressor {
         }
 
         public override Rectangle getExtents() {
+            if (img == null) {
+                return new Rectangle();
+            }
             return new Rectangle(-img.Width / 2, -img.Height / 2, img.Width, img.Height);
         }
     }

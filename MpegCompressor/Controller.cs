@@ -29,11 +29,19 @@ namespace MpegCompressor {
             Node n1 = new ReadImage();
             Node n2 = new ColorSpace();
             Node n3 = new ColorSpace();
+            Node n4 = new Subsample();
+            Node n5 = new Subsample();
+            n5.rename("bogus");
+
             Node.connect(n1, "outColor", n2, "inColor");
             Node.connect(n2, "outColor", n3, "inColor");
+            Node.connect(n2, "outColor", n4, "inChannels");
+            Node.connect(n4, "outChannels", n5, "inChannels");
             viewNodes.addNode(n1);
             viewNodes.addNode(n2);
             viewNodes.addNode(n3);
+            viewNodes.addNode(n4);
+            viewNodes.addNode(n5);
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

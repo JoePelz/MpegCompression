@@ -88,6 +88,7 @@
             this.viewLeft.Name = "viewLeft";
             this.viewLeft.Size = new System.Drawing.Size(576, 393);
             this.viewLeft.TabIndex = 0;
+            this.viewLeft.TabStop = true;
             // 
             // viewRight
             // 
@@ -97,6 +98,7 @@
             this.viewRight.Name = "viewRight";
             this.viewRight.Size = new System.Drawing.Size(601, 393);
             this.viewRight.TabIndex = 0;
+            this.viewRight.TabStop = true;
             // 
             // splitContainer3
             // 
@@ -122,6 +124,7 @@
             this.viewNodes.Name = "viewNodes";
             this.viewNodes.Size = new System.Drawing.Size(819, 206);
             this.viewNodes.TabIndex = 0;
+            this.viewNodes.TabStop = true;
             // 
             // viewProperties
             // 
@@ -132,6 +135,7 @@
             this.viewProperties.Name = "viewProperties";
             this.viewProperties.Size = new System.Drawing.Size(358, 206);
             this.viewProperties.TabIndex = 0;
+            this.viewProperties.TabStop = true;
             // 
             // Form1
             // 

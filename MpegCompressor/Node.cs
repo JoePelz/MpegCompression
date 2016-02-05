@@ -23,25 +23,34 @@ namespace MpegCompressor {
 
         private bool isSelected, isDirty;
         protected Label name;
+        protected Label extra;
         protected Dictionary<string, Property> properties;
         protected Dictionary<string, Address> inputs;
         protected Dictionary<string, HashSet<Address>> outputs;
-        protected char viewChannel;
 
         public event EventHandler eViewChanged;
 
         public Node() {
             SuspendLayout();
+            
+            AutoSize = false;
+            Size = new System.Drawing.Size(100, 100);
+            BackColor = System.Drawing.Color.CadetBlue;
+            Margin = new Padding(5);
+
             name = new Label();
             name.Text = "default";
             name.AutoSize = true;
             name.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(name);
 
-            AutoSize = false;
-            Size = new System.Drawing.Size(100, 100);
-            BackColor = System.Drawing.Color.CadetBlue;
-            Margin = new Padding(5);
+            extra = new Label();
+            extra.Text = "";
+            extra.AutoSize = true;
+            extra.Top = 15;
+            Controls.Add(extra);
+
+
             ResumeLayout();
 
             properties = new Dictionary<string, Property>();
@@ -56,6 +65,14 @@ namespace MpegCompressor {
             createProperties();
             createInputs();
             createOutputs();
+        }
+
+        public void rename(string newName) {
+            properties["name"].setString(newName);
+        }
+
+        public void setExtra(string sExtra) {
+            extra.Text = sExtra;
         }
 
         protected abstract void createProperties();
@@ -171,10 +188,6 @@ namespace MpegCompressor {
                 clean();
             }
             return null;
-        }
-
-        public virtual void channel(char ch) {
-            viewChannel = ch;
         }
 
         public abstract Rectangle getExtents();

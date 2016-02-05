@@ -155,7 +155,8 @@ namespace MpegCompressor {
 
         private Bitmap generateImage() {
             //draw a picture!
-            Bitmap render = new Bitmap(128, 128, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            //Bitmap render = new Bitmap(128, 128, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            Bitmap render = new Bitmap(128, 128, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
             BitmapData bmpData = render.LockBits(
                 new Rectangle(0, 0, render.Width, render.Height),
                 System.Drawing.Imaging.ImageLockMode.ReadWrite,
@@ -171,11 +172,7 @@ namespace MpegCompressor {
 
             //order: B,G,R,A,  B,G,R,A,  ...
             for (int counter = 1; counter < rgbValues.Length; counter++) {
-                if (counter % 4 == 3) { //alpha channel
-                    rgbValues[counter] = 255;
-                } else {
-                    rgbValues[counter] = (byte)(counter % 256); //whatever
-                }
+                rgbValues[counter] = (byte)(counter % 256); //whatever
             }
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
 

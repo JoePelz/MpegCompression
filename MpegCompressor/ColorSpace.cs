@@ -65,35 +65,48 @@ namespace MpegCompressor {
 
         protected override void clean() {
             base.clean();
-            DataBlob upstream = inputs["inColor"].node.getData(inputs["inColor"].port);
-            if (upstream.img != null) {
-                bmp = upstream.img.Clone(new Rectangle(0, 0, upstream.img.Width, upstream.img.Height), upstream.img.PixelFormat);
-                if (inSpace == outSpace)
-                    return;
+            Address upstream = inputs["inColor"];
+            if (upstream == null) {
+                return;
+            }
+            DataBlob dataIn = upstream.node.getData(upstream.port);
+            if (dataIn == null) {
+                return;
+            }
 
-                switch (inSpace) {
-                    case Space.RGB:
-                        //doNothing
-                        break;
-                    case Space.HSV:
-                        HSVtoRGB(bmp);
-                        break;
-                    case Space.YCrCb:
-                        YCrCbtoRGB(bmp);
-                        break;
-                }
-                switch(outSpace) {
-                    case Space.RGB:
-                        break;
-                    case Space.HSV:
-                        RGBtoHSV(bmp);
-                        break;
-                    case Space.YCrCb:
-                        RGBtoYCrCb(bmp);
-                        break;
-                }
+            if (dataIn.type == DataBlob.Type.Channels) {
+                //TODO: disallow this. We shouldn't silently change the channel dimensions. Only do this is channels are 4:4:4 already.
+                bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width);
+            } else if (dataIn.type == DataBlob.Type.Image) {
+                bmp = dataIn.img.Clone(new Rectangle(0, 0, dataIn.img.Width, dataIn.img.Height), dataIn.img.PixelFormat);
             } else {
                 bmp = null;
+                return;
+            }
+            
+            if (inSpace == outSpace)
+                return;
+
+            switch (inSpace) {
+                case Space.RGB:
+                    //doNothing
+                    break;
+                case Space.HSV:
+                    HSVtoRGB(bmp);
+                    break;
+                case Space.YCrCb:
+                    YCrCbtoRGB(bmp);
+                    break;
+            }
+            switch(outSpace) {
+                case Space.RGB:
+                    break;
+                case Space.HSV:
+                    RGBtoHSV(bmp);
+                    break;
+                case Space.YCrCb:
+                    RGBtoYCrCb(bmp);
+                    break;
             }
         }
 
@@ -144,6 +157,10 @@ namespace MpegCompressor {
         }
         
         private static void YCrCbtoRGB(Bitmap bmp) {
+            if (bmp == null) {
+                return;
+            }
+
             BitmapData bmpData = bmp.LockBits(
                                 new Rectangle(0, 0, bmp.Width, bmp.Height),
                                 ImageLockMode.ReadWrite,

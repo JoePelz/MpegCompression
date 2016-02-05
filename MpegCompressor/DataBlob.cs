@@ -13,8 +13,11 @@ namespace MpegCompressor {
         };
 
         public Type type;
+
         public Bitmap img;
+
         public byte[][] channels;
         public int width;
+        public Subsample.Samples samplingMode;
     }
 }

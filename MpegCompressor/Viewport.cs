@@ -11,13 +11,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 namespace MpegCompressor {
-    public partial class Viewport : Panel {
-        private static float ZOOM_FACTOR = 1.2f;
-        private Matrix xform;
-        private PointF translate;
-        private PointF mDown;
-        private float scale;
-        private bool bMDown;
+    public partial class Viewport : TransformPanel {
         private char viewChannel;
 
         private IViewable content;
@@ -35,11 +29,6 @@ namespace MpegCompressor {
         }
 
         private void init() {
-            DoubleBuffered = true;
-            scale = 1;
-            xform = new Matrix();
-            translate = new Point();
-            mDown = new Point();
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
         }
@@ -130,15 +119,17 @@ namespace MpegCompressor {
             base.OnPaint(pe);
 
             Graphics g = pe.Graphics;
-            g.Transform = xform;
             g.InterpolationMode = InterpolationMode.NearestNeighbor; //I wanna see the PIXELS, dammit!
 
             if (content != null) {
                 Bitmap img = content.view();
                 if (img != null) {
+                    img = img.Clone(new Rectangle(0, 0, img.Width, img.Height), img.PixelFormat);
                     channelFilter(img);
+                    setFocusRect(img.Width, img.Height);
                 } else {
                     img = generateImage();
+                    setFocusRect(img.Width, img.Height);
                 }
                 g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
             }
@@ -182,110 +173,19 @@ namespace MpegCompressor {
         }
 
         public void setSource(IViewable view) {
+            //unregister old event handler
             if (content != null) {
                 content.eViewChanged -= OnSourceUpdate;
             }
             content = view;
+            //register new event handler
             if (content != null) {
                 content.eViewChanged += OnSourceUpdate;
             }
         }
 
-        private void updateTransform() {
-            xform.Reset();
-            //Note:  .translate() and .scale() _prepend_ a transformation, 
-            // so this is like SCALE * TRANSLATE despite being in reverse order.
-            xform.Translate(translate.X, translate.Y);
-            xform.Scale(scale, scale);
-            Invalidate();
-        }
-
-        protected override void OnMouseDown(MouseEventArgs e) {
-            base.OnMouseDown(e);
-            if (e.Button == MouseButtons.Right) {
-                focusView();
-                return;
-            }
-
-            mDown.X = e.X;
-            mDown.Y = e.Y;
-            bMDown = true;
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e) {
-            base.OnMouseMove(e);
-            if (bMDown) {
-                translate.X += (e.X - mDown.X);
-                translate.Y += (e.Y - mDown.Y);
-                mDown.X = e.X;
-                mDown.Y = e.Y;
-                updateTransform();
-            }
-        }
-
-        protected override void OnMouseUp(MouseEventArgs e) {
-            base.OnMouseUp(e);
-            bMDown = false;
-        }
-        
-        protected override void OnMouseWheel(MouseEventArgs e) {
-            //e is in screen space.
-            base.OnMouseWheel(e);
-            
-            float scroll = e.Delta / 120.0f;
-            if (scroll > 0) {
-                translate.X = (int)((translate.X - e.X) * ZOOM_FACTOR) + e.X;
-                translate.Y = (int)((translate.Y - e.Y) * ZOOM_FACTOR) + e.Y;
-                scale *= ZOOM_FACTOR;
-            } else if (scroll < 0) {
-                translate.X = (int)((translate.X - e.X) / ZOOM_FACTOR) + e.X;
-                translate.Y = (int)((translate.Y - e.Y) / ZOOM_FACTOR) + e.Y;
-                scale /= ZOOM_FACTOR;
-            }
-            
-            updateTransform();
-        }
-
         private void OnSourceUpdate(object sender, EventArgs e) {
             Invalidate();
         }
-
-        private void focusView() {
-            if (content == null) {
-                return;
-            }
-            int margin = 10;
-
-            Rectangle target = content.getExtents();
-            if (target.Width == 0) {
-                target.X = -64;
-                target.Y = -64;
-                target.Width = 128;
-                target.Height = 128;
-            }
-            target.X -= margin;
-            target.Y -= margin;
-            target.Width += margin*2;
-            target.Height += margin*2;
-
-
-
-            float scaleW = ((float)Size.Width / (target.Width));
-            float scaleH = ((float)Size.Height / (target.Height));
-            if (scaleW < scaleH) {
-                scale = scaleW;
-                translate = new PointF(
-                        (-target.X * scale),
-                        (-scale * (2 * target.Y + target.Height) + Size.Height) / 2);
-
-            } else {
-                scale = scaleH;
-                translate = new PointF(
-                        (-scale * (2*target.X + target.Width) + Size.Width) / 2,
-                        (-target.Y * scale));
-            }
-            updateTransform();
-        }
-        
     }
 }

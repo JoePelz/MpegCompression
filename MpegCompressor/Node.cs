@@ -27,6 +27,8 @@ namespace MpegCompressor {
         protected Dictionary<string, Property> properties;
         protected Dictionary<string, Address> inputs;
         protected Dictionary<string, HashSet<Address>> outputs;
+        protected Bitmap bmp;
+        public Point pos;
 
         public event EventHandler eViewChanged;
 
@@ -34,7 +36,7 @@ namespace MpegCompressor {
             SuspendLayout();
             
             AutoSize = false;
-            Size = new System.Drawing.Size(100, 100);
+            Size = new System.Drawing.Size(100, 50);
             BackColor = System.Drawing.Color.CadetBlue;
             Margin = new Padding(5);
 
@@ -187,9 +189,7 @@ namespace MpegCompressor {
             if (isDirty) {
                 clean();
             }
-            return null;
+            return bmp;
         }
-
-        public abstract Rectangle getExtents();
     }
 }

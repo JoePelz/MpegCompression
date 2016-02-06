@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor {
     public class ColorSpace : Node {
-        private enum Space { RGB, HSV, YCrCb };
-
-        private Bitmap bmp;
+        public enum Space { RGB, HSV, YCrCb };
+        
         private static string[] options 
             = new string[3] {
                 "RGB",
@@ -45,6 +44,20 @@ namespace MpegCompressor {
             properties["outSpace"] = p;
         }
 
+        public void setInSpace(Space space) {
+            inSpace = space;
+            properties["inSpace"].setSelection((int)space);
+            setExtra(inSpace.ToString() + " to " + outSpace.ToString());
+            soil();
+        }
+
+        public void setOutSpace(Space space) {
+            outSpace = space;
+            properties["outSpace"].setSelection((int)space);
+            setExtra(inSpace.ToString() + " to " + outSpace.ToString());
+            soil();
+        }
+
         private void P_eValueChanged(object sender, EventArgs e) {
             inSpace = (Space)properties["inSpace"].getSelection();
             outSpace = (Space)properties["outSpace"].getSelection();
@@ -52,7 +65,6 @@ namespace MpegCompressor {
             setExtra(inSpace.ToString() + " to " + outSpace.ToString());
 
             soil();
-            Invalidate();
         }
 
         public override DataBlob getData(string port) {
@@ -74,22 +86,20 @@ namespace MpegCompressor {
                 return;
             }
 
-            if (dataIn.type == DataBlob.Type.Channels) {
+            if (dataIn.type == DataBlob.Type.Channels && dataIn.channels != null) {
                 //TODO: disallow this. We shouldn't silently change the channel dimensions. Only do this is channels are 4:4:4 already.
                 bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width);
-            } else if (dataIn.type == DataBlob.Type.Image) {
+            } else if (dataIn.type == DataBlob.Type.Image && dataIn.img != null) {
                 bmp = dataIn.img.Clone(new Rectangle(0, 0, dataIn.img.Width, dataIn.img.Height), dataIn.img.PixelFormat);
             } else {
                 bmp = null;
-                return;
             }
             
-            if (inSpace == outSpace)
+            if (bmp == null || inSpace == outSpace)
                 return;
 
             switch (inSpace) {
                 case Space.RGB:
-                    //doNothing
                     break;
                 case Space.HSV:
                     HSVtoRGB(bmp);
@@ -309,21 +319,6 @@ namespace MpegCompressor {
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
 
             bmp.UnlockBits(bmpData);
-        }
-
-        public override Bitmap view() {
-            base.view();
-            if (bmp == null) {
-                return null;
-            }
-            return bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
-        }
-
-        public override Rectangle getExtents() {
-            if (bmp == null) {
-                return new Rectangle(0, 0, 0, 0);
-            }
-            return new Rectangle(-bmp.Width / 2, -bmp.Height / 2, bmp.Width, bmp.Height);
         }
     }
 }

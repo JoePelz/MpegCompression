@@ -10,7 +10,6 @@ namespace MpegCompressor {
     public class Subsample : Node {
         public enum Samples { s444, s422, s411, s420 }
         private byte[][] channels;
-        private Bitmap bmp;
         private static string[] options
             = new string[4] {
                 "4:4:4",
@@ -29,27 +28,29 @@ namespace MpegCompressor {
             Property p = properties["name"];
             p.setString("SubSample");
 
-            setExtra(inSamples.ToString().Remove(0, 1) + " to " + outSamples.ToString().Remove(0, 1));
+            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
 
             //Will need to choose output sample space.
-            p = new Property();
-            p.createChoices(options, (int)inSamples, "input sample space");
-            p.eValueChanged += P_eValueChanged;
-            properties["inSamples"] = p;
+            //p = new Property();
+            //p.createChoices(options, (int)inSamples, "input sample space");
+            //p.eValueChanged += P_eValueChanged;
+            //properties["inSamples"] = p;
             p = new Property();
             p.createChoices(options, (int)outSamples, "output sample space");
             p.eValueChanged += P_eValueChanged;
             properties["outSamples"] = p;
         }
 
-        private void P_eValueChanged(object sender, EventArgs e) {
-            inSamples = (Samples)properties["inSamples"].getSelection();
-            outSamples = (Samples)properties["outSamples"].getSelection();
-
-            setExtra(inSamples.ToString().Remove(0, 1) + " to " + outSamples.ToString().Remove(0, 1));
-
+        public void setOutSamples(Samples samples) {
+            outSamples = samples;
+            properties["outSamples"].setSelection((int)samples);
+            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
             soil();
-            Invalidate();
+        }
+
+        private void P_eValueChanged(object sender, EventArgs e) {
+            //inSamples = (Samples)properties["inSamples"].getSelection();
+            setOutSamples((Samples)properties["outSamples"].getSelection());
         }
 
         protected override void createInputs() {
@@ -90,16 +91,19 @@ namespace MpegCompressor {
                 if (dataIn.img == null)
                     return;
                 bmpToChannels(dataIn.img);
+                inSamples = Samples.s444;
             } else if (dataIn.type == DataBlob.Type.Channels) {
                 if (dataIn.channels == null)
                     return;
                 //copy channels to local arrays
                 channels = new byte[dataIn.channels.Length][];
+                inSamples = dataIn.samplingMode;
+                width = dataIn.width;
                 for(int c = 0; c < channels.Length; c++) {
                     channels[c] = (byte[])dataIn.channels[c].Clone();
-                    width = dataIn.width;
                 }
             }
+            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
 
             //Transform data
             convertSrcChannels();
@@ -430,17 +434,5 @@ namespace MpegCompressor {
             return bmp;
         }
 
-        public override Bitmap view() {
-            base.view();
-            if (bmp == null) {
-                return null;
-            }
-            //create bitmap from data
-            return bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
-        }
-
-        public override Rectangle getExtents() {
-            return new Rectangle(-bmp.Width / 2, -bmp.Height / 2, bmp.Width, bmp.Height);
-        }
     }
 }

@@ -32,6 +32,11 @@ namespace MpegCompressor {
             Node n4 = new Subsample();
             Node n5 = new ColorSpace();
 
+            (n2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (n3 as Subsample).setOutSamples(Subsample.Samples.s420);
+            (n4 as Subsample).setOutSamples(Subsample.Samples.s444);
+            (n5 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+
             Node.connect(n1, "outColor", n2, "inColor");
             Node.connect(n2, "outColor", n3, "inChannels");
             Node.connect(n3, "outChannels", n4, "inChannels");

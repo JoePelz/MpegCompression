@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace MpegCompressor {
     public partial class NodeView : FlowLayoutPanel {
@@ -53,6 +54,12 @@ namespace MpegCompressor {
             if (handler != null) {
                 handler(this, new EventArgs());
             }
+        }
+
+        protected override void OnPaint(PaintEventArgs e) {
+            base.OnPaint(e);
+            Graphics g = e.Graphics;
+            g.DrawRectangle(Pens.Black, new Rectangle(50, 150, 100, 50));
         }
 
         public Node getSelection() {

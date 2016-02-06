@@ -33,17 +33,4 @@ public class MyNode : Node {
         base.clean();
 		//read inputs and update output...
 	}
-
-    public override Bitmap view() {
-        base.view();
-        if (bmp == null) {
-            return null;
-        }
-        //create bitmap from data
-        return bmp;
-    }
-	
-    public override Rectangle getExtents() {
-        return new Rectangle(-bmp.Width / 2, -bmp.Height / 2, bmp.Width, bmp.Height);
-    }
 }

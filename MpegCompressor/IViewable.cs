@@ -10,9 +10,6 @@ namespace MpegCompressor {
     public interface IViewable {
 
         event EventHandler eViewChanged;
-        
         Bitmap view();
-
-        System.Drawing.Rectangle getExtents();
     }
 }

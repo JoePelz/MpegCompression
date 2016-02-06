@@ -9,7 +9,6 @@ using System.Drawing;
 namespace MpegCompressor {
     public class ReadImage : Node {
         private string filepath;
-        private Bitmap img;
 
         public ReadImage() {
             setPath("C:\\temp\\uv.jpg");
@@ -38,13 +37,18 @@ namespace MpegCompressor {
             base.getData(port);
             DataBlob d = new DataBlob();
             d.type = DataBlob.Type.Image;
-            d.img = img;
+            d.img = bmp;
             return d;
         }
 
-        private void setPath(string path) {
+        public void setPath(string path) {
             filepath = path;
             properties["path"].setString(path);
+
+            int lastSlash = path.LastIndexOf('\\') + 1;
+            lastSlash = lastSlash == -1 ? 0 : lastSlash;
+
+            setExtra(path.Substring(lastSlash));
             soil();
         }
 
@@ -56,26 +60,11 @@ namespace MpegCompressor {
             base.clean();
             //load image from path, if it exists
             try {
-                img = new Bitmap(filepath);
+                bmp = new Bitmap(filepath);
             } catch (Exception) {
                 //silently fail. 
-                img = null;
+                bmp = null;
             }
-        }
-
-        public override Bitmap view() {
-            base.view();
-            if (img == null) {
-                return null;
-            }
-            return img.Clone(new Rectangle(0, 0, img.Width, img.Height), img.PixelFormat);
-        }
-
-        public override Rectangle getExtents() {
-            if (img == null) {
-                return new Rectangle();
-            }
-            return new Rectangle(-img.Width / 2, -img.Height / 2, img.Width, img.Height);
         }
     }
 }

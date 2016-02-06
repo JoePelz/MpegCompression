@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace MpegCompressor {
     //TODO: have node not extend panel, and be drawn purely by NodeView.
-    public abstract class Node : Panel, IViewable, IProperties {
+    public abstract class Node : IViewable, IProperties {
         public class Address {
             public Node node;
             public string port;
@@ -21,9 +21,9 @@ namespace MpegCompressor {
             }
         }
 
-        private bool isSelected, isDirty;
-        protected Label name;
-        protected Label extra;
+        //private bool isSelected;
+        private bool isDirty;
+        private string extra;
         protected Dictionary<string, Property> properties;
         protected Dictionary<string, Address> inputs;
         protected Dictionary<string, HashSet<Address>> outputs;
@@ -33,35 +33,13 @@ namespace MpegCompressor {
         public event EventHandler eViewChanged;
 
         public Node() {
-            SuspendLayout();
-            
-            AutoSize = false;
-            Size = new System.Drawing.Size(100, 50);
-            BackColor = System.Drawing.Color.CadetBlue;
-            Margin = new Padding(5);
-
-            name = new Label();
-            name.Text = "default";
-            name.AutoSize = true;
-            name.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            Controls.Add(name);
-
-            extra = new Label();
-            extra.Text = "";
-            extra.AutoSize = true;
-            extra.Top = 15;
-            Controls.Add(extra);
-
-
-            ResumeLayout();
-
             properties = new Dictionary<string, Property>();
             inputs = new Dictionary<string, Address>();
             outputs = new Dictionary<string, HashSet<Address>>();
             
             Property p = new Property();
             p.createString("default", "Name of the control");
-            p.eValueChanged += (s, e) => name.Text = (s as Property).getString();
+            p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
 
             createProperties();
@@ -74,7 +52,15 @@ namespace MpegCompressor {
         }
 
         public void setExtra(string sExtra) {
-            extra.Text = sExtra;
+            extra = sExtra;
+        }
+
+        public string getName() {
+            return properties["name"].getString();
+        }
+
+        public string getExtra() {
+            return extra;
         }
 
         protected abstract void createProperties();
@@ -82,6 +68,10 @@ namespace MpegCompressor {
         protected abstract void createInputs();
 
         protected abstract void createOutputs();
+
+        public Dictionary<string, Address> getInputs() {
+            return inputs;
+        }
 
         public static void connect(Node from, string fromPort, Node to, string toPort) {
             from.addOutput(fromPort, to, toPort);
@@ -161,20 +151,6 @@ namespace MpegCompressor {
 
         protected virtual void clean() {
             isDirty = false;
-        }
-
-        private void updateNodeDisplay() {
-            SuspendLayout();
-            BackColor = isSelected ? System.Drawing.Color.Wheat : System.Drawing.Color.CadetBlue;
-            ResumeLayout();
-        }
-
-        public void setSelected(bool value) {
-            isSelected = value;
-            updateNodeDisplay();
-        }
-        public bool getSelected() {
-            return isSelected;
         }
         
         private void fireOutputChanged(EventArgs e) {

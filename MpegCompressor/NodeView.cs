@@ -16,25 +16,27 @@ namespace MpegCompressor {
         private Pen linePen;
         private Font nodeFont;
         private LinkedList<Node> nodes;
+        private Point mdown;
 
         public NodeView() {
             InitializeComponent();
-            this.SetStyle(ControlStyles.Selectable, true);
-            this.TabStop = true;
-            nodeFont = new Font("Tahoma", 11.0f);
-            linePen = new Pen(Color.Black, 3);
-            nodes = new LinkedList<Node>();
+            init();
         }
 
         public NodeView(IContainer container) {
             container.Add(this);
 
             InitializeComponent();
+            init();
+        }
+
+        private void init() {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
             nodeFont = new Font("Tahoma", 11.0f);
             linePen = new Pen(Color.Black, 3);
             nodes = new LinkedList<Node>();
+            mdown = new Point();
         }
 
         public void clearNodes() {
@@ -46,6 +48,15 @@ namespace MpegCompressor {
 
         public void addNode(Node n) {
             nodes.AddLast(n);
+
+            int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
+            foreach (Node d in nodes) {
+                if (d.pos.X < left) left = d.pos.X;
+                if (d.pos.X > right) right = d.pos.X;
+                if (d.pos.Y < top) top = d.pos.Y;
+                if (d.pos.Y > bottom) bottom = d.pos.Y;
+            }
+            setFocusRect(left, top, right - left + 100, bottom - top + 50);
         }
 
         private void select(Node sel) {
@@ -107,11 +118,15 @@ namespace MpegCompressor {
             this.Focus();
             base.OnMouseEnter(e);
         }
-
+        
         protected override void OnMouseDown(MouseEventArgs e) {
-            if ((Control.ModifierKeys & Keys.Alt) != 0) {
-                base.OnMouseDown(e);
-            } else {
+            base.OnMouseDown(e);
+            mdown = e.Location;
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e) {
+            base.OnMouseUp(e);
+            if (mdown.X - e.X == 0 && mdown.Y - e.Y == 0) {
                 select(hitTest(e.X, e.Y));
             }
         }

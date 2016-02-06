@@ -34,6 +34,13 @@ namespace MpegCompressor {
             contentRect.Height = height;
         }
 
+        public void setFocusRect(int left, int top, int width, int height) {
+            contentRect.X = left;
+            contentRect.Y = top;
+            contentRect.Width = width;
+            contentRect.Height = height;
+        }
+
         private void init() {
             DoubleBuffered = true;
             scale = 1;
@@ -108,7 +115,7 @@ namespace MpegCompressor {
             updateTransform();
         }
 
-        protected virtual void focusView() {
+        public virtual void focusView() {
             int margin = 10;
 
             Rectangle target = contentRect;

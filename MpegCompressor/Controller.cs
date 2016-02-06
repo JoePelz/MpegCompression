@@ -23,6 +23,9 @@ namespace MpegCompressor {
             viewNodes.eSelectionChanged += OnSelectionChange;
 
             buildGraph();
+            viewLeft.focusView();
+            viewRight.focusView();
+            viewNodes.focusView();
         }
 
         public void buildGraph() {
@@ -32,11 +35,11 @@ namespace MpegCompressor {
             Node n4 = new Subsample();
             Node n5 = new ColorSpace();
             
-            n1.pos = new System.Drawing.Point(10, 100);
-            n2.pos = new System.Drawing.Point(140, 30);
-            n3.pos = new System.Drawing.Point(180, 100);
-            n4.pos = new System.Drawing.Point(220, 170);
-            n5.pos = new System.Drawing.Point(350, 100);
+            n1.pos = new System.Drawing.Point(0, 0);
+            n2.pos = new System.Drawing.Point(110, 50);
+            n3.pos = new System.Drawing.Point(220, 100);
+            n4.pos = new System.Drawing.Point(330, 100);
+            n5.pos = new System.Drawing.Point(440, 50);
 
             (n2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (n3 as Subsample).setOutSamples(Subsample.Samples.s420);
@@ -71,6 +74,7 @@ namespace MpegCompressor {
                     //load left view with selected node
                     viewLeft.setSource(n);
                     viewLeft.Invalidate();
+                    viewNodes.Invalidate();
                 }
                 return true;
             } else if (keys == Keys.D2) {
@@ -79,6 +83,7 @@ namespace MpegCompressor {
                     //load right view with selected node
                     viewRight.setSource(n);
                     viewRight.Invalidate();
+                    viewNodes.Invalidate();
                 }
                 return true;
             }

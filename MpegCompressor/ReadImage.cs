@@ -65,6 +65,7 @@ namespace MpegCompressor {
                 //silently fail. 
                 bmp = null;
             }
+            bmp = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
         }
     }
 }

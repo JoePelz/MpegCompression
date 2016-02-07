@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MpegCompressor {
-    public enum PROP_TYPE{
-        INTEGER,
-        FLOAT,
-        STRING,
-        CHECKBOX,
-        SELECTION
-    };
     public class Property : TableLayoutPanel {
+        public enum Type {
+            INTEGER,
+            FLOAT,
+            STRING,
+            CHECKBOX,
+            SELECTION
+        };
+
         private Label lblName;
         private NumericUpDown nUpDown;
         private TextBox sTextBox;
@@ -25,7 +26,7 @@ namespace MpegCompressor {
         private float fMin;
         private float fMax;
         private string sVal;
-        private PROP_TYPE type;
+        private Type type;
         private string sLabel;
         private string[] choices;
 
@@ -42,7 +43,7 @@ namespace MpegCompressor {
             nVal = val;
             nMin = min;
             nMax = max;
-            type = PROP_TYPE.INTEGER;
+            type = Type.INTEGER;
             updateLayout();
         }
 
@@ -51,14 +52,14 @@ namespace MpegCompressor {
             fVal = val;
             fMin = min;
             fMax = max;
-            type = PROP_TYPE.FLOAT;
+            type = Type.FLOAT;
             updateLayout();
         }
 
         public void createString(string value, string label) {
             sVal = value;
             sLabel = label;
-            type = PROP_TYPE.STRING;
+            type = Type.STRING;
             updateLayout();
         }
 
@@ -66,7 +67,7 @@ namespace MpegCompressor {
             nVal = defChoice;
             this.choices = choices;
             sLabel = label;
-            type = PROP_TYPE.SELECTION;
+            type = Type.SELECTION;
             updateLayout();
         }
 
@@ -109,16 +110,16 @@ namespace MpegCompressor {
             resetLayout();
 
             switch(type) {
-                case PROP_TYPE.INTEGER:
+                case Type.INTEGER:
                     layoutInt();
                     break;
-                case PROP_TYPE.FLOAT:
+                case Type.FLOAT:
                     layoutFloat();
                     break;
-                case PROP_TYPE.STRING:
+                case Type.STRING:
                     layoutString();
                     break;
-                case PROP_TYPE.SELECTION:
+                case Type.SELECTION:
                     layoutSelection();
                     break;
                 default:

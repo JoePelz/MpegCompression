@@ -17,6 +17,7 @@ namespace MpegCompressor {
         private Font nodeFont;
         private LinkedList<Node> nodes;
         private Point mdown;
+        private bool bDragging;
 
         public NodeView() {
             InitializeComponent();
@@ -48,7 +49,10 @@ namespace MpegCompressor {
 
         public void addNode(Node n) {
             nodes.AddLast(n);
+            recalcFocus();
+        }
 
+        private void recalcFocus() {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
             foreach (Node d in nodes) {
                 if (d.pos.X < left) left = d.pos.X;
@@ -120,11 +124,40 @@ namespace MpegCompressor {
         }
         
         protected override void OnMouseDown(MouseEventArgs e) {
-            base.OnMouseDown(e);
-            mdown = e.Location;
+            Node n;
+            //if (Control.ModifierKeys == Keys.Alt) {
+            if (e.Button == MouseButtons.Middle) {
+                bDragging = true;
+                if ((n = hitTest(e.X, e.Y)) != null) {
+                    select(n);
+                }
+                mdown = e.Location;
+                ScreenToCanvas(ref mdown);
+            } else {
+                base.OnMouseDown(e);
+                mdown = e.Location;
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e) {
+            if (bDragging) {
+                //mdown is in canvas coordinates
+                Point newPos = e.Location;
+                ScreenToCanvas(ref newPos);
+                getSelection().pos.Offset(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                mdown = newPos;
+                Invalidate();
+            } else {
+                base.OnMouseMove(e);
+            }
         }
 
         protected override void OnMouseUp(MouseEventArgs e) {
+            if (bDragging) {
+                bDragging = false;
+                recalcFocus();
+                return;
+            }
             base.OnMouseUp(e);
             if (mdown.X - e.X == 0 && mdown.Y - e.Y == 0) {
                 select(hitTest(e.X, e.Y));

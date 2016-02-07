@@ -69,6 +69,11 @@ namespace MpegCompressor {
             y = (int)((y - translate.Y) / scale);
         }
 
+        public void ScreenToCanvas(ref Point p) {
+            p.X = (int)((p.X - translate.X) / scale);
+            p.Y = (int)((p.Y - translate.Y) / scale);
+        }
+
         protected override void OnMouseDown(MouseEventArgs e) {
             base.OnMouseDown(e);
             if (e.Button == MouseButtons.Right) {

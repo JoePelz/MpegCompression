@@ -13,6 +13,7 @@ namespace MpegCompressor {
         public event EventHandler eSelectionChanged;
 
         private Node selectedNode;
+        private LinkedList<Node> selectedNodes;
         private Pen linePen;
         private Font nodeFont;
         private LinkedList<Node> nodes;
@@ -38,6 +39,7 @@ namespace MpegCompressor {
             linePen = new Pen(Color.Black, 3);
             nodes = new LinkedList<Node>();
             mdown = new Point();
+            selectedNodes = new LinkedList<Node>();
         }
 
         public void clearNodes() {
@@ -64,11 +66,20 @@ namespace MpegCompressor {
         }
 
         private void select(Node sel) {
-            selectedNode = sel;
-            
-            EventHandler handler = eSelectionChanged;
-            if (handler != null) {
-                handler(this, new EventArgs());
+            if (Control.ModifierKeys == Keys.Shift) {
+                if (sel != null)
+                    selectedNodes.AddLast(sel);
+            } else {
+                selectedNodes.Clear();
+                if (sel != null)
+                    selectedNodes.AddLast(sel);
+            }
+            if (selectedNodes.Count() == 1) {
+                selectedNode = sel;
+                EventHandler handler = eSelectionChanged;
+                if (handler != null) {
+                    handler(this, new EventArgs());
+                }
             }
             Invalidate();
         }
@@ -89,7 +100,7 @@ namespace MpegCompressor {
 
             foreach (Node n in nodes) {
                 r.Location = n.pos;
-                if (n == selectedNode) {
+                if (selectedNodes.Contains(n)) {
                     g.FillRectangle(Brushes.Wheat, r);
                 } else {
                     g.FillRectangle(Brushes.CadetBlue, r);
@@ -128,7 +139,7 @@ namespace MpegCompressor {
             //if (Control.ModifierKeys == Keys.Alt) {
             if (e.Button == MouseButtons.Middle) {
                 bDragging = true;
-                if ((n = hitTest(e.X, e.Y)) != null) {
+                if ((n = hitTest(e.X, e.Y)) != null && !selectedNodes.Contains(n)) {
                     select(n);
                 }
                 mdown = e.Location;
@@ -144,7 +155,9 @@ namespace MpegCompressor {
                 //mdown is in canvas coordinates
                 Point newPos = e.Location;
                 ScreenToCanvas(ref newPos);
-                getSelection().pos.Offset(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                foreach (Node n in selectedNodes) {
+                    n.pos.Offset(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                }
                 mdown = newPos;
                 Invalidate();
             } else {

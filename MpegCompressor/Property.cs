@@ -19,6 +19,7 @@ namespace MpegCompressor {
         private NumericUpDown nUpDown;
         private TextBox sTextBox;
         private ComboBox comboBox;
+        private CheckBox checkbox;
         private int nVal;
         private int nMin;
         private int nMax;
@@ -71,6 +72,12 @@ namespace MpegCompressor {
             updateLayout();
         }
 
+        public void createCheckbox(string label) {
+            sLabel = label;
+            type = Type.CHECKBOX;
+            updateLayout();
+        }
+
         public void setFloat(float f) {
             nUpDown.Value = (decimal)f;
         }
@@ -84,6 +91,9 @@ namespace MpegCompressor {
             nVal = sel;
             comboBox.SelectedIndex = sel;
         }
+        public void setChecked(bool b) {
+            checkbox.Checked = b;
+        }
 
         public float getFloat() {
             return fVal;
@@ -96,6 +106,9 @@ namespace MpegCompressor {
         }
         public int getSelection() {
             return nVal;
+        }
+        public bool getChecked() {
+            return checkbox.Checked;
         }
 
         void resetLayout() {
@@ -121,6 +134,9 @@ namespace MpegCompressor {
                     break;
                 case Type.SELECTION:
                     layoutSelection();
+                    break;
+                case Type.CHECKBOX:
+                    layoutCheckbox();
                     break;
                 default:
                     break;
@@ -209,6 +225,25 @@ namespace MpegCompressor {
 
             Controls.Add(comboBox, 0, 0);
             Controls.Add(lblName, 1, 0);
+        }
+
+        private void layoutCheckbox() {
+            lblName = new Label();
+            lblName.Text = sLabel;
+            lblName.Name = "lblName";
+            lblName.AutoSize = true;
+            lblName.Dock = DockStyle.Fill;
+            lblName.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
+
+            checkbox = new CheckBox();
+            checkbox.CheckedChanged += Checkbox_CheckedChanged;
+
+            Controls.Add(checkbox, 0, 0);
+            Controls.Add(lblName, 1, 0);
+        }
+
+        private void Checkbox_CheckedChanged(object sender, EventArgs e) {
+            fireEvent(e);
         }
 
         private void ComboBox_SelectedIndexChanged(object sender, EventArgs e) {

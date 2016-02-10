@@ -29,37 +29,49 @@ namespace MpegCompressor {
         }
 
         public void buildGraph() {
-            Node n1 = new ReadImage();
-            Node n2 = new ColorSpace();
-            Node n25 = new ColorToChannels();
-            Node n3 = new Subsample();
-            Node n4 = new ChannelsToColor();
-            Node n5 = new ColorSpace();
+            Node nRead = new ReadImage();
+            Node nCS1 = new ColorSpace();
+            Node nCtCH = new ColorToChannels();
+            Node nSS = new Subsample();
+            Node nDCT = new DCT();
+            Node nCHtC = new ChannelsToColor();
+            Node nCHtC2 = new ChannelsToColor();
+            Node nCS2 = new ColorSpace();
+            Node nChunkTest = new TestChunker();
 
-            n1.pos = new System.Drawing.Point(0, 0);
-            n2.pos = new System.Drawing.Point(110, 50);
-            n25.pos = new System.Drawing.Point(160, -10);
-            n3.pos = new System.Drawing.Point(220, 100);
-            n4.pos = new System.Drawing.Point(330, 100);
-            n5.pos = new System.Drawing.Point(440, 50);
+            nRead.pos = new System.Drawing.Point(-110, 25);
+            nChunkTest.pos = new System.Drawing.Point(0, -10);
+            nCS1.pos = new System.Drawing.Point(0, 50);
+            nCtCH.pos = new System.Drawing.Point(110, 50);
+            nSS.pos = new System.Drawing.Point(220, 75);
+            nCHtC.pos = new System.Drawing.Point(330, 50);
+            nCS2.pos = new System.Drawing.Point(440, 50);
+            nDCT.pos = new System.Drawing.Point(330, 110);
+            nCHtC2.pos = new System.Drawing.Point(440, 110);
 
-            (n1 as ReadImage).setPath("C:\\temp\\sunrise.bmp");
-            (n2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (n3 as Subsample).setOutSamples(Subsample.Samples.s420);
-            (n5 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
+            (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
 
-            Node.connect(n1, "outColor", n2, "inColor");
-            Node.connect(n2, "outColor", n25, "inColor");
-            Node.connect(n25, "outChannels", n3, "inChannels");
-            Node.connect(n3, "outChannels", n4, "inChannels");
-            Node.connect(n4, "outColor", n5, "inColor");
+            Node.connect(nRead, "outColor", nCS1, "inColor");
+            Node.connect(nCS1, "outColor", nCtCH, "inColor");
+            Node.connect(nCtCH, "outChannels", nSS, "inChannels");
+            Node.connect(nSS, "outChannels", nDCT, "inChannels");
+            Node.connect(nSS, "outChannels", nCHtC, "inChannels");
+            Node.connect(nDCT, "outChannels", nCHtC2, "inChannels");
+            Node.connect(nCHtC, "outColor", nCS2, "inColor");
+            Node.connect(nRead, "outColor", nChunkTest, "inColor");
 
-            viewNodes.addNode(n1);
-            viewNodes.addNode(n2);
-            viewNodes.addNode(n25);
-            viewNodes.addNode(n3);
-            viewNodes.addNode(n4);
-            viewNodes.addNode(n5);
+            viewNodes.addNode(nRead);
+            viewNodes.addNode(nCS1);
+            viewNodes.addNode(nCtCH);
+            viewNodes.addNode(nSS);
+            viewNodes.addNode(nDCT);
+            viewNodes.addNode(nCHtC);
+            viewNodes.addNode(nCHtC2);
+            viewNodes.addNode(nCS2);
+            viewNodes.addNode(nChunkTest);
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

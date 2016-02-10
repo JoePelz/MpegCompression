@@ -63,27 +63,21 @@
   <ItemGroup>
     <Compile Include="ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
-    <Compile Include="ColorSpace.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ColorSpace.cs" />
     <Compile Include="ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
     <Compile Include="DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
-    <Compile Include="Node.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Node.cs" />
     <Compile Include="NodeView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="NodeView.Designer.cs">
       <DependentUpon>NodeView.cs</DependentUpon>
     </Compile>
-    <Compile Include="NoOp.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="NoOp.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Property.cs">
       <SubType>Component</SubType>
@@ -102,12 +96,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadImage.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Subsample.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ReadImage.cs" />
+    <Compile Include="Subsample.cs" />
     <Compile Include="TestChunker.cs" />
     <Compile Include="TransformPanel.cs">
       <SubType>Component</SubType>

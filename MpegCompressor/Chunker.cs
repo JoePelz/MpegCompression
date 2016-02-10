@@ -29,7 +29,7 @@ namespace MpegCompressor {
         }
 
         public System.Collections.IEnumerable getIterators() {
-            for(int i = 0; i < getNumChunks(); i++) {
+            for (int i = 0; i < getNumChunks(); i++) {
                 yield return getChunk(i);
             }
         }
@@ -57,7 +57,28 @@ namespace MpegCompressor {
                 output -= size * Bpp; //carriage return
                 output += stride; //line feed
             }
-            yield return 2;
+        }
+
+        public byte[] getBlock(byte[] channel, int iChunk) {
+            byte[] result = new byte[size * size * Bpp];
+            int iDest = 0;
+            foreach (int pixel in getChunk(iChunk)) {
+                for (int c = 0; c < Bpp; c++) {
+                    result[iDest++] = pixel == -1 ? (byte)0 : channel[pixel + c];
+                }
+            }
+            return result;
+        }
+
+        public void setBlock(byte[] channel, int iChunk, byte[] newBytes) {
+            int iDest = 0;
+            foreach (int pixel in getChunk(iChunk)) {
+                if (pixel != -1) {
+                    for (int c = 0; c < Bpp; c++) {
+                        channel[pixel + c] = newBytes[iDest++];
+                    }
+                }
+            }
         }
     }
 }

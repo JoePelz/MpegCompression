@@ -49,7 +49,7 @@ namespace MpegCompressor {
                 if (dataIn.channels == null)
                     return;
                 //copy channels to local arrays
-                bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width);
+                bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width, dataIn.height);
             } else {
                 return;
             }

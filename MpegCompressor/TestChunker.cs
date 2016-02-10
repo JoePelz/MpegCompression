@@ -85,7 +85,8 @@ namespace MpegCompressor {
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
 
 
-
+            //Using the iterator method
+            /*
             Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
             int pixel;
             int nPixels = chunkSize * chunkSize;
@@ -99,6 +100,18 @@ namespace MpegCompressor {
                     }
                     pixel++;
                 }
+            }
+            */
+
+            //Using the chunk pull/push method
+            Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
+            byte[] data;
+            for(int i = 0; i < c.getNumChunks(); i++) {
+                data = c.getBlock(rgbValues, i);
+                for(int j = 0; j < data.Length; j++) {
+                    data[j] = (byte)(j * 255 / (data.Length - 1));
+                }
+                c.setBlock(rgbValues, i, data);
             }
 
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);

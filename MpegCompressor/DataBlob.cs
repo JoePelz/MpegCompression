@@ -18,6 +18,7 @@ namespace MpegCompressor {
 
         public byte[][] channels;
         public int width;
+        public int height;
         public Subsample.Samples samplingMode;
     }
 }

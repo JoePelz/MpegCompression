@@ -19,6 +19,7 @@ namespace MpegCompressor {
         private Samples inSamples;
         private Samples outSamples;
         private int width;
+        private int height;
 
         public Subsample() {
             //default setup
@@ -62,6 +63,7 @@ namespace MpegCompressor {
             d.type = DataBlob.Type.Channels;
             d.channels = channels;
             d.width = width;
+            d.height = height;
             d.samplingMode = outSamples;
             return d;
         }
@@ -89,6 +91,7 @@ namespace MpegCompressor {
                 channels = new byte[dataIn.channels.Length][];
                 inSamples = dataIn.samplingMode;
                 width = dataIn.width;
+                height = dataIn.height;
                 for(int c = 0; c < channels.Length; c++) {
                     channels[c] = (byte[])dataIn.channels[c].Clone();
                 }
@@ -103,7 +106,6 @@ namespace MpegCompressor {
         
         private void upsample() {
             int size4 = channels[0].Length; //Y channel. Should be full length.
-            int height = size4 / width;
             int size422 = (width + 1) / 2 * height;
             int size420 = (width + 1) / 2 * (height + 1) / 2;
             int size411 = (width + 3) / 4 * height;
@@ -219,7 +221,6 @@ namespace MpegCompressor {
             //create BMP of r dimensions.
             //write channels into bmp, duplicating as needed.
             int size4 = channels[0].Length; //Y channel. Should be full length.
-            int height = size4 / width;
             int size422 = (width + 1) / 2 * height;
             int size420 = (width + 1) / 2 * (height + 1) / 2;
             int size411 = (width + 3) / 4 * height;
@@ -286,15 +287,13 @@ namespace MpegCompressor {
             if (bmp != null) {
                 bmp.Dispose();
             }
-            bmp = channelsToBitmap(channels, outSamples, width);
+            bmp = channelsToBitmap(channels, outSamples, width, height);
         }
 
-        public static Bitmap channelsToBitmap(byte[][] channels, Samples mode, int width) {
+        public static Bitmap channelsToBitmap(byte[][] channels, Samples mode, int width, int height) {
             if (channels == null) {
                 return null;
             }
-
-            int height = channels[0].Length / width;
 
             Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
 

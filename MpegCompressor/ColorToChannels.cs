@@ -10,6 +10,7 @@ namespace MpegCompressor {
     class ColorToChannels : Node {
         private byte[][] channels;
         private int width;
+        private int height;
         
         public ColorToChannels() {
             rename("Color");
@@ -30,6 +31,7 @@ namespace MpegCompressor {
             d.type = DataBlob.Type.Channels;
             d.channels = channels;
             d.width = width;
+            d.height = height;
             d.samplingMode = Subsample.Samples.s444;
             return d;
         }
@@ -55,6 +57,7 @@ namespace MpegCompressor {
         
         private void bmpToChannels(Bitmap bmp) {
             width = bmp.Width;
+            height = bmp.Height;
 
             BitmapData bmpData = bmp.LockBits(
                                new Rectangle(0, 0, bmp.Width, bmp.Height),

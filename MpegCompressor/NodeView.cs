@@ -100,6 +100,9 @@ namespace MpegCompressor {
 
             foreach (Node n in nodes) {
                 r.Location = n.pos;
+                g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X - 5, n.pos.Y + 18, 10, 14));
+                g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X + 95, n.pos.Y + 18, 10, 14));
+
                 if (selectedNodes.Contains(n)) {
                     g.FillRectangle(Brushes.Wheat, r);
                 } else {
@@ -133,13 +136,13 @@ namespace MpegCompressor {
         protected override void OnMouseDown(MouseEventArgs e) {
             Node n;
 
+            mdown = e.Location;
 
             //if the mouse is over a node, selected it and begin dragging. otherwise do base.
             //  if shift is selected, toggle selection instead of replacing
             if ((n = hitTest(e.X, e.Y)) != null) {
                 select(n, Control.ModifierKeys == Keys.Shift);
                 bDragging = true;
-                mdown = e.Location;
                 ScreenToCanvas(ref mdown);
             } else {
                 base.OnMouseDown(e);
@@ -162,6 +165,10 @@ namespace MpegCompressor {
         }
 
         protected override void OnMouseUp(MouseEventArgs e) {
+            if (mdown.X == e.X && mdown.Y == e.Y) {
+                select(hitTest(e.X, e.Y), Control.ModifierKeys == Keys.Shift);
+            }
+
             if (bDragging) {
                 bDragging = false;
                 recalcFocus();

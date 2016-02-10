@@ -117,6 +117,22 @@ namespace MpegCompressor {
                 return;
             }
 
+            /*
+            byte[] testData =
+                {
+                200, 202, 189, 188, 189, 175, 175, 175,
+                200, 203, 198, 188, 189, 182, 178, 175,
+                203, 200, 200, 195, 200, 187, 185, 175,
+                200, 200, 200, 200, 197, 187, 187, 187,
+                200, 205, 200, 200, 195, 188, 187, 175,
+                200, 200, 200, 200, 200, 190, 187, 175,
+                205, 200, 199, 200, 191, 187, 187, 175,
+                210, 200, 200, 200, 188, 185, 187, 186
+                };
+            byte[] DCT_testData = doDCT(testData, quantizationY);
+            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
+            */
+
             
             Chunker c = new Chunker(chunkSize, width, height, width, 1);
             byte[] data;
@@ -141,26 +157,34 @@ namespace MpegCompressor {
         private byte[] doIDCT(byte[] data, byte[,] qTable) {
             byte[] result = new byte[data.Length];
             double bin;
-            for (int v = 0; v < chunkSize; v++) {
-                for (int u = 0; u < chunkSize; u++) {
+
+            for (int j = 0; j < chunkSize; j++) {
+                for (int i = 0; i < chunkSize; i++) {
                     bin = 0;
-                    for (int j = 0; j < chunkSize; j++) {
-                        for (int i = 0; i < chunkSize; i++) {
-                            bin += Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
-                                    * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
-                                    * data[j * chunkSize + i] * qTable[j, i]
-                                    * (i == 0 ? 1 / Math.Sqrt(2) : 1) * (j == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize / 2);
+                    for (int v = 0; v < chunkSize; v++) {
+                        for (int u = 0; u < chunkSize; u++) {
+                            bin += (
+                                (u == 0 ? 1 / Math.Sqrt(2) : 1) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize / 2)
+                                * Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
+                                * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
+                                * (data[v * chunkSize + u] > 127 ? data[v * chunkSize + u] - 256 : data[v * chunkSize + u]) * qTable[v, u]
+                                );
                         }
                     }
-                    result[v * chunkSize + u] = (byte)bin;
+                    bin += 128;
+                    if (bin > 255) bin = 255;
+                    if (bin < 0) bin = 0;
+                    result[j * chunkSize + i] = (byte)bin;
                 }
             }
+            
             return result;
         }
 
         private byte[] doDCT(byte[] data, byte[,] qTable) {
             byte[] result = new byte[data.Length];
             double bin;
+            //DCT the values, and quantize
             for (int v = 0; v < chunkSize; v++) {
                 for (int u = 0; u < chunkSize; u++) {
                     bin = 0;
@@ -168,12 +192,12 @@ namespace MpegCompressor {
                         for (int i = 0; i < chunkSize; i++) {
                             bin += Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
                                     * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
-                                    * data[j*chunkSize + i];
+                                    * (data[j*chunkSize + i] - 128);
                         }
                     }
                     bin *= (u == 0 ? 1 / Math.Sqrt(2) : 1) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize/2);
-                    bin /= qTable[v, u];
-                    result[v * chunkSize + u] = (byte)bin;
+                    result[v * chunkSize + u] = (byte)Math.Round(bin / qTable[v, u]);
+                    //result[v * chunkSize + u] = (int)bin;
                 }
             }
             return result;

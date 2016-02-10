@@ -38,6 +38,7 @@ namespace MpegCompressor {
             Node nCHtC = new ChannelsToColor();
             Node nCHtC2 = new ChannelsToColor();
             Node nCHtC3 = new ChannelsToColor();
+            Node nCS3 = new ColorSpace();
             Node nCS2 = new ColorSpace();
             Node nChunkTest = new TestChunker();
 
@@ -52,11 +53,13 @@ namespace MpegCompressor {
             nCHtC2.pos = new System.Drawing.Point(440, 110);
             nIDCT.pos = new System.Drawing.Point(440, 170);
             nCHtC3.pos = new System.Drawing.Point(550, 170);
+            nCS3.pos = new System.Drawing.Point(660, 170);
 
             (nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT as DCT).setInverse(true);
 
             Node.connect(nRead, "outColor", nChunkTest, "inColor");
@@ -69,6 +72,7 @@ namespace MpegCompressor {
             Node.connect(nCHtC, "outColor", nCS2, "inColor");
             Node.connect(nDCT, "outChannels", nIDCT, "inChannels");
             Node.connect(nIDCT, "outChannels", nCHtC3, "inChannels");
+            Node.connect(nCHtC3, "outColor", nCS3, "inColor");
 
             viewNodes.addNode(nRead);
             viewNodes.addNode(nCS1);
@@ -79,6 +83,7 @@ namespace MpegCompressor {
             viewNodes.addNode(nCHtC);
             viewNodes.addNode(nCHtC2);
             viewNodes.addNode(nCHtC3);
+            viewNodes.addNode(nCS3);
             viewNodes.addNode(nCS2);
             viewNodes.addNode(nChunkTest);
         }

@@ -51,6 +51,7 @@ namespace MpegCompressor {
             if (dataIn == null || dataIn.img == null) {
                 return;
             }
+            bmp = dataIn.img;
             bmpToChannels(bmp);
         }
         

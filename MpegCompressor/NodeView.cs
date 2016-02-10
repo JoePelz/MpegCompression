@@ -65,8 +65,8 @@ namespace MpegCompressor {
             setFocusRect(left, top, right - left + 100, bottom - top + 50);
         }
 
-        private void select(Node sel) {
-            if (Control.ModifierKeys == Keys.Shift) {
+        private void select(Node sel, bool toggle) {
+            if (toggle) {
                 if (sel != null)
                     selectedNodes.AddLast(sel);
             } else {
@@ -125,10 +125,6 @@ namespace MpegCompressor {
             return selectedNode;
         }
 
-        private void onNodeClicked(object sender, MouseEventArgs e) {
-            select(sender as Node);
-        }
-
         protected override void OnMouseEnter(EventArgs e) {
             this.Focus();
             base.OnMouseEnter(e);
@@ -136,17 +132,17 @@ namespace MpegCompressor {
         
         protected override void OnMouseDown(MouseEventArgs e) {
             Node n;
-            //if (Control.ModifierKeys == Keys.Alt) {
-            if (e.Button == MouseButtons.Middle) {
+
+
+            //if the mouse is over a node, selected it and begin dragging. otherwise do base.
+            //  if shift is selected, toggle selection instead of replacing
+            if ((n = hitTest(e.X, e.Y)) != null) {
+                select(n, Control.ModifierKeys == Keys.Shift);
                 bDragging = true;
-                if ((n = hitTest(e.X, e.Y)) != null && !selectedNodes.Contains(n)) {
-                    select(n);
-                }
                 mdown = e.Location;
                 ScreenToCanvas(ref mdown);
             } else {
                 base.OnMouseDown(e);
-                mdown = e.Location;
             }
         }
 
@@ -172,9 +168,6 @@ namespace MpegCompressor {
                 return;
             }
             base.OnMouseUp(e);
-            if (mdown.X - e.X == 0 && mdown.Y - e.Y == 0) {
-                select(hitTest(e.X, e.Y));
-            }
         }
 
         private Node hitTest(int x, int y) {

@@ -34,13 +34,16 @@ namespace MpegCompressor {
             Node n3 = new Subsample();
             Node n4 = new Subsample();
             Node n5 = new ColorSpace();
-            
+            Node n6 = new TestChunker();
+
             n1.pos = new System.Drawing.Point(0, 0);
             n2.pos = new System.Drawing.Point(110, 50);
             n3.pos = new System.Drawing.Point(220, 100);
             n4.pos = new System.Drawing.Point(330, 100);
             n5.pos = new System.Drawing.Point(440, 50);
+            n6.pos = new System.Drawing.Point(110, 110);
 
+            (n1 as ReadImage).setPath("C:\\temp\\sunrise.bmp");
             (n2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (n3 as Subsample).setOutSamples(Subsample.Samples.s420);
             (n4 as Subsample).setOutSamples(Subsample.Samples.s444);
@@ -50,12 +53,14 @@ namespace MpegCompressor {
             Node.connect(n2, "outColor", n3, "inChannels");
             Node.connect(n3, "outChannels", n4, "inChannels");
             Node.connect(n4, "outChannels", n5, "inColor");
+            Node.connect(n1, "outColor", n6, "inColor");
 
             viewNodes.addNode(n1);
             viewNodes.addNode(n2);
             viewNodes.addNode(n3);
             viewNodes.addNode(n4);
             viewNodes.addNode(n5);
+            viewNodes.addNode(n6);
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

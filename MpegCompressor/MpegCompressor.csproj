@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chunker.cs" />
     <Compile Include="ColorSpace.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -104,6 +105,7 @@
     <Compile Include="Subsample.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TestChunker.cs" />
     <Compile Include="TransformPanel.cs">
       <SubType>Component</SubType>
     </Compile>

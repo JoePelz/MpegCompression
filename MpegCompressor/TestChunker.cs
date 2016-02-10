@@ -26,12 +26,13 @@ namespace MpegCompressor {
         protected override void createProperties() {
             Property p = new Property();
             p.createInt(4, 2, 16, "Chunk size to use");
-            p.eValueChanged += P_eValueChanged; ;
+            p.eValueChanged += P_eValueChanged;
             properties["chunkSize"] = p;
         }
 
         public void setChunkSize(int size) {
             chunkSize = Math.Min(Math.Max(2, size), 16);
+            properties["chunkSize"].setInt(chunkSize);
             setExtra("Chunk Size: " + chunkSize);
             soil();
         }

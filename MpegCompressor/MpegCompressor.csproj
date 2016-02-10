@@ -61,12 +61,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
     <Compile Include="ColorSpace.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
+    <Compile Include="DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
     <Compile Include="Node.cs">

@@ -63,7 +63,7 @@ namespace MpegCompressor {
             return extra;
         }
 
-        protected abstract void createProperties();
+        protected virtual void createProperties() { }
 
         protected abstract void createInputs();
 
@@ -73,9 +73,14 @@ namespace MpegCompressor {
             return inputs;
         }
 
-        public static void connect(Node from, string fromPort, Node to, string toPort) {
-            from.addOutput(fromPort, to, toPort);
-            to.addInput(toPort, from, fromPort);
+        public static bool connect(Node from, string fromPort, Node to, string toPort) {
+            if (!from.addOutput(fromPort, to, toPort))
+                return false;
+            if (!to.addInput(toPort, from, fromPort)) {
+                from.removeOutput(fromPort, to, toPort);
+                return false;
+            }
+            return true;
         }
 
         public static void disconnect(Node from, string fromPort, Node to, string toPort) {

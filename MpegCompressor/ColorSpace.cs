@@ -86,10 +86,7 @@ namespace MpegCompressor {
                 return;
             }
 
-            if (dataIn.type == DataBlob.Type.Channels && dataIn.channels != null) {
-                //TODO: disallow this. We shouldn't silently change the channel dimensions. Only do this is channels are 4:4:4 already.
-                bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width);
-            } else if (dataIn.type == DataBlob.Type.Image && dataIn.img != null) {
+            if (dataIn.type == DataBlob.Type.Image && dataIn.img != null) {
                 bmp = dataIn.img.Clone(new Rectangle(0, 0, dataIn.img.Width, dataIn.img.Height), dataIn.img.PixelFormat);
             } else {
                 bmp = null;

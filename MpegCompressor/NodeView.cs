@@ -93,6 +93,9 @@ namespace MpegCompressor {
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
                 foreach (Node.Address a in n.getInputs().Values) {
+                    if (a == null) {
+                        continue;
+                    }
                     drawLink(g, a.node, n);
                 }
             }

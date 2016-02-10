@@ -48,10 +48,9 @@ namespace MpegCompressor {
                 return;
             }
             DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
+            if (dataIn == null || dataIn.img == null) {
                 return;
             }
-            bmp = dataIn.img;
             bmpToChannels(bmp);
         }
         

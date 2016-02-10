@@ -34,8 +34,10 @@ namespace MpegCompressor {
             Node nCtCH = new ColorToChannels();
             Node nSS = new Subsample();
             Node nDCT = new DCT();
+            Node nIDCT = new DCT();
             Node nCHtC = new ChannelsToColor();
             Node nCHtC2 = new ChannelsToColor();
+            Node nCHtC3 = new ChannelsToColor();
             Node nCS2 = new ColorSpace();
             Node nChunkTest = new TestChunker();
 
@@ -48,12 +50,16 @@ namespace MpegCompressor {
             nCS2.pos = new System.Drawing.Point(440, 50);
             nDCT.pos = new System.Drawing.Point(330, 110);
             nCHtC2.pos = new System.Drawing.Point(440, 110);
+            nIDCT.pos = new System.Drawing.Point(440, 170);
+            nCHtC3.pos = new System.Drawing.Point(550, 170);
 
             (nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nIDCT as DCT).setInverse(true);
 
+            Node.connect(nRead, "outColor", nChunkTest, "inColor");
             Node.connect(nRead, "outColor", nCS1, "inColor");
             Node.connect(nCS1, "outColor", nCtCH, "inColor");
             Node.connect(nCtCH, "outChannels", nSS, "inChannels");
@@ -61,15 +67,18 @@ namespace MpegCompressor {
             Node.connect(nSS, "outChannels", nCHtC, "inChannels");
             Node.connect(nDCT, "outChannels", nCHtC2, "inChannels");
             Node.connect(nCHtC, "outColor", nCS2, "inColor");
-            Node.connect(nRead, "outColor", nChunkTest, "inColor");
+            Node.connect(nDCT, "outChannels", nIDCT, "inChannels");
+            Node.connect(nIDCT, "outChannels", nCHtC3, "inChannels");
 
             viewNodes.addNode(nRead);
             viewNodes.addNode(nCS1);
             viewNodes.addNode(nCtCH);
             viewNodes.addNode(nSS);
             viewNodes.addNode(nDCT);
+            viewNodes.addNode(nIDCT);
             viewNodes.addNode(nCHtC);
             viewNodes.addNode(nCHtC2);
+            viewNodes.addNode(nCHtC3);
             viewNodes.addNode(nCS2);
             viewNodes.addNode(nChunkTest);
         }

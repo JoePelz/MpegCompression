@@ -7,25 +7,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    public class ColorSpace : Node {
+    public class ColorSpace : PixelNode {
         public enum Space { RGB, HSV, YCrCb };
         
-        private static string[] options 
-            = new string[3] {
+        private static string[] options = new string[3] {
                 "RGB",
                 "HSV",
                 "YCrCb" };
         private Space inSpace = Space.RGB;
         private Space outSpace = Space.RGB;
-
-        protected override void createInputs() {
-            inputs.Add("inColor", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outColor", new HashSet<Address>());
-        }
-
+        
         protected override void createProperties() {
             Property p = properties["name"];
             p.setString("ColorSpace");
@@ -67,30 +58,8 @@ namespace MpegCompressor {
             soil();
         }
 
-        public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Image;
-            d.img = bmp;
-            return d;
-        }
-
         protected override void clean() {
             base.clean();
-            Address upstream = inputs["inColor"];
-            if (upstream == null) {
-                return;
-            }
-            DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
-                return;
-            }
-
-            if (dataIn.type == DataBlob.Type.Image && dataIn.img != null) {
-                bmp = dataIn.img.Clone(new Rectangle(0, 0, dataIn.img.Width, dataIn.img.Height), dataIn.img.PixelFormat);
-            } else {
-                bmp = null;
-            }
             
             if (bmp == null || inSpace == outSpace)
                 return;

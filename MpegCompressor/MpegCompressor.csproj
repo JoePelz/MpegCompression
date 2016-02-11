@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChannelNode.cs" />
     <Compile Include="ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
     <Compile Include="ColorSpace.cs" />
@@ -78,6 +79,7 @@
       <DependentUpon>NodeView.cs</DependentUpon>
     </Compile>
     <Compile Include="NoOp.cs" />
+    <Compile Include="PixelNode.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Property.cs">
       <SubType>Component</SubType>

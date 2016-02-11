@@ -7,20 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    class TestChunker : Node {
+    class TestChunker : PixelNode {
         int chunkSize;
 
         public TestChunker() {
             rename("Chunk Tester!");
             setChunkSize(4);
-        }
-
-        protected override void createInputs() {
-            inputs.Add("inColor", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outColor", new HashSet<Address>());
         }
 
         protected override void createProperties() {
@@ -41,31 +33,8 @@ namespace MpegCompressor {
             setChunkSize(properties["chunkSize"].getInt());
         }
 
-        public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Image;
-            d.img = bmp;
-            return d;
-        }
-
         protected override void clean() {
             base.clean();
-            Address upstream = inputs["inColor"];
-            if (upstream == null) {
-                return;
-            }
-            DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
-                return;
-            }
-
-            if (dataIn.type == DataBlob.Type.Image && dataIn.img != null) {
-                bmp = dataIn.img.Clone(new Rectangle(0, 0, dataIn.img.Width, dataIn.img.Height), dataIn.img.PixelFormat);
-            } else {
-                bmp = null;
-                return;
-            }
 
             drawChunks();
         }

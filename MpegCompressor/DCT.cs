@@ -5,11 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    class DCT : Node {
+    class DCT : ChannelNode {
         private const int chunkSize = 8;
-        private byte[][] channels;
-        private int width, height;
-        private Subsample.Samples samples;
         private bool isInverse;
         /// <summary>
         /// Luminance quantization table. 
@@ -46,14 +43,6 @@ namespace MpegCompressor {
             rename("DCT");
         }
 
-        protected override void createInputs() {
-            inputs.Add("inChannels", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outChannels", new HashSet<Address>());
-        }
-
         protected override void createProperties() {
             Property p = new Property();
             p.createCheckbox("Inverse");
@@ -74,48 +63,10 @@ namespace MpegCompressor {
 
         private void P_eValueChanged(object sender, EventArgs e) {
             setInverse(properties["isInverse"].getChecked());
-            
-        }
-
-        public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Channels;
-            d.channels = channels;
-            d.width = width;
-            d.height = height;
-            d.samplingMode = samples;
-            return d;
         }
 
         protected override void clean() {
             base.clean();
-            
-            //Acquire source
-            Address upstream = inputs["inChannels"];
-            if (upstream == null) {
-                return;
-            }
-            DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
-                return;
-            }
-
-            //Acquire data from source
-            if (dataIn.type == DataBlob.Type.Channels) {
-                if (dataIn.channels == null)
-                    return;
-                //copy channels to local arrays
-                channels = new byte[dataIn.channels.Length][];
-                samples = dataIn.samplingMode;
-                width = dataIn.width;
-                height = dataIn.height;
-                for (int channel = 0; channel < channels.Length; channel++) {
-                    channels[channel] = (byte[])dataIn.channels[channel].Clone();
-                }
-            } else {
-                return;
-            }
 
             /*
             byte[] testData =
@@ -132,8 +83,23 @@ namespace MpegCompressor {
             byte[] DCT_testData = doDCT(testData, quantizationY);
             byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
             */
+            /*
+            byte[] testData =
+                {
+                70, 70, 100, 70, 87, 87, 150, 187,
+                85, 100, 96, 79, 87, 154, 87, 113,
+                100, 85, 116, 79, 70, 87, 86, 196,
+                136, 69, 87, 200, 79, 71, 117, 96,
+                161, 70, 87, 200, 103, 71, 96, 113,
+                161, 123, 147, 133, 113, 113, 85, 161,
+                146, 147, 175, 100, 103, 103, 163, 187,
+                156, 146, 189, 70, 113, 161, 163, 197
+                };
+            byte[] DCT_testData = doDCT(testData, quantizationY);
+            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
+            */
 
-            
+
             Chunker c = new Chunker(chunkSize, width, height, width, 1);
             byte[] data;
             for (int i = 0; i < c.getNumChunks(); i++) {
@@ -164,7 +130,7 @@ namespace MpegCompressor {
                     for (int v = 0; v < chunkSize; v++) {
                         for (int u = 0; u < chunkSize; u++) {
                             bin += (
-                                (u == 0 ? 1 / Math.Sqrt(2) : 1) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize / 2)
+                                (u == 0 ? 1.0 / Math.Sqrt(2) : 1.0) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize / 2)
                                 * Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
                                 * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
                                 * (data[v * chunkSize + u] > 127 ? data[v * chunkSize + u] - 256 : data[v * chunkSize + u]) * qTable[v, u]
@@ -190,14 +156,16 @@ namespace MpegCompressor {
                     bin = 0;
                     for (int j = 0; j < chunkSize; j++) {
                         for (int i = 0; i < chunkSize; i++) {
-                            bin += Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
-                                    * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
-                                    * (data[j*chunkSize + i] - 128);
+                            bin += (float) (Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
+                                 * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
+                                 * (data[j*chunkSize + i] - 128));
                         }
                     }
-                    bin *= (u == 0 ? 1 / Math.Sqrt(2) : 1) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize/2);
+                    bin *= ((u == 0 ? 1.0 / Math.Sqrt(2) : 1.0) * (v == 0 ? 1.0 / Math.Sqrt(2) : 1.0)) / (chunkSize/2);
+                    //Quantize
                     result[v * chunkSize + u] = (byte)Math.Round(bin / qTable[v, u]);
-                    //result[v * chunkSize + u] = (int)bin;
+                    //Don't quantize
+                    //result[v * chunkSize + u] = (byte)bin;
                 }
             }
             return result;

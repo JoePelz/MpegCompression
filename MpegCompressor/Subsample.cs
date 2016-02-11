@@ -7,19 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    public class Subsample : Node {
+    public class Subsample : ChannelNode {
         public enum Samples { s444, s422, s411, s420 }
-        private byte[][] channels;
         private static string[] options
             = new string[4] {
                 "4:4:4",
                 "4:2:2",
                 "4:1:1",
                 "4:2:0" };
-        private Samples inSamples;
         private Samples outSamples;
-        private int width;
-        private int height;
 
         public Subsample() {
             //default setup
@@ -29,7 +25,7 @@ namespace MpegCompressor {
             Property p = properties["name"];
             p.setString("SubSample");
 
-            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
+            setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
 
             //Will need to choose output sample space.
             p = new Property();
@@ -41,7 +37,7 @@ namespace MpegCompressor {
         public void setOutSamples(Samples samples) {
             outSamples = samples;
             properties["outSamples"].setSelection((int)samples);
-            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
+            setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
             soil();
         }
         
@@ -49,56 +45,16 @@ namespace MpegCompressor {
             setOutSamples((Samples)properties["outSamples"].getSelection());
         }
 
-        protected override void createInputs() {
-            inputs.Add("inChannels", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outChannels", new HashSet<Address>());
-        }
-
         public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Channels;
-            d.channels = channels;
-            d.width = width;
-            d.height = height;
-            d.samplingMode = outSamples;
-            return d;
+            DataBlob data = base.getData(port);
+            data.samplingMode = outSamples;
+            return data;
         }
         
         protected override void clean() {
             base.clean();
-            bmp = null;
-            channels = null;
             
-            //Acquire source
-            Address upstream = inputs["inChannels"];
-            if (upstream == null) {
-                return;
-            }
-            DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
-                return;
-            }
-
-            //Acquire data from source
-            if (dataIn.type == DataBlob.Type.Channels) {
-                if (dataIn.channels == null)
-                    return;
-                //copy channels to local arrays
-                channels = new byte[dataIn.channels.Length][];
-                inSamples = dataIn.samplingMode;
-                width = dataIn.width;
-                height = dataIn.height;
-                for(int c = 0; c < channels.Length; c++) {
-                    channels[c] = (byte[])dataIn.channels[c].Clone();
-                }
-            } else {
-                return;
-            }
-            setExtra(options[(int)inSamples] + " to " + options[(int)outSamples]);
+            setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
 
             //Transform data
             convertSrcChannels();
@@ -115,7 +71,7 @@ namespace MpegCompressor {
 
             int iNew, iOld;
 
-            switch (inSamples) {
+            switch (samples) {
                 case Samples.s444:
                     //4:4:4 should have channels 1 and 2 be size4
                     if (channels[1].Length != size4 || channels[2].Length != size4) {

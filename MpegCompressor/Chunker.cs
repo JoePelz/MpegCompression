@@ -13,6 +13,7 @@ namespace MpegCompressor {
         private int Bpp;
         private int chunksWide;
         private int chunksHigh;
+        private byte[] buffer = new byte[64];
 
         public Chunker(int size, int width, int height, int stride, int Bpp) {
             this.size = size;
@@ -59,15 +60,13 @@ namespace MpegCompressor {
             }
         }
 
-        public byte[] getBlock(byte[] channel, int iChunk) {
-            byte[] result = new byte[size * size * Bpp];
+        public void getBlock(byte[] channel, byte[] result, int iChunk) {
             int iDest = 0;
             foreach (int pixel in getChunk(iChunk)) {
                 for (int c = 0; c < Bpp; c++) {
                     result[iDest++] = pixel == -1 ? (byte)0 : channel[pixel + c];
                 }
             }
-            return result;
         }
 
         public void setBlock(byte[] channel, int iChunk, byte[] newBytes) {
@@ -79,6 +78,61 @@ namespace MpegCompressor {
                     }
                 }
             }
+        }
+
+        public void getZigZag8Block(byte[] channel, byte[] result, int iChunk) {
+            getBlock(channel, buffer, iChunk);
+            int iDest = 0;
+            foreach (int zig in zigZag8Index()) {
+                result[iDest++] = buffer[zig];
+            }
+        }
+
+        public void setZigZag8Block(byte[] channel, int iChunk, byte[] newBytes) {
+            int iDest = 0;
+            foreach (int zig in zigZag8Index()) {
+                buffer[zig] = newBytes[iDest++];
+            }
+            setBlock(channel, iChunk, buffer);
+        }
+
+        public static System.Collections.Generic.IEnumerable<int> zigZag8Index() {
+            //yield order:
+            /*
+              0  1  8 16  9  2  3 10
+             17 24 32 25 18 11  4  5
+             12 19 26 33 40 48 41 34
+             27 20 13  6  7 14 21 28
+             35 42 49 56 57 50 43 36
+             29 22 15 23 30 37 44 51
+             58 59 52 45 38 31 39 46
+             53 60 61 54 47 55 62 63
+
+            from
+              0  1  2  3  4  5  6  7
+              8  9 10 11 12 13 14 15
+             16 17 18 19 20 21 22 23
+             24 25 26 27 28 29 30 31
+             32 33 34 35 36 37 38 39
+             40 41 42 43 44 45 46 47
+             48 49 50 51 52 53 54 55
+             56 57 58 59 60 61 62 63
+            */
+
+            byte[] indices = {
+                  0,  1,  8, 16,  9,  2,  3, 10,
+                 17, 24, 32, 25, 18, 11,  4,  5,
+                 12, 19, 26, 33, 40, 48, 41, 34,
+                 27, 20, 13,  6,  7, 14, 21, 28,
+                 35, 42, 49, 56, 57, 50, 43, 36,
+                 29, 22, 15, 23, 30, 37, 44, 51,
+                 58, 59, 52, 45, 38, 31, 39, 46,
+                 53, 60, 61, 54, 47, 55, 62, 63
+            };
+            foreach (int i in indices) {
+                yield return i;
+            }
+            yield break;
         }
     }
 }

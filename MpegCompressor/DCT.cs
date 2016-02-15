@@ -101,9 +101,9 @@ namespace MpegCompressor {
 
 
             Chunker c = new Chunker(chunkSize, width, height, width, 1);
-            byte[] data;
+            byte[] data = new byte[chunkSize * chunkSize];
             for (int i = 0; i < c.getNumChunks(); i++) {
-                data = c.getBlock(channels[0], i);
+                c.getBlock(channels[0], data, i);
                 data = isInverse ? doIDCT(data, quantizationY) : doDCT(data, quantizationY);
                 c.setBlock(channels[0], i, data);
             }
@@ -111,10 +111,10 @@ namespace MpegCompressor {
             //with 4:2:0 the width of the Cr/b channel is half that of the Y channel, rounded up
             c = new Chunker(chunkSize, (width+1) / 2, (height+1) / 2, (width+1) / 2, 1);
             for (int i = 0; i < c.getNumChunks(); i++) {
-                data = c.getBlock(channels[1], i);
+                c.getBlock(channels[1], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
                 c.setBlock(channels[1], i, data);
-                data = c.getBlock(channels[2], i);
+                c.getBlock(channels[2], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
                 c.setBlock(channels[2], i, data);
             }

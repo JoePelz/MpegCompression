@@ -81,6 +81,7 @@ namespace MpegCompressor {
         }
 
         public void createButton(string text, string label) {
+            sVal = text;
             sLabel = label;
             type = Type.BUTTON;
             updateLayout();
@@ -93,7 +94,13 @@ namespace MpegCompressor {
             nUpDown.Value = n;
         }
         public void setString(string s) {
-            sTextBox.Text = s;
+            if (sTextBox != null) {
+                sTextBox.Text = s;
+            }
+            if (btn != null) {
+                btn.Text = s;
+            }
+            sVal = s;
         }
         public void setSelection(int sel) {
             nVal = sel;
@@ -263,8 +270,9 @@ namespace MpegCompressor {
 
             btn = new Button();
             btn.Click += Btn_Click;
+            btn.Text = sVal;
 
-            Controls.Add(checkbox, 0, 0);
+            Controls.Add(btn, 0, 0);
             Controls.Add(lblName, 1, 0);
         }
 

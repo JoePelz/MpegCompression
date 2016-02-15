@@ -17,7 +17,7 @@ namespace MpegCompressor {
             model = new Project();
 
             viewProps = props;
-            viewLeft = left;
+            viewLeft  = left;
             viewRight = right;
             viewNodes = nodes;
             viewNodes.eSelectionChanged += OnSelectionChange;
@@ -41,6 +41,12 @@ namespace MpegCompressor {
             Node nCS3 = new ColorSpace();
             Node nCS2 = new ColorSpace();
             Node nChunkTest = new TestChunker();
+            Node nWriter = new WriteChannels();
+
+            Node nReader = new ReadChannels();
+            Node nCHtC4 = new ChannelsToColor();
+            Node nIDCT2 = new DCT();
+            Node nCS4 = new ColorSpace();
 
             nRead.pos = new System.Drawing.Point(-110, 25);
             nChunkTest.pos = new System.Drawing.Point(0, -10);
@@ -52,15 +58,23 @@ namespace MpegCompressor {
             nDCT.pos = new System.Drawing.Point(330, 110);
             nCHtC2.pos = new System.Drawing.Point(440, 110);
             nIDCT.pos = new System.Drawing.Point(440, 170);
+            nWriter.pos = new System.Drawing.Point(440, 230);
             nCHtC3.pos = new System.Drawing.Point(550, 170);
             nCS3.pos = new System.Drawing.Point(660, 170);
+
+            nReader.pos = new System.Drawing.Point(-110, 290);
+            nIDCT2.pos = new System.Drawing.Point(10, 290);
+            nCHtC4.pos = new System.Drawing.Point(130, 290);
+            nCS4.pos = new System.Drawing.Point(250, 290);
 
             (nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCS4 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT as DCT).setInverse(true);
+            (nIDCT2 as DCT).setInverse(true);
 
             Node.connect(nRead, "outColor", nChunkTest, "inColor");
             Node.connect(nRead, "outColor", nCS1, "inColor");
@@ -71,8 +85,13 @@ namespace MpegCompressor {
             Node.connect(nDCT, "outChannels", nCHtC2, "inChannels");
             Node.connect(nCHtC, "outColor", nCS2, "inColor");
             Node.connect(nDCT, "outChannels", nIDCT, "inChannels");
+            Node.connect(nDCT, "outChannels", nWriter, "inChannels");
             Node.connect(nIDCT, "outChannels", nCHtC3, "inChannels");
             Node.connect(nCHtC3, "outColor", nCS3, "inColor");
+
+            Node.connect(nReader, "outChannels", nIDCT2, "inChannels");
+            Node.connect(nIDCT2, "outChannels", nCHtC4, "inChannels");
+            Node.connect(nCHtC4, "outColor", nCS4, "inColor");
 
             viewNodes.addNode(nRead);
             viewNodes.addNode(nCS1);
@@ -85,7 +104,13 @@ namespace MpegCompressor {
             viewNodes.addNode(nCHtC3);
             viewNodes.addNode(nCS3);
             viewNodes.addNode(nCS2);
+            viewNodes.addNode(nWriter);
             viewNodes.addNode(nChunkTest);
+
+            viewNodes.addNode(nReader);
+            viewNodes.addNode(nIDCT2);
+            viewNodes.addNode(nCHtC4);
+            viewNodes.addNode(nCS4);
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

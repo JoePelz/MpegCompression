@@ -74,9 +74,9 @@ namespace MpegCompressor {
 
             //Using the chunk pull/push method
             Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
-            byte[] data;
+            byte[] data = new byte[chunkSize * chunkSize * 3];
             for(int i = 0; i < c.getNumChunks(); i++) {
-                data = c.getBlock(rgbValues, i);
+                c.getBlock(rgbValues, data, i);
                 for(int j = 0; j < data.Length; j++) {
                     data[j] = (byte)(j * 255 / (data.Length - 1));
                 }

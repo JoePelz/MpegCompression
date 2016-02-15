@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadChannels.cs" />
     <Compile Include="ReadImage.cs" />
     <Compile Include="Subsample.cs" />
     <Compile Include="TestChunker.cs" />

@@ -12,7 +12,8 @@ namespace MpegCompressor {
             FLOAT,
             STRING,
             CHECKBOX,
-            SELECTION
+            SELECTION,
+            BUTTON
         };
 
         private Label lblName;
@@ -20,6 +21,7 @@ namespace MpegCompressor {
         private TextBox sTextBox;
         private ComboBox comboBox;
         private CheckBox checkbox;
+        private Button btn;
         private int nVal;
         private int nMin;
         private int nMax;
@@ -75,6 +77,12 @@ namespace MpegCompressor {
         public void createCheckbox(string label) {
             sLabel = label;
             type = Type.CHECKBOX;
+            updateLayout();
+        }
+
+        public void createButton(string text, string label) {
+            sLabel = label;
+            type = Type.BUTTON;
             updateLayout();
         }
 
@@ -137,6 +145,9 @@ namespace MpegCompressor {
                     break;
                 case Type.CHECKBOX:
                     layoutCheckbox();
+                    break;
+                case Type.BUTTON:
+                    layoutButton();
                     break;
                 default:
                     break;
@@ -240,6 +251,25 @@ namespace MpegCompressor {
 
             Controls.Add(checkbox, 0, 0);
             Controls.Add(lblName, 1, 0);
+        }
+
+        private void layoutButton() {
+            lblName = new Label();
+            lblName.Text = sLabel;
+            lblName.Name = "lblName";
+            lblName.AutoSize = true;
+            lblName.Dock = DockStyle.Fill;
+            lblName.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
+
+            btn = new Button();
+            btn.Click += Btn_Click;
+
+            Controls.Add(checkbox, 0, 0);
+            Controls.Add(lblName, 1, 0);
+        }
+
+        private void Btn_Click(object sender, EventArgs e) {
+            fireEvent(e);
         }
 
         private void Checkbox_CheckedChanged(object sender, EventArgs e) {

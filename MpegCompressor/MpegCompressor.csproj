@@ -110,6 +110,7 @@
     <Compile Include="Viewport.Designer.cs">
       <DependentUpon>Viewport.cs</DependentUpon>
     </Compile>
+    <Compile Include="WriteChannels.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

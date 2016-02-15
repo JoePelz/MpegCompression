@@ -65,9 +65,9 @@ namespace MpegCompressor {
 
         protected virtual void createProperties() { }
 
-        protected abstract void createInputs();
+        protected virtual void createInputs() { }
 
-        protected abstract void createOutputs();
+        protected virtual void createOutputs() { }
 
         public Dictionary<string, Address> getInputs() {
             return inputs;
@@ -164,8 +164,7 @@ namespace MpegCompressor {
                 handler(this, e);
             }
         }
-
-
+        
         public virtual Bitmap view() {
             if (isDirty) {
                 clean();

@@ -167,11 +167,11 @@ namespace MpegCompressor {
         
         private void convertSrcChannels() {
 
-            upsample();
-
             if (channels == null) {
                 return;
             }
+
+            upsample();
 
             //drop elements as needed
             //create BMP of r dimensions.

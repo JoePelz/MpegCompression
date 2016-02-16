@@ -67,7 +67,9 @@ namespace MpegCompressor {
 
         protected override void clean() {
             base.clean();
-
+            if (channels == null) {
+                return;
+            }
             /*
             byte[] testData =
                 {
@@ -99,13 +101,34 @@ namespace MpegCompressor {
             byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
             */
 
+            
+            byte[] testData =
+                {
+                128, 128, 128, 128, 128, 128, 128, 128,
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0, 
+                0, 0, 0, 0, 0, 0, 0, 0
+                };
+            byte[] DCT_testData = doDCT(testData, quantizationC);
+            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationC);
+            byte[] DCT_testData2 = doDCT(testData, quantizationC);
+            for(int i = 8; i < 64; i++) { DCT_testData2[i] = 0; }
+            byte[] IDCT_testData2 = doIDCT(DCT_testData2, quantizationC);
+
+
+
+
 
             Chunker c = new Chunker(chunkSize, width, height, width, 1);
             byte[] data = new byte[chunkSize * chunkSize];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(channels[0], data, i);
                 data = isInverse ? doIDCT(data, quantizationY) : doDCT(data, quantizationY);
-                c.setBlock(channels[0], i, data);
+                c.setBlock(channels[0], data, i);
             }
 
             //with 4:2:0 the width of the Cr/b channel is half that of the Y channel, rounded up
@@ -113,10 +136,10 @@ namespace MpegCompressor {
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(channels[1], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
-                c.setBlock(channels[1], i, data);
+                c.setBlock(channels[1], data, i);
                 c.getBlock(channels[2], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
-                c.setBlock(channels[2], i, data);
+                c.setBlock(channels[2], data, i);
             }
         }
 
@@ -143,7 +166,6 @@ namespace MpegCompressor {
                     result[j * chunkSize + i] = (byte)bin;
                 }
             }
-            
             return result;
         }
 
@@ -164,8 +186,6 @@ namespace MpegCompressor {
                     bin *= ((u == 0 ? 1.0 / Math.Sqrt(2) : 1.0) * (v == 0 ? 1.0 / Math.Sqrt(2) : 1.0)) / (chunkSize/2);
                     //Quantize
                     result[v * chunkSize + u] = (byte)Math.Round(bin / qTable[v, u]);
-                    //Don't quantize
-                    //result[v * chunkSize + u] = (byte)bin;
                 }
             }
             return result;

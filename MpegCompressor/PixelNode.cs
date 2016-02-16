@@ -21,8 +21,10 @@ namespace MpegCompressor {
             DataBlob d = new DataBlob();
             d.type = DataBlob.Type.Image;
             d.img = bmp;
-            d.width = bmp.Width;
-            d.height = bmp.Height;
+            if (bmp != null) {
+                d.width = bmp.Width;
+                d.height = bmp.Height;
+            }
             return d;
         }
 

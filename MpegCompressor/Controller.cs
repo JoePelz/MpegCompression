@@ -67,7 +67,8 @@ namespace MpegCompressor {
             nCHtC4.pos = new System.Drawing.Point(130, 290);
             nCS4.pos = new System.Drawing.Point(250, 290);
 
-            (nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
+            //(nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
+            (nRead as ReadImage).setPath("C:\\temp\\black.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);

@@ -80,7 +80,7 @@ namespace MpegCompressor {
                 for(int j = 0; j < data.Length; j++) {
                     data[j] = (byte)(j * 255 / (data.Length - 1));
                 }
-                c.setBlock(rgbValues, i, data);
+                c.setBlock(rgbValues, data, i);
             }
 
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);

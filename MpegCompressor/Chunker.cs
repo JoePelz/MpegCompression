@@ -64,12 +64,12 @@ namespace MpegCompressor {
             int iDest = 0;
             foreach (int pixel in getChunk(iChunk)) {
                 for (int c = 0; c < Bpp; c++) {
-                    result[iDest++] = pixel == -1 ? (byte)0 : channel[pixel + c];
+                    result[iDest++] = (pixel == -1 ? (byte)0 : channel[pixel + c]);
                 }
             }
         }
 
-        public void setBlock(byte[] channel, int iChunk, byte[] newBytes) {
+        public void setBlock(byte[] channel, byte[] newBytes, int iChunk) {
             int iDest = 0;
             foreach (int pixel in getChunk(iChunk)) {
                 if (pixel != -1) {
@@ -88,12 +88,12 @@ namespace MpegCompressor {
             }
         }
 
-        public void setZigZag8Block(byte[] channel, int iChunk, byte[] newBytes) {
+        public void setZigZag8Block(byte[] channel, byte[] newBytes, int iChunk) {
             int iDest = 0;
             foreach (int zig in zigZag8Index()) {
                 buffer[zig] = newBytes[iDest++];
             }
-            setBlock(channel, iChunk, buffer);
+            setBlock(channel, buffer, iChunk);
         }
 
         public static System.Collections.Generic.IEnumerable<int> zigZag8Index() {

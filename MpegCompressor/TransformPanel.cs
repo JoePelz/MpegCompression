@@ -130,6 +130,7 @@ namespace MpegCompressor {
                 target.Width = 128;
                 target.Height = 128;
             }
+            margin = target.Height / 10;
             target.X -= margin;
             target.Y -= margin;
             target.Width += margin * 2;

@@ -117,9 +117,14 @@ namespace MpegCompressor {
                     g = rgbValues[pixel + 1];
                     r = rgbValues[pixel + 2];
 
+                    /*
                     Y = (byte)((0.299 * r) + (0.587 * g) + (0.114 * b));
                     Cb = (byte)(128 - (0.168736 * r) - (0.331264 * g) + (0.500000 * b));
                     Cr = (byte)(128 + (0.500000 * r) - (0.418688 * g) - (0.081312 * b));
+                    */
+                    Y  = (byte)(      ( 0.299 * r) + ( 0.587 * g) + ( 0.114 * b));
+                    Cb = (byte)(128 + (-0.169 * r) + (-0.331 * g) + ( 0.500 * b));
+                    Cr = (byte)(128 + ( 0.500 * r) + (-0.419 * g) + (-0.081 * b));
 
                     rgbValues[pixel] = Cb;
                     rgbValues[pixel + 1] = Cr;
@@ -161,13 +166,19 @@ namespace MpegCompressor {
                     Cr = rgbValues[pixel + 1] - 128;
                     Y = rgbValues[pixel + 2];
 
-                    r = (int)(Y + 1.40200 * Cr);
-                    g = (int)(Y - 0.34414 * Cb - 0.71414 * Cr);
-                    b = (int)(Y + 1.77200 * Cb);
-                    r = r < 0 ? 0 : r > 255 ? 255 : r;
-                    g = g < 0 ? 0 : g > 255 ? 255 : g;
-                    b = b < 0 ? 0 : b > 255 ? 255 : b;
+                    /*
+                    r = (int)(Y + 1.40200 * Cr);  //-4
+                    g = (int)(Y - 0.34414 * Cb - 0.71414 * Cr); //
+                    b = (int)(Y + 1.77200 * Cb);  //-5
+                    */
                     
+                    r = (int)(Y + 1.400 * Cr);  //
+                    g = (int)(Y - 0.343 * Cb - 0.711 * Cr); //
+                    b = (int)(Y + 1.765 * Cb);  //-5
+                    
+                    r = r < 0 ? 0 : (r > 255 ? 255 : r);
+                    g = g < 0 ? 0 : (g > 255 ? 255 : g);
+                    b = b < 0 ? 0 : (b > 255 ? 255 : b);
                     rgbValues[pixel] = (byte)b;
                     rgbValues[pixel + 1] = (byte)g;
                     rgbValues[pixel + 2] = (byte)r;

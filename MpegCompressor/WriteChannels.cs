@@ -136,7 +136,19 @@ namespace MpegCompressor {
                         } //chunk written out
                     } //channel written out
 
-                    c = new Chunker(8, (width + 1) / 2, (height + 1) / 2, (width + 1) / 2, 1);
+                    //
+
+                    switch (samples) {
+                        case Subsample.Samples.s411:
+                            c = new Chunker(8, (width + 3) / 4, height, (width + 3) / 4, 1);
+                            break;
+                        case Subsample.Samples.s420:
+                            c = new Chunker(8, (width + 1) / 2, (height + 1) / 2, (width + 1) / 2, 1);
+                            break;
+                        case Subsample.Samples.s422:
+                            c = new Chunker(8, (width + 1) / 2, height, (width + 1) / 2, 1);
+                            break;
+                    }
                     indexer = Chunker.zigZag8Index();
                     for (int channel = 1; channel < channels.Length; channel++) {
                         for (int i = 0; i < c.getNumChunks(); i++) {

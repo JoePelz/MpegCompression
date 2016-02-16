@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor {
     class Controller {
-        private Project model;
         private PropertyPage viewProps;
         private Viewport viewLeft;
         private Viewport viewRight;
         private NodeView viewNodes;
 
         public Controller(PropertyPage props, NodeView nodes, Viewport left, Viewport right) {
-            model = new Project();
 
             viewProps = props;
             viewLeft  = left;

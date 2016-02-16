@@ -56,16 +56,20 @@ namespace MpegCompressor {
             }
 
             System.Windows.Forms.MessageBox.Show(
-                "width: " + width + " = " + read_width + 
-                "\nheight: " + height + " = " + read_height +
+                "width: " + state.width + " = " + read_width + 
+                "\nheight: " + state.height + " = " + read_height +
                 "\nquality: " + 130 + " = " + read_quality +
-                "\nsamples: " + samples + " = " + (Subsample.Samples)read_samples
+                "\nsamples: " + state.samplingMode + " = " + (Subsample.Samples)read_samples
                 , "File Information");
 
         }
 
         private void save(object sender, EventArgs e) {
             clean();
+
+            if (state == null || state.channels == null) {
+                return;
+            }
             //data to save: image width, image height, quality factor, y channel, Cr channel, Cb channel
             //perform zig-zag RLE on channels.
             //
@@ -93,15 +97,15 @@ namespace MpegCompressor {
             byte prev, count, val;
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
-                    writer.Write((short)width);
-                    writer.Write((short)height);
+                    writer.Write((short)state.width);
+                    writer.Write((short)state.height);
                     writer.Write((byte)130);
-                    writer.Write((byte)samples);
+                    writer.Write((byte)state.samplingMode);
                     byte[] data = new byte[64];
-                    Chunker c = new Chunker(8, width, height, width, 1);
+                    Chunker c = new Chunker(8, state.width, state.height, state.width, 1);
                     var indexer = Chunker.zigZag8Index();
                     for (int i = 0; i < c.getNumChunks(); i++) {
-                        c.getBlock(channels[0], data, i);
+                        c.getBlock(state.channels[0], data, i);
                         count = 0;
                         prev = data[0];
                         foreach (int index in indexer) {
@@ -138,21 +142,21 @@ namespace MpegCompressor {
 
                     //
 
-                    switch (samples) {
+                    switch (state.samplingMode) {
                         case Subsample.Samples.s411:
-                            c = new Chunker(8, (width + 3) / 4, height, (width + 3) / 4, 1);
+                            c = new Chunker(8, (state.width + 3) / 4, state.height, (state.width + 3) / 4, 1);
                             break;
                         case Subsample.Samples.s420:
-                            c = new Chunker(8, (width + 1) / 2, (height + 1) / 2, (width + 1) / 2, 1);
+                            c = new Chunker(8, (state.width + 1) / 2, (state.height + 1) / 2, (state.width + 1) / 2, 1);
                             break;
                         case Subsample.Samples.s422:
-                            c = new Chunker(8, (width + 1) / 2, height, (width + 1) / 2, 1);
+                            c = new Chunker(8, (state.width + 1) / 2, state.height, (state.width + 1) / 2, 1);
                             break;
                     }
                     indexer = Chunker.zigZag8Index();
-                    for (int channel = 1; channel < channels.Length; channel++) {
+                    for (int channel = 1; channel < state.channels.Length; channel++) {
                         for (int i = 0; i < c.getNumChunks(); i++) {
-                            c.getBlock(channels[channel], data, i);
+                            c.getBlock(state.channels[channel], data, i);
                             count = 0;
                             prev = data[0];
                             foreach (int index in indexer) {

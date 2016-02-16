@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    class TestChunker : PixelNode {
+    class TestChunker : ColorNode {
         int chunkSize;
 
         public TestChunker() {
@@ -36,19 +36,23 @@ namespace MpegCompressor {
         protected override void clean() {
             base.clean();
 
+            if (state == null || state.bmp == null) {
+                return;
+            }
+
             drawChunks();
         }
 
         private void drawChunks() {
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
+            BitmapData bmpData = state.bmp.LockBits(
+                                new Rectangle(0, 0, state.width, state.height),
                                 ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
+                                state.bmp.PixelFormat);
 
             IntPtr ptr = bmpData.Scan0;
 
             //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
+            int nBytes = Math.Abs(bmpData.Stride) * bmpData.Height;
             byte[] rgbValues = new byte[nBytes];
 
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
@@ -85,7 +89,7 @@ namespace MpegCompressor {
 
             System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
 
-            bmp.UnlockBits(bmpData);
+            state.bmp.UnlockBits(bmpData);
         }
     }
 }

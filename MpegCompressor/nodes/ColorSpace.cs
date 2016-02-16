@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor {
-    public class ColorSpace : PixelNode {
+    public class ColorSpace : ColorNode {
         public enum Space { RGB, HSV, YCrCb };
         
         private static string[] options = new string[3] {
@@ -61,27 +61,27 @@ namespace MpegCompressor {
         protected override void clean() {
             base.clean();
             
-            if (bmp == null || inSpace == outSpace)
+            if (state == null || state.bmp == null || inSpace == outSpace)
                 return;
 
             switch (inSpace) {
                 case Space.RGB:
                     break;
                 case Space.HSV:
-                    HSVtoRGB(bmp);
+                    HSVtoRGB(state.bmp);
                     break;
                 case Space.YCrCb:
-                    YCrCbtoRGB(bmp);
+                    YCrCbtoRGB(state.bmp);
                     break;
             }
             switch(outSpace) {
                 case Space.RGB:
                     break;
                 case Space.HSV:
-                    RGBtoHSV(bmp);
+                    RGBtoHSV(state.bmp);
                     break;
                 case Space.YCrCb:
-                    RGBtoYCrCb(bmp);
+                    RGBtoYCrCb(state.bmp);
                     break;
             }
         }

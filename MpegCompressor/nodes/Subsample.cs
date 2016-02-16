@@ -16,17 +16,11 @@ namespace MpegCompressor {
                 "4:1:1",
                 "4:2:0" };
         private Samples outSamples;
-
-        public Subsample() {
-            //default setup
-        }
-
+        
         protected override void createProperties() {
             Property p = properties["name"];
             p.setString("SubSample");
-
-            setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
-
+            
             //Will need to choose output sample space.
             p = new Property();
             p.createChoices(options, (int)outSamples, "output sample space");
@@ -44,130 +38,130 @@ namespace MpegCompressor {
         private void P_eValueChanged(object sender, EventArgs e) {
             setOutSamples((Samples)properties["outSamples"].getSelection());
         }
-
-        public override DataBlob getData(string port) {
-            DataBlob data = base.getData(port);
-            data.samplingMode = outSamples;
-            return data;
-        }
         
         protected override void clean() {
             base.clean();
             
-            setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
+            if (state == null || state.channels == null) {
+                return;
+            }
+
+            setExtra(options[(int)state.samplingMode] + " to " + options[(int)outSamples]);
 
             //Transform data
             convertSrcChannels();
+
+            state.samplingMode = outSamples;
         }
         
         private void upsample() {
-            int size4 = channels[0].Length; //Y channel. Should be full length.
-            int size422 = (width + 1) / 2 * height;
-            int size420 = (width + 1) / 2 * (height + 1) / 2;
-            int size411 = (width + 3) / 4 * height;
+            int size4 = state.channels[0].Length; //Y channel. Should be full length.
+            int size422 = (state.width + 1) / 2 * state.height;
+            int size420 = (state.width + 1) / 2 * (state.height + 1) / 2;
+            int size411 = (state.width + 3) / 4 * state.height;
 
             byte[] newG;
             byte[] newB;
 
             int iNew, iOld;
 
-            switch (samples) {
+            switch (state.samplingMode) {
                 case Samples.s444:
                     //4:4:4 should have channels 1 and 2 be size4
-                    if (channels[1].Length != size4 || channels[2].Length != size4) {
-                        channels = null;
+                    if (state.channels[1].Length != size4 || state.channels[2].Length != size4) {
+                        state.channels = null;
                         return;
                     }
                     break;
                 case Samples.s422:
                     //4:2:2 should have channels 1 and 2 be size422
-                    if (channels[1].Length != size422 || channels[2].Length != size422) {
-                        channels = null;
+                    if (state.channels[1].Length != size422 || state.channels[2].Length != size422) {
+                        state.channels = null;
                         return;
                     }
                     newG = new byte[size4];
                     newB = new byte[size4];
                     iOld = 0;
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            iNew = y * width + x;
+                    for (int y = 0; y < state.height; y++) {
+                        for (int x = 0; x < state.width; x++) {
+                            iNew = y * state.width + x;
                             //pixel iterates over every pixel in the full size image.
                             if (x % 2 == 0) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
-                                if (x == width - 1)
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
+                                if (x == state.width - 1)
                                     iOld++;
                             } else if (x % 2 == 1) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
                                 iOld++;
                             }
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
                 case Samples.s420:
                     //4:2:0 should have channels 1 and 2 be size1
-                    if (channels[1].Length != size420 || channels[2].Length != size420) {
-                        channels = null;
+                    if (state.channels[1].Length != size420 || state.channels[2].Length != size420) {
+                        state.channels = null;
                         return;
                     }
                     newG = new byte[size4];
                     newB = new byte[size4];
                     iOld = -1;
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            iNew = y * width + x;
+                    for (int y = 0; y < state.height; y++) {
+                        for (int x = 0; x < state.width; x++) {
+                            iNew = y * state.width + x;
 
                             if (x % 2 == 0) {
                                 iOld++;
                             }
                             if (y % 2 == 1 && x == 0) {
-                                iOld -= (width + 1) / 2;
+                                iOld -= (state.width + 1) / 2;
                             }
 
-                            newG[iNew] = channels[1][iOld];
-                            newB[iNew] = channels[2][iOld];
+                            newG[iNew] = state.channels[1][iOld];
+                            newB[iNew] = state.channels[2][iOld];
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
                 case Samples.s411:
                     //4:1:1 should have channels 1 and 2 be size411
-                    if (channels[1].Length != size411 || channels[2].Length != size411) {
-                        channels = null;
+                    if (state.channels[1].Length != size411 || state.channels[2].Length != size411) {
+                        state.channels = null;
                         return;
                     }
                     newG = new byte[size4];
                     newB = new byte[size4];
                     iOld = 0;
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            iNew = y * width + x;
+                    for (int y = 0; y < state.height; y++) {
+                        for (int x = 0; x < state.width; x++) {
+                            iNew = y * state.width + x;
                             //pixel iterates over every pixel in the full size image.
                             if (x % 4 < 3) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
-                                if (x == width - 1)
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
+                                if (x == state.width - 1)
                                     iOld++;
                             } else if (x % 4 == 3) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
                                 iOld++;
                             }
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
             }
         }
         
         private void convertSrcChannels() {
 
-            if (channels == null) {
+            if (state.channels == null) {
                 return;
             }
 
@@ -176,10 +170,10 @@ namespace MpegCompressor {
             //drop elements as needed
             //create BMP of r dimensions.
             //write channels into bmp, duplicating as needed.
-            int size4 = channels[0].Length; //Y channel. Should be full length.
-            int size422 = (width + 1) / 2 * height;
-            int size420 = (width + 1) / 2 * (height + 1) / 2;
-            int size411 = (width + 3) / 4 * height;
+            int size4 = state.channels[0].Length; //Y channel. Should be full length.
+            int size422 = (state.width + 1) / 2 * state.height;
+            int size420 = (state.width + 1) / 2 * (state.height + 1) / 2;
+            int size411 = (state.width + 3) / 4 * state.height;
             int iNew, iOld;
             byte[] newG;
             byte[] newB;
@@ -191,59 +185,56 @@ namespace MpegCompressor {
                     newG = new byte[size422];
                     newB = new byte[size422];
                     iNew = 0;
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x+= 2) {
-                            iOld = y * width + x;
+                    for (int y = 0; y < state.height; y++) {
+                        for (int x = 0; x < state.width; x+= 2) {
+                            iOld = y * state.width + x;
                             if (x % 2 == 0) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
                                 iNew++;
                             }
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
                 case Samples.s420:
                     newG = new byte[size420];
                     newB = new byte[size420];
                     iNew = 0;
-                    for (int y = 0; y < height; y += 2) {
-                        for (int x = 0; x < width; x += 2) {
-                            iOld = y * width + x;
+                    for (int y = 0; y < state.height; y += 2) {
+                        for (int x = 0; x < state.width; x += 2) {
+                            iOld = y * state.width + x;
                             if (x % 2 == 0 && y % 2 == 0) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
                                 iNew++;
                             }
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
                 case Samples.s411:
                     newG = new byte[size411];
                     newB = new byte[size411];
                     iNew = 0;
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x += 4) {
-                            iOld = y * width + x;
+                    for (int y = 0; y < state.height; y++) {
+                        for (int x = 0; x < state.width; x += 4) {
+                            iOld = y * state.width + x;
                             if (x % 4 == 0) {
-                                newG[iNew] = channels[1][iOld];
-                                newB[iNew] = channels[2][iOld];
+                                newG[iNew] = state.channels[1][iOld];
+                                newB[iNew] = state.channels[2][iOld];
                                 iNew++;
                             }
                         }
                     }
-                    channels[1] = newG;
-                    channels[2] = newB;
+                    state.channels[1] = newG;
+                    state.channels[2] = newB;
                     break;
             }
 
-            if (bmp != null) {
-                bmp.Dispose();
-            }
-            bmp = channelsToBitmap(channels, outSamples, width, height);
+            state.bmp = channelsToBitmap(state.channels, outSamples, state.width, state.height);
         }
 
         public static Bitmap channelsToBitmap(byte[][] channels, Samples mode, int width, int height) {

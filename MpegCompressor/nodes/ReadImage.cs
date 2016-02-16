@@ -33,14 +33,6 @@ namespace MpegCompressor {
             outputs.Add("outColor", new HashSet<Address>());
         }
 
-        public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Image;
-            d.img = bmp;
-            return d;
-        }
-
         public void setPath(string path) {
             filepath = path;
             properties["path"].setString(path);
@@ -59,12 +51,15 @@ namespace MpegCompressor {
         protected override void clean() {
             base.clean();
             //load image from path, if it exists
+            state = new DataBlob();
+
             try {
-                bmp = new Bitmap(filepath);
-                bmp = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                state.bmp = new Bitmap(filepath);
+                state.bmp = state.bmp.Clone(new Rectangle(0, 0, state.bmp.Width, state.bmp.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                state.width = state.bmp.Width;
+                state.height = state.bmp.Height;
             } catch (Exception) {
                 //silently fail. 
-                bmp = null;
             }
         }
     }

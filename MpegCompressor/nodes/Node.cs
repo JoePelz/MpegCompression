@@ -27,7 +27,7 @@ namespace MpegCompressor {
         protected Dictionary<string, Property> properties;
         protected Dictionary<string, Address> inputs;
         protected Dictionary<string, HashSet<Address>> outputs;
-        protected Bitmap bmp;
+        protected DataBlob state;
         public Point pos;
 
         public event EventHandler eViewChanged;
@@ -36,12 +36,12 @@ namespace MpegCompressor {
             properties = new Dictionary<string, Property>();
             inputs = new Dictionary<string, Address>();
             outputs = new Dictionary<string, HashSet<Address>>();
+            state = new DataBlob();
             
             Property p = new Property();
             p.createString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
-
             createProperties();
             createInputs();
             createOutputs();
@@ -137,7 +137,7 @@ namespace MpegCompressor {
             if (isDirty) {
                 clean();
             }
-            return null;
+            return state;
         }
 
         public Dictionary<string, Property> getProperties() {
@@ -169,7 +169,7 @@ namespace MpegCompressor {
             if (isDirty) {
                 clean();
             }
-            return bmp;
+            return state.bmp;
         }
     }
 }

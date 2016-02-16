@@ -22,39 +22,28 @@ namespace MpegCompressor {
             outputs.Add("outColor", new HashSet<Address>());
         }
 
-        public override DataBlob getData(string port) {
-            base.getData(port);
-            DataBlob d = new DataBlob();
-            d.type = DataBlob.Type.Image;
-            d.img = bmp;
-            return d;
-        }
-
         protected override void clean() {
             base.clean();
-
-            bmp = null;
 
             //Acquire source
             Address upstream = inputs["inChannels"];
             if (upstream == null) {
                 return;
             }
-            DataBlob dataIn = upstream.node.getData(upstream.port);
-            if (dataIn == null) {
+            state = upstream.node.getData(upstream.port);
+            if (state == null) {
                 return;
             }
 
-            if (dataIn.type == DataBlob.Type.Channels) {
-                if (dataIn.channels == null)
-                    return;
-                //copy channels to local arrays
-                bmp = Subsample.channelsToBitmap(dataIn.channels, dataIn.samplingMode, dataIn.width, dataIn.height);
-            } else {
+            state = state.clone();
+
+            if (state.type != DataBlob.Type.Channels || state.channels == null) {
+                state = null;
                 return;
             }
-            
-            
+
+            state.bmp = Subsample.channelsToBitmap(state.channels, state.samplingMode, state.width, state.height);
+            state.type = DataBlob.Type.Image;
         }
     }
 }

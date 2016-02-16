@@ -61,26 +61,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChannelNode.cs" />
-    <Compile Include="ChannelsToColor.cs" />
+    <Compile Include="nodes\ChannelNode.cs" />
+    <Compile Include="nodes\ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
-    <Compile Include="ColorSpace.cs" />
-    <Compile Include="ColorToChannels.cs" />
+    <Compile Include="nodes\ColorSpace.cs" />
+    <Compile Include="nodes\ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
-    <Compile Include="DCT.cs" />
+    <Compile Include="nodes\DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
-    <Compile Include="Node.cs" />
+    <Compile Include="nodes\MoVec.cs" />
+    <Compile Include="nodes\Node.cs" />
     <Compile Include="NodeView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="NodeView.Designer.cs">
       <DependentUpon>NodeView.cs</DependentUpon>
     </Compile>
-    <Compile Include="NoOp.cs" />
-    <Compile Include="PixelNode.cs" />
-    <Compile Include="Project.cs" />
+    <Compile Include="nodes\NoOp.cs" />
+    <Compile Include="nodes\ColorNode.cs" />
     <Compile Include="Property.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -98,10 +98,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadChannels.cs" />
-    <Compile Include="ReadImage.cs" />
-    <Compile Include="Subsample.cs" />
-    <Compile Include="TestChunker.cs" />
+    <Compile Include="nodes\ReadChannels.cs" />
+    <Compile Include="nodes\ReadImage.cs" />
+    <Compile Include="nodes\Subsample.cs" />
+    <Compile Include="nodes\TestChunker.cs" />
     <Compile Include="TransformPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -111,7 +111,7 @@
     <Compile Include="Viewport.Designer.cs">
       <DependentUpon>Viewport.cs</DependentUpon>
     </Compile>
-    <Compile Include="WriteChannels.cs" />
+    <Compile Include="nodes\WriteChannels.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

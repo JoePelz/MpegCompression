@@ -67,7 +67,7 @@ namespace MpegCompressor {
 
         protected override void clean() {
             base.clean();
-            if (channels == null) {
+            if (state == null || state.channels == null) {
                 return;
             }
             /*
@@ -100,46 +100,25 @@ namespace MpegCompressor {
             byte[] DCT_testData = doDCT(testData, quantizationY);
             byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
             */
-
             
-            byte[] testData =
-                {
-                128, 128, 128, 128, 128, 128, 128, 128,
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0, 
-                0, 0, 0, 0, 0, 0, 0, 0
-                };
-            byte[] DCT_testData = doDCT(testData, quantizationC);
-            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationC);
-            byte[] DCT_testData2 = doDCT(testData, quantizationC);
-            for(int i = 8; i < 64; i++) { DCT_testData2[i] = 0; }
-            byte[] IDCT_testData2 = doIDCT(DCT_testData2, quantizationC);
 
-
-
-
-
-            Chunker c = new Chunker(chunkSize, width, height, width, 1);
+            Chunker c = new Chunker(chunkSize, state.width, state.height, state.width, 1);
             byte[] data = new byte[chunkSize * chunkSize];
             for (int i = 0; i < c.getNumChunks(); i++) {
-                c.getBlock(channels[0], data, i);
+                c.getBlock(state.channels[0], data, i);
                 data = isInverse ? doIDCT(data, quantizationY) : doDCT(data, quantizationY);
-                c.setBlock(channels[0], data, i);
+                c.setBlock(state.channels[0], data, i);
             }
 
             //with 4:2:0 the width of the Cr/b channel is half that of the Y channel, rounded up
-            c = new Chunker(chunkSize, (width+1) / 2, (height+1) / 2, (width+1) / 2, 1);
+            c = new Chunker(chunkSize, (state.width +1) / 2, (state.height +1) / 2, (state.width +1) / 2, 1);
             for (int i = 0; i < c.getNumChunks(); i++) {
-                c.getBlock(channels[1], data, i);
+                c.getBlock(state.channels[1], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
-                c.setBlock(channels[1], data, i);
-                c.getBlock(channels[2], data, i);
+                c.setBlock(state.channels[1], data, i);
+                c.getBlock(state.channels[2], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
-                c.setBlock(channels[2], data, i);
+                c.setBlock(state.channels[2], data, i);
             }
         }
 

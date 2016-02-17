@@ -90,7 +90,7 @@ namespace MpegCompressor {
                     state.imageHeight = reader.ReadUInt16();
                     state.channelWidth = reader.ReadUInt16();
                     state.channelHeight = reader.ReadUInt16();
-                    reader.ReadByte(); //quality doesn't matter yet.
+                    state.quantizeQuality = reader.ReadByte();
                     state.samplingMode = (Subsample.Samples)reader.ReadByte();
                     
                     state.channels[0] = new byte[state.channelWidth * state.channelHeight];

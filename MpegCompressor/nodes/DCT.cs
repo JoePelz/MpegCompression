@@ -47,6 +47,7 @@ namespace MpegCompressor {
             rename("DCT");
             quantizationC = new byte[8, 8];
             quantizationY = new byte[8, 8];
+            generateQTables(50);
         }
 
         private void generateQTables(int qf) {
@@ -64,8 +65,8 @@ namespace MpegCompressor {
             if (scaling_factor != 0) { // if qf is not 100
                 for (int y = 0; y < 8; y++) {
                     for (int x = 0; x < 8; x++) {
-                        quantizationC[x, y] = (byte)Math.Max(Math.Round(quantizationC_orig[x, y] * scaling_factor), 255);
-                        quantizationY[x, y] = (byte)Math.Max(Math.Round(quantizationY_orig[x, y] * scaling_factor), 255);
+                        quantizationC[x, y] = (byte)Math.Min(Math.Round(quantizationC_orig[x, y] * scaling_factor), 255);
+                        quantizationY[x, y] = (byte)Math.Min(Math.Round(quantizationY_orig[x, y] * scaling_factor), 255);
                     }
                 }
             } else {
@@ -87,7 +88,7 @@ namespace MpegCompressor {
 
             p = new Property();
             p.createInt(50, 10, 100, "Quantization quality (%)");
-            p.eValueChanged += (prop, b) => { generateQTables((prop as Property).getInt()); };
+            p.eValueChanged += (prop, b) => { soil(); };
             properties["quality"] = p;
         }
 
@@ -112,6 +113,11 @@ namespace MpegCompressor {
                 return;
             }
 
+            if (!isInverse) {
+                state.quantizeQuality = properties["quality"].getInt();
+            }
+            generateQTables(state.quantizeQuality);
+
             /*
             byte[] test = {
                 128, 0, 0, 0, 0, 0, 0, 0,
@@ -127,10 +133,7 @@ namespace MpegCompressor {
             byte[] test_dct = doDCT(test, quantizationC);
             byte[] test_idct = doIDCT(test_dct, quantizationC);
             */
-
-
-
-
+            
             padChannels();
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             

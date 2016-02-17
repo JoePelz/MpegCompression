@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,11 @@ namespace MpegCompressor {
             p.createButton("open", "load channels from file");
             p.eValueChanged += open;
             properties.Add("open", p);
+
+            p = new Property();
+            p.createButton("info", "stats on the file read");
+            p.eValueChanged += (a, b) => { check();  };
+            properties.Add("info", p);
         }
 
         protected override void clean() {
@@ -58,18 +64,36 @@ namespace MpegCompressor {
             */
         }
 
+        private void check() {
+            if (state == null) {
+                System.Windows.Forms.MessageBox.Show("No state");
+                return;
+            }
+
+            System.Windows.Forms.MessageBox.Show(
+                "image width: " + state.imageWidth +
+                "\nimage height: " + state.imageHeight + 
+                "\nchannel width: " + state.channelWidth + 
+                "\nchannel height: " + state.channelHeight +
+                "\nsamples: " + state.samplingMode + " = "
+                , "File Information");
+        }
+
+
         private void open(object sender, EventArgs e) {
             state = new DataBlob();
             state.type = DataBlob.Type.Channels;
             state.channels = new byte[3][];
             using (Stream stream = new FileStream(inPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                 using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
-                    state.width = reader.ReadUInt16();
-                    state.height = reader.ReadUInt16();
+                    state.imageWidth = reader.ReadUInt16();
+                    state.imageHeight = reader.ReadUInt16();
+                    state.channelWidth = reader.ReadUInt16();
+                    state.channelHeight = reader.ReadUInt16();
                     reader.ReadByte(); //quality doesn't matter yet.
                     state.samplingMode = (Subsample.Samples)reader.ReadByte();
                     
-                    state.channels[0] = new byte[state.width * state.height];
+                    state.channels[0] = new byte[state.channelWidth * state.channelHeight];
 
                     byte[] data = new byte[64];
                     byte count, val;
@@ -77,7 +101,7 @@ namespace MpegCompressor {
                     //======================
                     //===== Y Channel ======
                     //======================
-                    Chunker c = new Chunker(8, state.width, state.height, state.width, 1);
+                    Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
                     var indexer = Chunker.zigZag8Index();
                     for (int iChunk = 0; iChunk < c.getNumChunks(); iChunk++) {
                         for (int iPixel = 0; iPixel < 64;) {
@@ -99,25 +123,10 @@ namespace MpegCompressor {
                     //===========================
                     //===== Cr, Cb Channels =====
                     //===========================
-                    switch (state.samplingMode) {
-                        case Subsample.Samples.s411:
-                            state.channels[1] = new byte[(state.width + 3) / 4 * state.height];
-                            c = new Chunker(8, (state.width + 3) / 4, state.height, (state.width + 3) / 4, 1);
-                            break;
-                        case Subsample.Samples.s420:
-                            state.channels[1] = new byte[(state.width + 1) / 2 * (state.height + 1) / 2];
-                            c = new Chunker(8, (state.width + 1) / 2, (state.height + 1) / 2, (state.width + 1) / 2, 1);
-                            break;
-                        case Subsample.Samples.s422:
-                            state.channels[1] = new byte[(state.width + 1) / 2 * state.height];
-                            c = new Chunker(8, (state.width + 1) / 2, state.height, (state.width + 1) / 2, 1);
-                            break;
-                        case Subsample.Samples.s444:
-                            state.channels[1] = new byte[state.channels[0].Length];
-                            break;
-                    }
+                    Size len = Subsample.getPaddedCbCrSize(new Size(state.channelWidth, state.channelHeight), state.samplingMode);
+                    state.channels[1] = new byte[len.Width * len.Height];
                     state.channels[2] = new byte[state.channels[1].Length];
-
+                    c = new Chunker(8, len.Width, len.Height, len.Width, 1);
                     
                     indexer = Chunker.zigZag8Index();
                     for (int channel = 1; channel < state.channels.Length; channel++) {

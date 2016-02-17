@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor {
     public class Chunker {
-        private int size;
+        private int chunkSize;
         private int width, height;
         private int stride;
         private int Bpp;
@@ -15,14 +15,14 @@ namespace MpegCompressor {
         private int chunksHigh;
         private byte[] buffer = new byte[64];
 
-        public Chunker(int size, int width, int height, int stride, int Bpp) {
-            this.size = size;
+        public Chunker(int chunkSize, int width, int height, int stride, int Bpp) {
+            this.chunkSize = chunkSize;
             this.width = width;
             this.height = height;
             this.stride = stride;
             this.Bpp = Bpp;
-            chunksWide = (width + size - 1) / size;
-            chunksHigh = (height + size - 1) / size;
+            chunksWide = (width + chunkSize - 1) / chunkSize;
+            chunksHigh = (height + chunkSize - 1) / chunkSize;
         }
 
         public int getNumChunks() {
@@ -35,18 +35,18 @@ namespace MpegCompressor {
             }
         }
 
-        private System.Collections.IEnumerable getChunk(int index) {
+        private System.Collections.IEnumerable getChunk(int chunkIndex) {
             //assert index = [0..getNumChunks)
-            if (index >= getNumChunks()) {
+            if (chunkIndex >= getNumChunks()) {
                 yield break;
             }
 
-            int px = (index % chunksWide) * size;
-            int py = (index / chunksWide) * size;
+            int px = (chunkIndex % chunksWide) * chunkSize;
+            int py = (chunkIndex / chunksWide) * chunkSize;
             int output = px * Bpp + py * stride;
             //output is index of the pixel at the top left of the desired chunk.
-            for (int y = 0; y < size; y++) {
-                for (int x = 0; x < size; x++) {
+            for (int y = 0; y < chunkSize; y++) {
+                for (int x = 0; x < chunkSize; x++) {
                     if (px + x >= width || py + y >= height) {
                         //out of bounds. What do we do?
                         yield return -1;
@@ -55,7 +55,7 @@ namespace MpegCompressor {
                     }
                     output += Bpp; //iterate one pixel to the right
                 }
-                output -= size * Bpp; //carriage return
+                output -= chunkSize * Bpp; //carriage return
                 output += stride; //line feed
             }
         }

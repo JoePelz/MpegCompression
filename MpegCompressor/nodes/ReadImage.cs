@@ -56,10 +56,10 @@ namespace MpegCompressor {
             try {
                 state.bmp = new Bitmap(filepath);
                 state.bmp = state.bmp.Clone(new Rectangle(0, 0, state.bmp.Width, state.bmp.Height), System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                state.width = state.bmp.Width;
-                state.height = state.bmp.Height;
+                state.imageWidth = state.bmp.Width;
+                state.imageHeight = state.bmp.Height;
             } catch (Exception) {
-                //silently fail. 
+                state = null;
             }
         }
     }

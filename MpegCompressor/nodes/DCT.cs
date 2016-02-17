@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,48 +71,38 @@ namespace MpegCompressor {
             if (state == null || state.channels == null) {
                 return;
             }
-            /*
-            byte[] testData =
-                {
-                200, 202, 189, 188, 189, 175, 175, 175,
-                200, 203, 198, 188, 189, 182, 178, 175,
-                203, 200, 200, 195, 200, 187, 185, 175,
-                200, 200, 200, 200, 197, 187, 187, 187,
-                200, 205, 200, 200, 195, 188, 187, 175,
-                200, 200, 200, 200, 200, 190, 187, 175,
-                205, 200, 199, 200, 191, 187, 187, 175,
-                210, 200, 200, 200, 188, 185, 187, 186
-                };
-            byte[] DCT_testData = doDCT(testData, quantizationY);
-            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
-            */
-            /*
-            byte[] testData =
-                {
-                70, 70, 100, 70, 87, 87, 150, 187,
-                85, 100, 96, 79, 87, 154, 87, 113,
-                100, 85, 116, 79, 70, 87, 86, 196,
-                136, 69, 87, 200, 79, 71, 117, 96,
-                161, 70, 87, 200, 103, 71, 96, 113,
-                161, 123, 147, 133, 113, 113, 85, 161,
-                146, 147, 175, 100, 103, 103, 163, 187,
-                156, 146, 189, 70, 113, 161, 163, 197
-                };
-            byte[] DCT_testData = doDCT(testData, quantizationY);
-            byte[] IDCT_testData = doIDCT(DCT_testData, quantizationY);
-            */
-            
 
-            Chunker c = new Chunker(chunkSize, state.width, state.height, state.width, 1);
+            /*
+            byte[] test = {
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                128, 0, 0, 0, 0, 0, 0, 0
+            };
+            //sbyte[] test_dct = (sbyte[])(Array)doDCT(test, quantizationC);
+            byte[] test_dct = doDCT(test, quantizationC);
+            byte[] test_idct = doIDCT(test_dct, quantizationC);
+            */
+
+
+
+
+            padChannels();
+            Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
+            
             byte[] data = new byte[chunkSize * chunkSize];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(state.channels[0], data, i);
                 data = isInverse ? doIDCT(data, quantizationY) : doDCT(data, quantizationY);
                 c.setBlock(state.channels[0], data, i);
             }
-
-            //with 4:2:0 the width of the Cr/b channel is half that of the Y channel, rounded up
-            c = new Chunker(chunkSize, (state.width +1) / 2, (state.height +1) / 2, (state.width +1) / 2, 1);
+            
+            Size tempS = Subsample.getPaddedCbCrSize(new Size(state.channelWidth, state.channelHeight), state.samplingMode);
+            c = new Chunker(chunkSize, tempS.Width, tempS.Height, tempS.Width, 1);
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(state.channels[1], data, i);
                 data = isInverse ? doIDCT(data, quantizationC) : doDCT(data, quantizationC);
@@ -135,13 +126,15 @@ namespace MpegCompressor {
                                 (u == 0 ? 1.0 / Math.Sqrt(2) : 1.0) * (v == 0 ? 1 / Math.Sqrt(2) : 1) / (chunkSize / 2)
                                 * Math.Cos(((2 * i + 1) * u * Math.PI) / (2 * chunkSize))
                                 * Math.Cos(((2 * j + 1) * v * Math.PI) / (2 * chunkSize))
-                                * (data[v * chunkSize + u] > 127 ? data[v * chunkSize + u] - 256 : data[v * chunkSize + u]) * qTable[v, u]
+                                * (sbyte)data[v * chunkSize + u] * qTable[v, u]
                                 );
                         }
                     }
                     bin += 128;
-                    if (bin > 255) bin = 255;
-                    if (bin < 0) bin = 0;
+                    if (bin > 255)
+                        bin = 255;
+                    if (bin < 0)
+                        bin = 0;
                     result[j * chunkSize + i] = (byte)bin;
                 }
             }
@@ -168,6 +161,43 @@ namespace MpegCompressor {
                 }
             }
             return result;
+        }
+
+        private void padChannels() {
+            //padd the size
+            Size ySize = new Size(state.channelWidth, state.channelHeight);
+            Size brOldSize = Subsample.deduceCbCrSize(state);
+            Size brNewSize = Subsample.getPaddedCbCrSize(ySize, state.samplingMode);
+            if (ySize.Width % 8 != 0) {
+                ySize.Width += 8 - (ySize.Width % 8);
+            }
+            if (ySize.Height % 8 != 0) {
+                ySize.Height += 8 - (ySize.Height % 8);
+            }
+
+            //create padded container
+            byte[][] newChannels = new byte[3][];
+            newChannels[0] = new byte[ySize.Width * ySize.Height];
+            newChannels[1] = new byte[brNewSize.Width * brNewSize.Height];
+            newChannels[2] = new byte[newChannels[1].Length];
+
+            //copy array into larger container
+            for (int y = 0; y < state.channelHeight; y++) {
+                Array.Copy(state.channels[0], y * state.channelWidth, newChannels[0], y * ySize.Width, state.channelWidth);
+            }
+            for (int y = 0; y < brOldSize.Height; y++) {
+                Array.Copy(state.channels[1], y * brOldSize.Width, newChannels[1], y * brNewSize.Width, brOldSize.Width);
+                Array.Copy(state.channels[2], y * brOldSize.Width, newChannels[2], y * brNewSize.Width, brOldSize.Width);
+                for (int x = brOldSize.Width; x < brNewSize.Width; x++) {
+                    newChannels[1][y * brNewSize.Width + x] = 127;
+                    newChannels[2][y * brNewSize.Width + x] = 127;
+                }
+            }
+
+            //update state
+            state.channelWidth = ySize.Width;
+            state.channelHeight = ySize.Height;
+            state.channels = newChannels;
         }
     }
 }

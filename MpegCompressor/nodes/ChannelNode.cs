@@ -40,6 +40,7 @@ namespace MpegCompressor {
             for (int channel = 0; channel < newChannels.Length; channel++) {
                 newChannels[channel] = (byte[])state.channels[channel].Clone();
             }
+            state.channels = newChannels;
         }
     }
 }

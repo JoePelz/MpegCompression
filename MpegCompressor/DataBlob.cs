@@ -17,10 +17,10 @@ namespace MpegCompressor {
         public Bitmap bmp;
 
         public byte[][] channels;
-        public int width;
-        public int height;
-        //public int realWidth;
-        //public int realHeight;
+        public int imageWidth;
+        public int imageHeight;
+        public int channelWidth;
+        public int channelHeight;
         public Subsample.Samples samplingMode;
 
         public DataBlob clone() {
@@ -28,10 +28,10 @@ namespace MpegCompressor {
             d.type = type;
             d.bmp = bmp;
             d.channels = channels;
-            d.width = width;
-            d.height = height;
-            //d.realHeight = realHeight;
-            //d.realWidth = realWidth;
+            d.imageWidth = imageWidth;
+            d.imageHeight = imageHeight;
+            d.channelHeight = channelHeight;
+            d.channelWidth = channelWidth;
             d.samplingMode = samplingMode;
             return d;
         }

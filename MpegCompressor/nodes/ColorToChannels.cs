@@ -42,11 +42,18 @@ namespace MpegCompressor {
                 return;
             }
 
-            bmpToChannels(state.bmp);
+            state.channelWidth = state.imageWidth;
+            state.channelHeight = state.imageHeight;
+            //Bitmap temp = new Bitmap(state.channelWidth, state.channelHeight, PixelFormat.Format24bppRgb);
+            //Graphics g = Graphics.FromImage(temp);
+            //g.DrawImage(state.bmp, 0, 0, state.imageWidth, state.imageHeight);
+            //g.Dispose();
+            bmpToChannels(ref state.channels, state.bmp);
             state.type = DataBlob.Type.Channels;
+            state.bmp = null;
         }
         
-        private void bmpToChannels(Bitmap bmp) {
+        private void bmpToChannels(ref byte[][] channels, Bitmap bmp) {
 
             BitmapData bmpData = bmp.LockBits(
                                new Rectangle(0, 0, bmp.Width, bmp.Height),
@@ -60,21 +67,21 @@ namespace MpegCompressor {
 
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
 
-            state.channels = new byte[3][];
-            state.channels[0] = new byte[bmp.Width * bmp.Height];
-            state.channels[1] = new byte[bmp.Width * bmp.Height];
-            state.channels[2] = new byte[bmp.Width * bmp.Height];
+            channels = new byte[3][];
+            channels[0] = new byte[bmp.Width * bmp.Height];
+            channels[1] = new byte[bmp.Width * bmp.Height];
+            channels[2] = new byte[bmp.Width * bmp.Height];
 
             int pixel;
             int iY = 0;
 
             for (int y = 0; y < bmpData.Height; y++) {
+                pixel = y * bmpData.Stride;
                 for (int x = 0; x < bmpData.Width; x++) {
-                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
-
-                    state.channels[0][iY] = rgbValues[pixel + 2];
-                    state.channels[1][iY] = rgbValues[pixel + 1];
-                    state.channels[2][iY++] = rgbValues[pixel];
+                    channels[0][iY] = rgbValues[pixel + 2];
+                    channels[1][iY] = rgbValues[pixel + 1];
+                    channels[2][iY++] = rgbValues[pixel];
+                    pixel += 3;
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -169,7 +170,11 @@ namespace MpegCompressor {
             if (isDirty) {
                 clean();
             }
-            return state.bmp;
+            if (state != null) {
+                return state.bmp;
+            }
+            //Debug.Write("View missing in " + properties["name"].getString() + "\n");
+            return null;
         }
     }
 }

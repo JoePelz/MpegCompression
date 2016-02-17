@@ -45,7 +45,7 @@ namespace MpegCompressor {
 
         private void drawChunks() {
             BitmapData bmpData = state.bmp.LockBits(
-                                new Rectangle(0, 0, state.width, state.height),
+                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
                                 ImageLockMode.ReadWrite,
                                 state.bmp.PixelFormat);
 

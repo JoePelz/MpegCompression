@@ -16,7 +16,75 @@ namespace MpegCompressor {
                 "4:1:1",
                 "4:2:0" };
         private Samples outSamples;
-        
+
+        public static Size getCbCrSize(Size ySize, Samples mode) {
+            switch (mode) {
+                case Samples.s444:
+                    break;
+                case Samples.s422:
+                    ySize.Width = (ySize.Width + 1) / 2;
+                    break;
+                case Samples.s420:
+                    ySize.Width = (ySize.Width + 1) / 2;
+                    ySize.Height = (ySize.Height + 1) / 2;
+                    break;
+                case Samples.s411:
+                    ySize.Width = (ySize.Width + 3) / 4;
+                    break;
+            }
+            return ySize;
+        }
+
+        public static Size getPaddedCbCrSize(Size ySize, Samples mode) {
+            switch (mode) {
+                case Samples.s444:
+                    break;
+                case Samples.s422:
+                    ySize.Width = (ySize.Width + 1) / 2;
+                    break;
+                case Samples.s420:
+                    ySize.Width = (ySize.Width + 1) / 2;
+                    ySize.Height = (ySize.Height + 1) / 2;
+                    break;
+                case Samples.s411:
+                    ySize.Width = (ySize.Width + 3) / 4;
+                    break;
+            }
+            if (ySize.Width % 8 != 0) {
+                ySize.Width += 8 - (ySize.Width % 8);
+            }
+            if (ySize.Height % 8 != 0) {
+                ySize.Height += 8 - (ySize.Height % 8);
+            }
+            return ySize;
+        }
+
+        public static Size deduceCbCrSize(DataBlob data) {
+            Size size = getCbCrSize(new Size(data.channelWidth, data.channelHeight), data.samplingMode);
+            if (data.channels[1].Length == size.Width * size.Height) {
+                return size;
+            }
+            size = getPaddedCbCrSize(new Size(data.channelWidth, data.channelHeight), data.samplingMode);
+            if (data.channels[1].Length == size.Width * size.Height) {
+                return size;
+            }
+            size.Width = 0;
+            size.Height = 0;
+            return size;
+        }
+
+        public static int getCbCrStride(DataBlob data) {
+            Size unpadded = getCbCrSize(new Size(data.channelWidth, data.channelHeight), data.samplingMode);
+            if (data.channels[1].Length == unpadded.Width * unpadded.Height) {
+                return unpadded.Width;
+            }
+            Size padded = getPaddedCbCrSize(new Size(data.channelWidth, data.channelHeight), data.samplingMode);
+            if (data.channels[1].Length == padded.Width * padded.Height) {
+                return padded.Width;
+            }
+            return -1;
+        }
+
         protected override void createProperties() {
             Property p = properties["name"];
             p.setString("SubSample");
@@ -55,10 +123,10 @@ namespace MpegCompressor {
         }
         
         private void upsample() {
-            int size4 = state.channels[0].Length; //Y channel. Should be full length.
-            int size422 = (state.width + 1) / 2 * state.height;
-            int size420 = (state.width + 1) / 2 * (state.height + 1) / 2;
-            int size411 = (state.width + 3) / 4 * state.height;
+            int size444 = state.channels[0].Length; //Y channel. Should be full length.
+            int size422 = (state.channelWidth + 1) / 2 * state.channelHeight;
+            int size420 = (state.channelWidth + 1) / 2 * (state.channelHeight + 1) / 2;
+            int size411 = (state.channelWidth + 3) / 4 * state.channelHeight;
 
             byte[] newG;
             byte[] newB;
@@ -68,7 +136,7 @@ namespace MpegCompressor {
             switch (state.samplingMode) {
                 case Samples.s444:
                     //4:4:4 should have channels 1 and 2 be size4
-                    if (state.channels[1].Length != size4 || state.channels[2].Length != size4) {
+                    if (state.channels[1].Length != size444 || state.channels[2].Length != size444) {
                         state.channels = null;
                         return;
                     }
@@ -79,17 +147,17 @@ namespace MpegCompressor {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size4];
-                    newB = new byte[size4];
+                    newG = new byte[size444];
+                    newB = new byte[size444];
                     iOld = 0;
-                    for (int y = 0; y < state.height; y++) {
-                        for (int x = 0; x < state.width; x++) {
-                            iNew = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y++) {
+                        for (int x = 0; x < state.channelWidth; x++) {
+                            iNew = y * state.channelWidth + x;
                             //pixel iterates over every pixel in the full size image.
                             if (x % 2 == 0) {
                                 newG[iNew] = state.channels[1][iOld];
                                 newB[iNew] = state.channels[2][iOld];
-                                if (x == state.width - 1)
+                                if (x == state.channelWidth - 1)
                                     iOld++;
                             } else if (x % 2 == 1) {
                                 newG[iNew] = state.channels[1][iOld];
@@ -107,18 +175,18 @@ namespace MpegCompressor {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size4];
-                    newB = new byte[size4];
+                    newG = new byte[size444];
+                    newB = new byte[size444];
                     iOld = -1;
-                    for (int y = 0; y < state.height; y++) {
-                        for (int x = 0; x < state.width; x++) {
-                            iNew = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y++) {
+                        for (int x = 0; x < state.channelWidth; x++) {
+                            iNew = y * state.channelWidth + x;
 
                             if (x % 2 == 0) {
                                 iOld++;
                             }
                             if (y % 2 == 1 && x == 0) {
-                                iOld -= (state.width + 1) / 2;
+                                iOld -= (state.channelWidth + 1) / 2;
                             }
 
                             newG[iNew] = state.channels[1][iOld];
@@ -134,17 +202,17 @@ namespace MpegCompressor {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size4];
-                    newB = new byte[size4];
+                    newG = new byte[size444];
+                    newB = new byte[size444];
                     iOld = 0;
-                    for (int y = 0; y < state.height; y++) {
-                        for (int x = 0; x < state.width; x++) {
-                            iNew = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y++) {
+                        for (int x = 0; x < state.channelWidth; x++) {
+                            iNew = y * state.channelWidth + x;
                             //pixel iterates over every pixel in the full size image.
                             if (x % 4 < 3) {
                                 newG[iNew] = state.channels[1][iOld];
                                 newB[iNew] = state.channels[2][iOld];
-                                if (x == state.width - 1)
+                                if (x == state.channelWidth - 1)
                                     iOld++;
                             } else if (x % 4 == 3) {
                                 newG[iNew] = state.channels[1][iOld];
@@ -170,10 +238,10 @@ namespace MpegCompressor {
             //drop elements as needed
             //create BMP of r dimensions.
             //write channels into bmp, duplicating as needed.
-            int size4 = state.channels[0].Length; //Y channel. Should be full length.
-            int size422 = (state.width + 1) / 2 * state.height;
-            int size420 = (state.width + 1) / 2 * (state.height + 1) / 2;
-            int size411 = (state.width + 3) / 4 * state.height;
+            int size444 = state.channels[0].Length; //Y channel. Should be full length.
+            int size422 = ((state.channelWidth + 1) / 2) * state.channelHeight;
+            int size420 = ((state.channelWidth + 1) / 2) * ((state.channelHeight + 1) / 2);
+            int size411 = ((state.channelWidth + 3) / 4) * state.channelHeight;
             int iNew, iOld;
             byte[] newG;
             byte[] newB;
@@ -185,9 +253,9 @@ namespace MpegCompressor {
                     newG = new byte[size422];
                     newB = new byte[size422];
                     iNew = 0;
-                    for (int y = 0; y < state.height; y++) {
-                        for (int x = 0; x < state.width; x+= 2) {
-                            iOld = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y++) {
+                        for (int x = 0; x < state.channelWidth; x+= 2) {
+                            iOld = y * state.channelWidth + x;
                             if (x % 2 == 0) {
                                 newG[iNew] = state.channels[1][iOld];
                                 newB[iNew] = state.channels[2][iOld];
@@ -202,9 +270,9 @@ namespace MpegCompressor {
                     newG = new byte[size420];
                     newB = new byte[size420];
                     iNew = 0;
-                    for (int y = 0; y < state.height; y += 2) {
-                        for (int x = 0; x < state.width; x += 2) {
-                            iOld = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y += 2) {
+                        for (int x = 0; x < state.channelWidth; x += 2) {
+                            iOld = y * state.channelWidth + x;
                             if (x % 2 == 0 && y % 2 == 0) {
                                 newG[iNew] = state.channels[1][iOld];
                                 newB[iNew] = state.channels[2][iOld];
@@ -219,9 +287,9 @@ namespace MpegCompressor {
                     newG = new byte[size411];
                     newB = new byte[size411];
                     iNew = 0;
-                    for (int y = 0; y < state.height; y++) {
-                        for (int x = 0; x < state.width; x += 4) {
-                            iOld = y * state.width + x;
+                    for (int y = 0; y < state.channelHeight; y++) {
+                        for (int x = 0; x < state.channelWidth; x += 4) {
+                            iOld = y * state.channelWidth + x;
                             if (x % 4 == 0) {
                                 newG[iNew] = state.channels[1][iOld];
                                 newB[iNew] = state.channels[2][iOld];
@@ -233,106 +301,7 @@ namespace MpegCompressor {
                     state.channels[2] = newB;
                     break;
             }
-
-            state.bmp = channelsToBitmap(state.channels, outSamples, state.width, state.height);
         }
-
-        public static Bitmap channelsToBitmap(byte[][] channels, Samples mode, int width, int height) {
-            if (channels == null) {
-                return null;
-            }
-
-            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-            int pixel;
-            int iY = 0, iCrb = 0;
-            switch (mode) {
-                case Samples.s444:
-                    for (int y = 0; y < bmpData.Height; y++) {
-                        for (int x = 0; x < bmpData.Width; x++) {
-                            pixel = y * bmpData.Stride + x * 3;
-                            rgbValues[pixel + 2] = channels[0][iY];
-                            rgbValues[pixel + 1] = channels[1][iCrb];
-                            rgbValues[pixel] = channels[2][iCrb];
-                            iY++;
-                            iCrb++;
-                        }
-                    }
-                    break;
-                case Samples.s422:
-                    iY = -1;
-                    iCrb = -1;
-                    for (int y = 0; y < bmpData.Height; y++) {
-                        for (int x = 0; x < bmpData.Width; x++) {
-                            pixel = y * bmpData.Stride + x * 3;
-
-                            iY++;
-                            if (x % 2 == 0) {
-                                iCrb++;
-                            }
-                            rgbValues[pixel + 2] = channels[0][iY];
-                            rgbValues[pixel + 1] = channels[1][iCrb];
-                            rgbValues[pixel] = channels[2][iCrb];
-                        }
-                    }
-                    break;
-                case Samples.s420:
-                    iY = -1;
-                    iCrb = -1;
-                    for (int y = 0; y < bmpData.Height; y++) {
-                        for (int x = 0; x < bmpData.Width; x++) {
-                            pixel = y * bmpData.Stride + x * 3;
-
-                            iY++;
-                            if (x % 2 == 0) {
-                                iCrb++;
-                            }
-                            if (y % 2 == 1 && x == 0) {
-                                iCrb -= (width + 1) / 2;
-                            }
-                            rgbValues[pixel + 2] = channels[0][iY];
-                            rgbValues[pixel + 1] = channels[1][iCrb];
-                            rgbValues[pixel] = channels[2][iCrb];
-                        }
-                    }
-                    break;
-                case Samples.s411:
-                    iY = -1;
-                    iCrb = -1;
-                    for (int y = 0; y < bmpData.Height; y++) {
-                        for (int x = 0; x < bmpData.Width; x++) {
-                            pixel = y * bmpData.Stride + x * 3;
-
-                            iY++;
-                            if (x % 4 == 0) {
-                                iCrb++;
-                            }
-                            rgbValues[pixel + 2] = channels[0][iY];
-                            rgbValues[pixel + 1] = channels[1][iCrb];
-                            rgbValues[pixel] = channels[2][iCrb];
-                        }
-                    }
-                    break;
-            }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
-
-            return bmp;
-        }
-
+        
     }
 }

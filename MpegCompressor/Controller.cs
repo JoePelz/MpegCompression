@@ -13,7 +13,7 @@ namespace MpegCompressor {
         private NodeView viewNodes;
 
         public Controller(PropertyPage props, NodeView nodes, Viewport left, Viewport right) {
-
+            
             viewProps = props;
             viewLeft  = left;
             viewRight = right;
@@ -64,9 +64,8 @@ namespace MpegCompressor {
             nIDCT2.pos = new System.Drawing.Point(10, 290);
             nCHtC4.pos = new System.Drawing.Point(130, 290);
             nCS4.pos = new System.Drawing.Point(250, 290);
-
-            //(nRead as ReadImage).setPath("C:\\temp\\sunrise.bmp");
-            (nRead as ReadImage).setPath("C:\\temp\\black.bmp");
+            
+            (nRead as ReadImage).setPath("C:\\temp\\strip.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);

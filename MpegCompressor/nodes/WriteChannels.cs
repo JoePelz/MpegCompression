@@ -43,6 +43,8 @@ namespace MpegCompressor {
         private void check(object sender, EventArgs e) {
             int read_width = 0;
             int read_height = 0;
+            int read_cwidth = 0;
+            int read_cheight = 0;
             int read_quality = 0;
             int read_samples = 0;
 
@@ -50,14 +52,18 @@ namespace MpegCompressor {
                 using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
                     read_width = reader.ReadUInt16();
                     read_height = reader.ReadUInt16();
+                    read_cwidth = reader.ReadUInt16();
+                    read_cheight = reader.ReadUInt16();
                     read_quality = reader.ReadByte();
                     read_samples = reader.ReadByte();
                 }
             }
 
             System.Windows.Forms.MessageBox.Show(
-                "width: " + state.width + " = " + read_width + 
-                "\nheight: " + state.height + " = " + read_height +
+                "image width: " + state.imageWidth + " = " + read_width +
+                "\nimage height: " + state.imageHeight + " = " + read_height +
+                "\nchannel width: " + state.channelWidth + " = " + read_cwidth +
+                "\nchannel height: " + state.channelHeight + " = " + read_cheight +
                 "\nquality: " + 130 + " = " + read_quality +
                 "\nsamples: " + state.samplingMode + " = " + (Subsample.Samples)read_samples
                 , "File Information");
@@ -97,12 +103,14 @@ namespace MpegCompressor {
             byte prev, count, val;
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
-                    writer.Write((short)state.width);
-                    writer.Write((short)state.height);
+                    writer.Write((short)state.imageWidth);
+                    writer.Write((short)state.imageHeight);
+                    writer.Write((short)state.channelWidth);
+                    writer.Write((short)state.channelHeight);
                     writer.Write((byte)130);
                     writer.Write((byte)state.samplingMode);
                     byte[] data = new byte[64];
-                    Chunker c = new Chunker(8, state.width, state.height, state.width, 1);
+                    Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
                     var indexer = Chunker.zigZag8Index();
                     for (int i = 0; i < c.getNumChunks(); i++) {
                         c.getBlock(state.channels[0], data, i);
@@ -144,13 +152,13 @@ namespace MpegCompressor {
 
                     switch (state.samplingMode) {
                         case Subsample.Samples.s411:
-                            c = new Chunker(8, (state.width + 3) / 4, state.height, (state.width + 3) / 4, 1);
+                            c = new Chunker(8, (state.channelWidth + 3) / 4, state.channelHeight, (state.channelWidth + 3) / 4, 1);
                             break;
                         case Subsample.Samples.s420:
-                            c = new Chunker(8, (state.width + 1) / 2, (state.height + 1) / 2, (state.width + 1) / 2, 1);
+                            c = new Chunker(8, (state.channelWidth + 1) / 2, (state.channelHeight + 1) / 2, (state.channelWidth + 1) / 2, 1);
                             break;
                         case Subsample.Samples.s422:
-                            c = new Chunker(8, (state.width + 1) / 2, state.height, (state.width + 1) / 2, 1);
+                            c = new Chunker(8, (state.channelWidth + 1) / 2, state.channelHeight, (state.channelWidth + 1) / 2, 1);
                             break;
                     }
                     indexer = Chunker.zigZag8Index();

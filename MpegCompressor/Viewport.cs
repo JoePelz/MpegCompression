@@ -64,7 +64,6 @@ namespace MpegCompressor {
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-
         private void channelFilter(Bitmap bmp) {
             if (viewChannel != 'r' && viewChannel != 'g' && viewChannel != 'b') {
                 return;
@@ -117,12 +116,12 @@ namespace MpegCompressor {
 
         protected override void OnPaint(PaintEventArgs pe) {
             base.OnPaint(pe);
-
+            Bitmap img = null;
             Graphics g = pe.Graphics;
             g.InterpolationMode = InterpolationMode.NearestNeighbor; //I wanna see the PIXELS, dammit!
 
             if (content != null) {
-                Bitmap img = content.view();
+                img = content.view();
                 if (img != null) {
                     img = img.Clone(new Rectangle(0, 0, img.Width, img.Height), img.PixelFormat);
                     channelFilter(img);
@@ -142,6 +141,10 @@ namespace MpegCompressor {
             g.DrawLine(Pens.Black, -50, 0, 50, 0);
             g.DrawString("(0, 0)", new Font("arial", 10.0f), Brushes.Black, 0, -20);
             */
+            if (img != null) {
+                g.ResetTransform();
+                g.DrawString("Size: " + img.Width + "x" + img.Height, new Font("arial", 10.0f), Brushes.Black, 0, 0);
+            }
         }
 
         private Bitmap generateImage() {

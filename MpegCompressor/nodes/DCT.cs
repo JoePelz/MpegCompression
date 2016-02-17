@@ -13,7 +13,7 @@ namespace MpegCompressor {
         /// Luminance quantization table. 
         /// Table 9.2, pg 284, Fundamentals of Multimedia textbook.
         /// </summary>
-        private static byte[,] quantizationY = 
+        private static byte[,] quantizationY_orig = 
             {
             {16, 11, 10, 16, 24, 40, 51, 61},
             {12, 12, 14, 19, 26, 58, 60, 55},
@@ -28,7 +28,7 @@ namespace MpegCompressor {
         /// Chrominance quantization table. 
         /// Table 9.2, pg 284, Fundamentals of Multimedia textbook.
         /// </summary>
-        private static byte[,] quantizationC =
+        private static byte[,] quantizationC_orig =
             {
             {17, 18, 24, 47, 99, 99, 99, 99},
             {18, 21, 26, 66, 99, 99, 99, 99},
@@ -40,8 +40,43 @@ namespace MpegCompressor {
             {99, 99, 99, 99, 99, 99, 99, 99}
             };
 
+        private byte[,] quantizationY;
+        private byte[,] quantizationC;
+
         public DCT() {
             rename("DCT");
+            quantizationC = new byte[8, 8];
+            quantizationY = new byte[8, 8];
+        }
+
+        private void generateQTables(int qf) {
+            double scaling_factor;
+            // qf is the user-selected compression quality
+            // qf == [1..100] (but should not be less than 10)
+            // Q is the default Quantization Matrix
+            // Qx is the scaled Quantization Matrix
+            // Q1 is a Quantization Matrix which is all 1’s
+            if (qf >= 50) {
+                scaling_factor = (100.0 - qf) / 50.0;
+            }else {
+                scaling_factor = (50.0 / qf);
+            }
+            if (scaling_factor != 0) { // if qf is not 100
+                for (int y = 0; y < 8; y++) {
+                    for (int x = 0; x < 8; x++) {
+                        quantizationC[x, y] = (byte)Math.Max(Math.Round(quantizationC_orig[x, y] * scaling_factor), 255);
+                        quantizationY[x, y] = (byte)Math.Max(Math.Round(quantizationY_orig[x, y] * scaling_factor), 255);
+                    }
+                }
+            } else {
+                for (int y = 0; y < 8; y++) {
+                    for (int x = 0; x < 8; x++) {
+                        quantizationC[x, y] = 1; // no quantization
+                        quantizationY[x, y] = 1; // no quantization
+                    }
+                }
+            }
+            state.quantizeQuality = qf;
         }
 
         protected override void createProperties() {
@@ -49,6 +84,11 @@ namespace MpegCompressor {
             p.createCheckbox("Inverse");
             p.eValueChanged += P_eValueChanged; ;
             properties["isInverse"] = p;
+
+            p = new Property();
+            p.createInt(50, 10, 100, "Quantization quality (%)");
+            p.eValueChanged += (prop, b) => { generateQTables((prop as Property).getInt()); };
+            properties["quality"] = p;
         }
 
         public void setInverse(bool b) {

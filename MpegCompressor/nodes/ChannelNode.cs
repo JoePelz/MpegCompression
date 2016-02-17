@@ -41,6 +41,7 @@ namespace MpegCompressor {
                 newChannels[channel] = (byte[])state.channels[channel].Clone();
             }
             state.channels = newChannels;
+            state.bmp = null;
         }
     }
 }

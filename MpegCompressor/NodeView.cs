@@ -118,7 +118,9 @@ namespace MpegCompressor {
             //if the mouse is over a node, selected it and begin dragging. otherwise do base.
             //  if shift is selected, toggle selection instead of replacing
             if ((n = hitTest(e.X, e.Y)) != null) {
-                select(n, Control.ModifierKeys == Keys.Shift);
+                if (!selectedNodes.Contains(n)) {
+                    select(n, Control.ModifierKeys == Keys.Shift);
+                }
                 bDragging = true;
                 ScreenToCanvas(ref mdown);
             } else {

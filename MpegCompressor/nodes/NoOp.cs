@@ -10,23 +10,20 @@ using System.Windows.Forms;
 namespace MpegCompressor {
     public class NoOp : Node {
 
+        public NoOp() {
+            rename("NoOp");
+        }
+
 	    protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("NoOp");
+            base.createProperties();
+            properties.Add("inColor", new Property(true, false));
+            properties.Add("outColor", new Property(false, true));
         }
-
-        protected override void createInputs() {
-            inputs.Add("inColor", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outColor", new HashSet<Address>());
-        }
-
+        
         protected override void clean() {
             base.clean();
 
-            Address upstream = inputs["inColor"];
+            Address upstream = properties["inColor"].input;
             if (upstream == null) {
                 return;
             }

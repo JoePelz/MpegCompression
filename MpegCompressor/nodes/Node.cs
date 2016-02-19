@@ -21,13 +21,10 @@ namespace MpegCompressor {
                 return node == other.node && port.Equals(other.port);
             }
         }
-
-        //private bool isSelected;
+        
         private bool isDirty;
         private string extra;
         protected Dictionary<string, Property> properties;
-        protected Dictionary<string, Address> inputs;
-        protected Dictionary<string, HashSet<Address>> outputs;
         protected DataBlob state;
         public Point pos;
 
@@ -35,17 +32,13 @@ namespace MpegCompressor {
 
         public Node() {
             properties = new Dictionary<string, Property>();
-            inputs = new Dictionary<string, Address>();
-            outputs = new Dictionary<string, HashSet<Address>>();
             state = new DataBlob();
             
-            Property p = new Property();
+            Property p = new Property(false, false);
             p.createString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
-            createInputs();
-            createOutputs();
         }
 
         public void rename(string newName) {
@@ -66,14 +59,6 @@ namespace MpegCompressor {
 
         protected virtual void createProperties() { }
 
-        protected virtual void createInputs() { }
-
-        protected virtual void createOutputs() { }
-
-        public Dictionary<string, Address> getInputs() {
-            return inputs;
-        }
-
         public static bool connect(Node from, string fromPort, Node to, string toPort) {
             if (!from.addOutput(fromPort, to, toPort))
                 return false;
@@ -91,14 +76,14 @@ namespace MpegCompressor {
 
         protected virtual bool addInput(string port, Node from, string fromPort) {
             //if the port is valid
-            if (inputs.ContainsKey(port)) {
+            if (properties.ContainsKey(port)) {
                 //if there's an old connection, disconnect both ends
-                if (inputs[port] != null) {
-                    inputs[port].node.removeOutput(inputs[port].port, this, port);
-                    inputs[port] = null;
+                if (properties[port].input != null) {
+                    properties[port].input.node.removeOutput(properties[port].input.port, this, port);
+                    properties[port].input = null;
                 }
                 //place the new connection
-                inputs[port] = new Address(from, fromPort);
+                properties[port].input = new Address(from, fromPort);
                 soil();
                 return true;
             }
@@ -109,8 +94,8 @@ namespace MpegCompressor {
         protected virtual bool addOutput(string port, Node to, string toPort) {
             //if there's an old connection, doesn't matter. Output can be 1..*
             HashSet<Address> cnx;
-            if (outputs.ContainsKey(port)) {
-                cnx = outputs[port];
+            if (properties.ContainsKey(port)) {
+                cnx = properties[port].output;
                 cnx.Add(new Address(to, toPort));
                 return true;
             }
@@ -119,8 +104,8 @@ namespace MpegCompressor {
 
         protected virtual void removeInput(string port) {
             //Note: only breaks this end of the connection.
-            if (inputs.ContainsKey(port)) {
-                inputs[port] = null;
+            if (properties.ContainsKey(port)) {
+                properties[port].input = null;
             }
             soil();
         }
@@ -128,9 +113,9 @@ namespace MpegCompressor {
         protected virtual void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
             Address match = new Address(to, toPort);
-            if (inputs.ContainsKey(port)) {
+            if (properties.ContainsKey(port)) {
                 //TODO: test this. It uses .Equals() to find the match right?
-                outputs[port].Remove(match);  //returns false if item not found.
+                properties[port].output.Remove(match);  //returns false if item not found.
             }
         }
 
@@ -147,8 +132,11 @@ namespace MpegCompressor {
 
         protected void soil() {
             isDirty = true;
-            foreach (KeyValuePair<string, HashSet<Address>> kvp in outputs) {
-                foreach (Address a in kvp.Value) {
+            foreach (KeyValuePair<string, Property> kvp in properties) {
+                if (!kvp.Value.isOutput) {
+                    return;
+                }
+                foreach (Address a in kvp.Value.output) {
                     a.node.soil();
                 }
             }

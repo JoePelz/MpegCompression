@@ -8,18 +8,16 @@ using System.Threading.Tasks;
 namespace MpegCompressor {
     public abstract class ColorNode : Node {
 
-        protected override void createInputs() {
-            inputs.Add("inColor", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outColor", new HashSet<Address>());
+        protected override void createProperties() {
+            base.createProperties();
+            properties.Add("inColor", new Property(true, false));
+            properties.Add("outColor", new Property(false, true));
         }
 
         protected override void clean() {
             base.clean();
 
-            Address upstream = inputs["inColor"];
+            Address upstream = properties["inColor"].input;
             if (upstream == null) {
                 return;
             }

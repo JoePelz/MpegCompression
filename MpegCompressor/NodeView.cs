@@ -89,11 +89,11 @@ namespace MpegCompressor {
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
-                foreach (Node.Address a in n.getInputs().Values) {
-                    if (a == null) {
-                        continue;
+                foreach (var prop in n.getProperties().Values) {
+                    //This may be redundant.
+                    if (prop.isInput && prop.input != null) {
+                        drawLink(g, prop.input.node, n);
                     }
-                    drawLink(g, a.node, n);
                 }
             }
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
@@ -105,10 +105,10 @@ namespace MpegCompressor {
 
         //box including: title, extra, properties (bubble left and/or right)
         private void drawNode(Graphics g, Node n) {
-            int width = Math.Max(100, (int)g.MeasureString(n.getName(), nodeTitleFont).Width);
+            int width = (int)g.MeasureString(n.getName(), nodeTitleFont).Width;
             int titleHeight = nodeTitleFont.Height;
             int textHeight = nodeFont.Height;
-            Rectangle r = new Rectangle(n.pos.X, n.pos.Y, width, titleHeight);
+            Rectangle r = new Rectangle(n.pos.X, n.pos.Y, Math.Max(100, width), titleHeight);
 
             //count the lines to cover with text
             if (n.getExtra() != null) {
@@ -125,7 +125,8 @@ namespace MpegCompressor {
             g.DrawRectangle(Pens.Black, r);
 
             //draw title
-            g.DrawString(n.getName(), nodeTitleFont, Brushes.Black, r.Location);
+            
+            g.DrawString(n.getName(), nodeTitleFont, Brushes.Black, r.Left + (r.Width - width) / 2, r.Top);
             g.DrawLine(Pens.Black, r.Left, r.Top + nodeTitleFont.Height, r.Right, r.Top + nodeTitleFont.Height);
             r.Offset(0, nodeTitleFont.Height);
 
@@ -138,7 +139,7 @@ namespace MpegCompressor {
             }
 
             foreach (var kvp in n.getProperties()) {
-                g.DrawString(kvp.Key, nodeFont, Brushes.Black, r.Location);
+                g.DrawString(kvp.Key, nodeFont, Brushes.Black, r.Left + (r.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, r.Top);
                 r.Offset(0, nodeFont.Height);
             }
         }

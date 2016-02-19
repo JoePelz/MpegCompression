@@ -8,6 +8,7 @@ using System.Windows.Forms;
 namespace MpegCompressor {
     public class Property : TableLayoutPanel {
         public enum Type {
+            NONE,
             INTEGER,
             FLOAT,
             STRING,
@@ -32,14 +33,30 @@ namespace MpegCompressor {
         private Type type;
         private string sLabel;
         private string[] choices;
+        public bool isInput { get; private set; }
+        public bool isOutput { get; private set; }
+        public Node.Address input;
+        public HashSet<Node.Address> output;
 
         public event EventHandler eValueChanged;
 
-        public Property() {
+        public Property(bool input, bool output) {
             ColumnCount = 2;
             RowCount = 1;
             Dock = DockStyle.Fill;
+            isInput = input;
+            isOutput = output;
+            type = Type.NONE;
+            if (output) {
+                this.output = new HashSet<Node.Address>();
+            }
+
         }
+
+        public Type getType() {
+            return type;
+        }
+
 
         public void createInt(int val, int min, int max, string label) {
             sLabel = label;

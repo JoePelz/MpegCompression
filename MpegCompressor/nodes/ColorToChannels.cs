@@ -14,19 +14,17 @@ namespace MpegCompressor {
             setExtra("to Channels");
         }
 
-        protected override void createInputs() {
-            inputs.Add("inColor", null);
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outChannels", new HashSet<Address>());
+        protected override void createProperties() {
+            base.createProperties();
+            properties.Add("inColor", new Property(true, false));
+            properties.Add("outChannels", new Property(false, true));
         }
 
         protected override void clean() {
             base.clean();
 
             //Acquire source
-            Address upstream = inputs["inColor"];
+            Address upstream = properties["inColor"].input;
             if (upstream == null) {
                 return;
             }

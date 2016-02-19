@@ -16,7 +16,9 @@ namespace MpegCompressor {
         }
 
         protected override void createProperties() {
-            Property p = new Property();
+            base.createProperties();
+
+            Property p = new Property(false, false);
             p.createInt(4, 2, 16, "Chunk size to use");
             p.eValueChanged += P_eValueChanged;
             properties["chunkSize"] = p;

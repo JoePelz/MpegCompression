@@ -81,12 +81,14 @@ namespace MpegCompressor {
         }
 
         protected override void createProperties() {
-            Property p = new Property();
+            base.createProperties();
+
+            Property p = new Property(false, false);
             p.createCheckbox("Inverse");
             p.eValueChanged += P_eValueChanged; ;
             properties["isInverse"] = p;
 
-            p = new Property();
+            p = new Property(false, false);
             p.createInt(50, 10, 100, "Quantization quality (%)");
             p.eValueChanged += (prop, b) => { soil(); };
             properties["quality"] = p;

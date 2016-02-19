@@ -14,8 +14,9 @@ namespace MpegCompressor {
 
         private Node selectedNode;
         private LinkedList<Node> selectedNodes;
-        private Pen linePen;
+        private static Pen linePen = new Pen(Color.Black, 3);
         private static Font nodeFont = new Font("Tahoma", 11.0f);
+        private static Font nodeExtraFont = new Font("Tahoma", 11.0f, FontStyle.Italic);
         private static Font nodeTitleFont = new Font("Tahoma", 13.0f, FontStyle.Bold);
         private LinkedList<Node> nodes;
         private Point mdown;
@@ -36,7 +37,6 @@ namespace MpegCompressor {
         private void init() {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
-            linePen = new Pen(Color.Black, 3);
             nodes = new LinkedList<Node>();
             mdown = new Point();
             selectedNodes = new LinkedList<Node>();
@@ -103,18 +103,19 @@ namespace MpegCompressor {
             }
         }
 
+        //box including: title, extra, properties (bubble left and/or right)
         private void drawNode(Graphics g, Node n) {
-            Rectangle r = new Rectangle(n.pos.X, n.pos.Y, 100, 50);
-            SizeF Name = g.MeasureString(n.getName(), nodeTitleFont);
-            r.Height = (int)Name.Height + 2;
-            r.Width = (int)Name.Width + 10;
+            int width = Math.Max(100, (int)g.MeasureString(n.getName(), nodeTitleFont).Width);
+            int titleHeight = nodeTitleFont.Height;
+            int textHeight = nodeFont.Height;
+            Rectangle r = new Rectangle(n.pos.X, n.pos.Y, width, titleHeight);
 
-            g.DrawLine(Pens.Black, r.Left, r.Bottom, r.Right, r.Bottom);
-
-            //draw properties
-            g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X - 5, n.pos.Y + 18, 10, 14));
-            g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X + 95, n.pos.Y + 18, 10, 14));
-
+            //count the lines to cover with text
+            if (n.getExtra() != null) {
+                r.Height += textHeight;
+            }
+            r.Height += textHeight * n.getProperties().Count;
+            
             //draw background
             if (selectedNodes.Contains(n)) {
                 g.FillRectangle(Brushes.Wheat, r);
@@ -123,9 +124,23 @@ namespace MpegCompressor {
             }
             g.DrawRectangle(Pens.Black, r);
 
+            //draw title
             g.DrawString(n.getName(), nodeTitleFont, Brushes.Black, r.Location);
-            r.Offset(0, nodeFont.Height);
-            g.DrawString(n.getExtra(), nodeFont, Brushes.Black, r.Location);
+            g.DrawLine(Pens.Black, r.Left, r.Top + nodeTitleFont.Height, r.Right, r.Top + nodeTitleFont.Height);
+            r.Offset(0, nodeTitleFont.Height);
+
+
+            //draw extra
+            if (n.getExtra() != null) {
+                g.DrawString(n.getExtra(), nodeExtraFont, Brushes.Black, r.Location);
+                g.DrawLine(Pens.Black, r.Left, r.Top + nodeExtraFont.Height, r.Right, r.Top + nodeExtraFont.Height);
+                r.Offset(0, nodeFont.Height);
+            }
+
+            foreach (var kvp in n.getProperties()) {
+                g.DrawString(kvp.Key, nodeFont, Brushes.Black, r.Location);
+                r.Offset(0, nodeFont.Height);
+            }
         }
 
         private void drawLink(Graphics g, Node a, Node b) {

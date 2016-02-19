@@ -21,6 +21,7 @@ namespace MpegCompressor {
         public int imageHeight;
         public int channelWidth;
         public int channelHeight;
+        public int quantizeQuality;
         public Subsample.Samples samplingMode;
 
         public DataBlob clone() {
@@ -32,6 +33,7 @@ namespace MpegCompressor {
             d.imageHeight = imageHeight;
             d.channelHeight = channelHeight;
             d.channelWidth = channelWidth;
+            d.quantizeQuality = quantizeQuality;
             d.samplingMode = samplingMode;
             return d;
         }

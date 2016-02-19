@@ -107,7 +107,7 @@ namespace MpegCompressor {
                     writer.Write((short)state.imageHeight);
                     writer.Write((short)state.channelWidth);
                     writer.Write((short)state.channelHeight);
-                    writer.Write((byte)130);
+                    writer.Write((byte)state.quantizeQuality);
                     writer.Write((byte)state.samplingMode);
                     byte[] data = new byte[64];
                     Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);

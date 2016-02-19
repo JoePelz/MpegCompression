@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor {
     public class MoVec : ChannelNode {
-        private const int radius = 15;
+        private const int searchRange = 15;
+
+
     }
 }

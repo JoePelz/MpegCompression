@@ -176,5 +176,28 @@ namespace MpegCompressor {
             //Debug.Write("View missing in " + properties["name"].getString() + "\n");
             return null;
         }
+
+
+        public void drawExtra(Graphics g) {
+            if (state == null || state.bmp == null) {
+                return;
+            }
+            //draw corner crosses.
+            //bottom left
+            g.DrawLine(Pens.BlanchedAlmond, -0.5f, -10, -0.5f, 10);
+            g.DrawLine(Pens.BlanchedAlmond, -10, -0.5f, 10, -0.5f);
+
+            //bottom right
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width + 0.5f, -10, state.bmp.Width + 0.5f, 10);
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width - 10, -0.5f, state.bmp.Width + 10, -0.5f);
+
+            //top right
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width + 0.5f, state.bmp.Height - 10, state.bmp.Width + 0.5f, state.bmp.Height + 10);
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width - 10, state.bmp.Height + 0.5f, state.bmp.Width + 10, state.bmp.Height + 0.5f);
+
+            //top left
+            g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
+            g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
+        }
     }
 }

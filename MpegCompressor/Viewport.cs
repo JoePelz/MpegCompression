@@ -118,6 +118,7 @@ namespace MpegCompressor {
             base.OnPaint(pe);
             Bitmap img = null;
             Graphics g = pe.Graphics;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality; //stop cutting corners! :P
             g.InterpolationMode = InterpolationMode.NearestNeighbor; //I wanna see the PIXELS, dammit!
 
             if (content != null) {
@@ -125,22 +126,15 @@ namespace MpegCompressor {
                 if (img != null) {
                     img = img.Clone(new Rectangle(0, 0, img.Width, img.Height), img.PixelFormat);
                     channelFilter(img);
-                    setFocusRect(img.Width, img.Height);
                 } else {
                     img = generateImage();
-                    setFocusRect(img.Width, img.Height);
                 }
-                g.DrawImage(img, -img.Width / 2, -img.Height / 2, img.Width, img.Height);
+                setFocusRect(0, -img.Height, img.Width, img.Height);
+                g.DrawImage(img, 0, -img.Height, img.Width, img.Height);
+                g.ScaleTransform(1, -1);
+                content.drawExtra(g);
             }
-            
-            /*
-            //Draw Origin (0, 0)
-            g.DrawEllipse(Pens.Black, -5, -5, 10, 10);
-            g.DrawEllipse(Pens.Black, -2, -2, 4, 4);
-            g.DrawLine(Pens.Black, 0, -50, 0, 50);
-            g.DrawLine(Pens.Black, -50, 0, 50, 0);
-            g.DrawString("(0, 0)", new Font("arial", 10.0f), Brushes.Black, 0, -20);
-            */
+
             if (img != null) {
                 g.ResetTransform();
                 g.DrawString("Size: " + img.Width + "x" + img.Height, new Font("arial", 10.0f), Brushes.Black, 0, 0);

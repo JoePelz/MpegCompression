@@ -15,9 +15,6 @@ namespace MpegCompressor {
         private Node selectedNode;
         private LinkedList<Node> selectedNodes;
         private static Pen linePen = new Pen(Color.Black, 3);
-        private static Font nodeFont = new Font("Tahoma", 11.0f);
-        private static Font nodeExtraFont = new Font("Tahoma", 11.0f, FontStyle.Italic);
-        private static Font nodeTitleFont = new Font("Tahoma", 13.0f, FontStyle.Bold);
         private LinkedList<Node> nodes;
         private Point mdown;
         private bool bDragging;
@@ -57,10 +54,11 @@ namespace MpegCompressor {
         private void recalcFocus() {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
             foreach (Node d in nodes) {
-                if (d.pos.X < left) left = d.pos.X;
-                if (d.pos.X > right) right = d.pos.X;
-                if (d.pos.Y < top) top = d.pos.Y;
-                if (d.pos.Y > bottom) bottom = d.pos.Y;
+                Rectangle r = d.getNodeRect();
+                if (r.Left < left) left = r.Left;
+                if (r.Right > right) right = r.Right;
+                if (r.Top < top) top = r.Top;
+                if (r.Bottom > bottom) bottom = r.Bottom;
             }
             setFocusRect(left, top, right - left + 100, bottom - top + 50);
         }
@@ -89,67 +87,18 @@ namespace MpegCompressor {
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
-                foreach (var prop in n.getProperties().Values) {
+                foreach (var kvp in n.getProperties()) {
                     //This may be redundant.
-                    if (prop.isInput && prop.input != null) {
-                        drawLink(g, prop.input.node, n);
+                    if (kvp.Value.isInput && kvp.Value.input != null) {
+                        g.DrawLine(linePen, kvp.Value.input.node.getJointPos(kvp.Value.input.port, false), n.getJointPos(kvp.Key, true));
                     }
                 }
             }
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 
             foreach (Node n in nodes) {
-                drawNode(g, n);
+                n.drawGraphNode(g, selectedNodes.Contains(n));
             }
-        }
-
-        //box including: title, extra, properties (bubble left and/or right)
-        private void drawNode(Graphics g, Node n) {
-            int width = (int)g.MeasureString(n.getName(), nodeTitleFont).Width;
-            int titleHeight = nodeTitleFont.Height;
-            int textHeight = nodeFont.Height;
-            Rectangle r = new Rectangle(n.pos.X, n.pos.Y, Math.Max(100, width), titleHeight);
-
-            //count the lines to cover with text
-            if (n.getExtra() != null) {
-                r.Height += textHeight;
-            }
-            r.Height += textHeight * n.getProperties().Count;
-            
-            //draw background
-            if (selectedNodes.Contains(n)) {
-                g.FillRectangle(Brushes.Wheat, r);
-            } else {
-                g.FillRectangle(Brushes.CadetBlue, r);
-            }
-            g.DrawRectangle(Pens.Black, r);
-
-            //draw title
-            
-            g.DrawString(n.getName(), nodeTitleFont, Brushes.Black, r.Left + (r.Width - width) / 2, r.Top);
-            g.DrawLine(Pens.Black, r.Left, r.Top + nodeTitleFont.Height, r.Right, r.Top + nodeTitleFont.Height);
-            r.Offset(0, nodeTitleFont.Height);
-
-
-            //draw extra
-            if (n.getExtra() != null) {
-                g.DrawString(n.getExtra(), nodeExtraFont, Brushes.Black, r.Location);
-                g.DrawLine(Pens.Black, r.Left, r.Top + nodeExtraFont.Height, r.Right, r.Top + nodeExtraFont.Height);
-                r.Offset(0, nodeFont.Height);
-            }
-
-            foreach (var kvp in n.getProperties()) {
-                g.DrawString(kvp.Key, nodeFont, Brushes.Black, r.Left + (r.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, r.Top);
-                r.Offset(0, nodeFont.Height);
-            }
-        }
-
-        private void drawLink(Graphics g, Node a, Node b) {
-            Point p1 = a.pos;
-            Point p2 = b.pos;
-            p1.Offset(100, 25);
-            p2.Offset(0, 25);
-            g.DrawLine(linePen, p1, p2);
         }
 
         public Node getSelection() {
@@ -183,7 +132,7 @@ namespace MpegCompressor {
                 Point newPos = e.Location;
                 ScreenToCanvas(ref newPos);
                 foreach (Node n in selectedNodes) {
-                    n.pos.Offset(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                    n.offsetPos(newPos.X - mdown.X, newPos.Y - mdown.Y);
                 }
                 mdown = newPos;
                 Invalidate();
@@ -209,11 +158,9 @@ namespace MpegCompressor {
             //x and y are in screen coordinates where 
             //  (0, 0) is the top left of the panel
             ScreenToCanvas(ref x, ref y);
-            Point pos;
 
             foreach (Node n in nodes) {
-                pos = n.pos;
-                if (x > pos.X && y > pos.Y && x < (pos.X + 100) && y < (pos.Y + 50)) {
+                if (n.hitTest(x, y)) {
                     return n;
                 }
             }

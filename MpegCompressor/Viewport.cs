@@ -132,7 +132,7 @@ namespace MpegCompressor {
                 setFocusRect(0, -img.Height, img.Width, img.Height);
                 g.DrawImage(img, 0, -img.Height, img.Width, img.Height);
                 g.ScaleTransform(1, -1);
-                content.drawExtra(g);
+                content.viewExtra(g);
             }
 
             if (img != null) {

@@ -36,7 +36,7 @@ namespace MpegCompressor {
             p.eValueChanged += (a, b) => { check();  };
             properties.Add("info", p);
 
-            properties.Remove("inChannels");
+            properties.Add("outChannels", new Property(false, true));
         }
 
         protected override void clean() {

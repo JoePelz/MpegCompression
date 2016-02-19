@@ -46,24 +46,24 @@ namespace MpegCompressor {
             Node nIDCT2 = new DCT();
             Node nCS4 = new ColorSpace();
 
-            nRead.pos = new System.Drawing.Point(-110, 25);
-            nChunkTest.pos = new System.Drawing.Point(0, -10);
-            nCS1.pos = new System.Drawing.Point(0, 50);
-            nCtCH.pos = new System.Drawing.Point(110, 50);
-            nSS.pos = new System.Drawing.Point(220, 75);
-            nCHtC.pos = new System.Drawing.Point(330, 50);
-            nCS2.pos = new System.Drawing.Point(440, 50);
-            nDCT.pos = new System.Drawing.Point(330, 110);
-            nCHtC2.pos = new System.Drawing.Point(440, 110);
-            nIDCT.pos = new System.Drawing.Point(440, 170);
-            nWriter.pos = new System.Drawing.Point(440, 230);
-            nCHtC3.pos = new System.Drawing.Point(550, 170);
-            nCS3.pos = new System.Drawing.Point(660, 170);
+            nRead.setPos(-110, 25);
+            nChunkTest.setPos(0, -10);
+            nCS1.setPos(0, 50);
+            nCtCH.setPos(110, 50);
+            nSS.setPos(220, 75);
+            nCHtC.setPos(330, 50);
+            nCS2.setPos(440, 50);
+            nDCT.setPos(330, 110);
+            nCHtC2.setPos(440, 110);
+            nIDCT.setPos(440, 170);
+            nWriter.setPos(440, 230);
+            nCHtC3.setPos(550, 170);
+            nCS3.setPos(660, 170);
 
-            nReader.pos = new System.Drawing.Point(-110, 290);
-            nIDCT2.pos = new System.Drawing.Point(10, 290);
-            nCHtC4.pos = new System.Drawing.Point(130, 290);
-            nCS4.pos = new System.Drawing.Point(250, 290);
+            nReader.setPos(-110, 290);
+            nIDCT2.setPos(10, 290);
+            nCHtC4.setPos(130, 290);
+            nCS4.setPos(250, 290);
             
             (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);

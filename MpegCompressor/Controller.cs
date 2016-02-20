@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.Nodes;
 
 namespace MpegCompressor {
     class Controller {
@@ -49,7 +50,7 @@ namespace MpegCompressor {
 
             (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nSS as Subsample).setOutSamples(DataBlob.Samples.s420);
             (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT as DCT).setInverse(true);
             
@@ -102,7 +103,7 @@ namespace MpegCompressor {
 
             (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nSS as Subsample).setOutSamples(DataBlob.Samples.s420);
             (nCS4 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT2 as DCT).setInverse(true);
             
@@ -127,6 +128,12 @@ namespace MpegCompressor {
             viewNodes.addNode(nIDCT2);
             viewNodes.addNode(nCHtC4);
             viewNodes.addNode(nCS4);
+        }
+
+        public void mergeTest() {
+            Node nR1 = new ReadImage();
+            Node nR2 = new ReadImage();
+            Node nM = new Merge();
         }
 
         public void buildGraph() {

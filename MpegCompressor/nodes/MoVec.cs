@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class MoVec : ChannelNode {
         private const int searchRange = 15;
 

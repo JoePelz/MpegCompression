@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     class ChannelsToColor : Node {
 
         public ChannelsToColor() {
@@ -74,7 +74,7 @@ namespace MpegCompressor {
             for (int y = 0; y < data.imageHeight; y++) {
                 pixel = y * bmpData.Stride;
                 iY = y * channelYStride;
-                iCrb = (data.samplingMode == Subsample.Samples.s420 ? y / 2 : y) * channelCRBStride;
+                iCrb = (data.samplingMode == DataBlob.Samples.s420 ? y / 2 : y) * channelCRBStride;
                 for (int x = 0; x < data.imageWidth; x++) {
                     rgbValues[pixel + 2] = data.channels[0][iY];
                     rgbValues[pixel + 1] = data.channels[1][iCrb];
@@ -82,13 +82,13 @@ namespace MpegCompressor {
                     pixel += 3;
                     iY++;
 
-                    if (data.samplingMode == Subsample.Samples.s420 || data.samplingMode == Subsample.Samples.s422) {
+                    if (data.samplingMode == DataBlob.Samples.s420 || data.samplingMode == DataBlob.Samples.s422) {
                         if (x % 2 == 1) {
                             iCrb++;
                         }
-                    } else if (data.samplingMode == Subsample.Samples.s444) {
+                    } else if (data.samplingMode == DataBlob.Samples.s444) {
                         iCrb++;
-                    } else if (data.samplingMode == Subsample.Samples.s411) {
+                    } else if (data.samplingMode == DataBlob.Samples.s411) {
                         if (x % 4 == 3) {
                             iCrb++;
                         }

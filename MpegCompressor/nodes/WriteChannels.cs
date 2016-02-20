@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class WriteChannels : ChannelNode {
         private string outPath;
         //byte values are -128 to 127, but stored in a uint type
@@ -63,7 +63,7 @@ namespace MpegCompressor {
                 "\nchannel width: " + state.channelWidth + " = " + read_cwidth +
                 "\nchannel height: " + state.channelHeight + " = " + read_cheight +
                 "\nquality: " + state.quantizeQuality + " = " + read_quality +
-                "\nsamples: " + state.samplingMode + " = " + (Subsample.Samples)read_samples
+                "\nsamples: " + state.samplingMode + " = " + (DataBlob.Samples)read_samples
                 , "File Information");
 
         }
@@ -149,13 +149,16 @@ namespace MpegCompressor {
                     //
 
                     switch (state.samplingMode) {
-                        case Subsample.Samples.s411:
+                        case DataBlob.Samples.s444:
+                            //just use the existing chunker
+                            break;
+                        case DataBlob.Samples.s411:
                             c = new Chunker(8, (state.channelWidth + 3) / 4, state.channelHeight, (state.channelWidth + 3) / 4, 1);
                             break;
-                        case Subsample.Samples.s420:
+                        case DataBlob.Samples.s420:
                             c = new Chunker(8, (state.channelWidth + 1) / 2, (state.channelHeight + 1) / 2, (state.channelWidth + 1) / 2, 1);
                             break;
-                        case Subsample.Samples.s422:
+                        case DataBlob.Samples.s422:
                             c = new Chunker(8, (state.channelWidth + 1) / 2, state.channelHeight, (state.channelWidth + 1) / 2, 1);
                             break;
                     }

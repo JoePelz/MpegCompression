@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     class ReadChannels : Node {
         private string inPath;
         //byte values are -128 to 127, but stored in a uint type
@@ -71,7 +71,7 @@ namespace MpegCompressor {
                     state.channelWidth = reader.ReadUInt16();
                     state.channelHeight = reader.ReadUInt16();
                     state.quantizeQuality = reader.ReadByte();
-                    state.samplingMode = (Subsample.Samples)reader.ReadByte();
+                    state.samplingMode = (DataBlob.Samples)reader.ReadByte();
                     
                     state.channels[0] = new byte[state.channelWidth * state.channelHeight];
 

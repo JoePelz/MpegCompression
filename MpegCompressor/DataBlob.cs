@@ -7,10 +7,9 @@ using System.Drawing;
 
 namespace MpegCompressor {
     public class DataBlob {
-        public enum Type {
-            Image,
-            Channels
-        };
+        public enum Type { Image, Channels };
+        public enum Samples { s444, s422, s411, s420 };
+
 
         public Type type;
 
@@ -22,7 +21,7 @@ namespace MpegCompressor {
         public int channelWidth;
         public int channelHeight;
         public int quantizeQuality;
-        public Subsample.Samples samplingMode;
+        public Samples samplingMode;
 
         public DataBlob clone() {
             DataBlob d = new DataBlob();

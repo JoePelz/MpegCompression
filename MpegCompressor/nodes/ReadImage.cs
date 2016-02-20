@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class ReadImage : Node {
         private string filepath;
 

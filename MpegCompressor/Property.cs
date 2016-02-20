@@ -35,8 +35,8 @@ namespace MpegCompressor {
         private string[] choices;
         public bool isInput { get; private set; }
         public bool isOutput { get; private set; }
-        public Node.Address input;
-        public HashSet<Node.Address> output;
+        public Nodes.Node.Address input;
+        public HashSet<Nodes.Node.Address> output;
 
         public event EventHandler eValueChanged;
 
@@ -48,7 +48,7 @@ namespace MpegCompressor {
             isOutput = output;
             type = Type.NONE;
             if (output) {
-                this.output = new HashSet<Node.Address>();
+                this.output = new HashSet<Nodes.Node.Address>();
             }
 
         }

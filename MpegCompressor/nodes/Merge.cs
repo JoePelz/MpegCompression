@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor.nodes {
-    class Merge : Node {
+namespace MpegCompressor.Nodes {
+    public class Merge : Node {
 
         public Merge() {
             rename("Merge");

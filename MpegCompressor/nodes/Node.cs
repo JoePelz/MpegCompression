@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     //TODO: have node not extend panel, and be drawn purely by NodeView.
     public abstract class Node : IViewable, IProperties {
         public class Address {

@@ -174,7 +174,7 @@ namespace MpegCompressor.Nodes {
             isDirty = true;
             foreach (KeyValuePair<string, Property> kvp in properties) {
                 if (!kvp.Value.isOutput) {
-                    return;
+                    continue;
                 }
                 foreach (Address a in kvp.Value.output) {
                     a.node.soil();

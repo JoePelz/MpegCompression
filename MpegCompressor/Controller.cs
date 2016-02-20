@@ -134,10 +134,26 @@ namespace MpegCompressor {
             Node nR1 = new ReadImage();
             Node nR2 = new ReadImage();
             Node nM = new Merge();
+
+            nR1.setPos(0, -50);
+            nR2.setPos(0, 50);
+            nM.setPos(180, 0);
+
+            (nR1 as ReadImage).setPath("C:\\temp\\uv.jpg");
+            (nR2 as ReadImage).setPath("C:\\temp\\lena.tif");
+
+            Node.connect(nR1, "outColor", nM, "inColorA");
+            Node.connect(nR2, "outColor", nM, "inColorB");
+
+            viewNodes.addNode(nR1);
+            viewNodes.addNode(nR2);
+            viewNodes.addNode(nM);
         }
 
         public void buildGraph() {
-            readWriteTest();
+            //DCTTest();
+            //readWriteTest();
+            mergeTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

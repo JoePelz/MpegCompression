@@ -6,20 +6,18 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor {
     public abstract class ChannelNode : Node {
-        
-        protected override void createInputs() {
-            inputs.Add("inChannels", null);
-        }
 
-        protected override void createOutputs() {
-            outputs.Add("outChannels", new HashSet<Address>());
+        protected override void createProperties() {
+            base.createProperties();
+            properties.Add("inChannels", new Property(true, false));
+            properties.Add("outChannels", new Property(false, true));
         }
 
         protected override void clean() {
             base.clean();
 
             //Acquire source
-            Address upstream = inputs["inChannels"];
+            Address upstream = properties["inChannels"].input;
             if (upstream == null) {
                 return;
             }

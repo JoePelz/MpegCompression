@@ -12,25 +12,19 @@ namespace MpegCompressor {
 
         public ReadImage() {
             setPath("C:\\temp\\uv.jpg");
+            rename("ReadImage");
         }
 
         protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("ReadImage");
+            base.createProperties();
 
             //create filepath property
-            p = new Property();
+            Property p = new Property(false, false);
             p.createString("", "Image file to open");
             p.eValueChanged += OnPathChange;
             properties.Add("path", p);
-        }
 
-        protected override void createInputs() {
-            //no inputs for ReadImage. Only string property.
-        }
-
-        protected override void createOutputs() {
-            outputs.Add("outColor", new HashSet<Address>());
+            properties.Add("outColor", new Property(false, true));
         }
 
         public void setPath(string path) {

@@ -11,5 +11,7 @@ namespace MpegCompressor {
 
         event EventHandler eViewChanged;
         Bitmap view();
+
+        void viewExtra(Graphics g);
     }
 }

@@ -13,31 +13,29 @@ namespace MpegCompressor {
 
         public WriteChannels() {
             setPath("C:\\temp\\testfile.dct");
-        }
-        
-        protected override void createOutputs() {
-            //went back and forth on this, but decided to remove output
+            rename("WriteChannels");
         }
 
         protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("WriteChannels");
+            base.createProperties();
 
             //create filepath property
-            p = new Property();
+            Property p = new Property(false, false);
             p.createString("", "Image path to save");
             p.eValueChanged += pathChanged;
             properties.Add("path", p);
 
-            p = new Property();
+            p = new Property(false, false);
             p.createButton("Save", "save image to file");
             p.eValueChanged += save;
             properties.Add("save", p);
 
-            p = new Property();
+            p = new Property(false, false);
             p.createButton("Check", "check file stats");
             p.eValueChanged += check;
             properties.Add("check", p);
+
+            properties.Remove("outChannels");
         }
 
         private void check(object sender, EventArgs e) {
@@ -64,7 +62,7 @@ namespace MpegCompressor {
                 "\nimage height: " + state.imageHeight + " = " + read_height +
                 "\nchannel width: " + state.channelWidth + " = " + read_cwidth +
                 "\nchannel height: " + state.channelHeight + " = " + read_cheight +
-                "\nquality: " + 130 + " = " + read_quality +
+                "\nquality: " + state.quantizeQuality + " = " + read_quality +
                 "\nsamples: " + state.samplingMode + " = " + (Subsample.Samples)read_samples
                 , "File Information");
 

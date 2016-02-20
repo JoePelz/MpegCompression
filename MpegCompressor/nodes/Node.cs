@@ -22,38 +22,71 @@ namespace MpegCompressor {
             }
         }
 
-        //private bool isSelected;
+        private static Font nodeFont = new Font("Tahoma", 11.0f);
+        private static Font nodeExtraFont = new Font("Tahoma", 11.0f, FontStyle.Italic);
+        private static Font nodeTitleFont = new Font("Tahoma", 13.0f, FontStyle.Bold);
+        private static int ballSize = nodeFont.Height / 2;
+        private static int ballOffset = (nodeFont.Height - ballSize) / 2;
+        private int titleWidth;
+        private Rectangle nodeRect;
         private bool isDirty;
         private string extra;
         protected Dictionary<string, Property> properties;
-        protected Dictionary<string, Address> inputs;
-        protected Dictionary<string, HashSet<Address>> outputs;
         protected DataBlob state;
-        public Point pos;
 
         public event EventHandler eViewChanged;
 
         public Node() {
             properties = new Dictionary<string, Property>();
-            inputs = new Dictionary<string, Address>();
-            outputs = new Dictionary<string, HashSet<Address>>();
             state = new DataBlob();
-            
-            Property p = new Property();
+            titleWidth = 100;
+            Property p = new Property(false, false);
             p.createString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
-            createInputs();
-            createOutputs();
+
+            nodeRect = new Rectangle(0, 0, 100, 100);
+        }
+
+        internal Rectangle getNodeRect() {
+            return nodeRect;
+        }
+
+        public void setPos(int x, int y) {
+            nodeRect.X = x;
+            nodeRect.Y = y;
+        }
+
+        public void offsetPos(int x, int y) {
+            nodeRect.X += x;
+            nodeRect.Y += y;
+        }
+
+        private void updateGraphRect() {
+            nodeRect.Width = Math.Max(100, titleWidth);
+            nodeRect.Height = nodeTitleFont.Height;
+
+            //count the lines to cover with text
+            if (getExtra() != null) {
+                nodeRect.Height += nodeExtraFont.Height;
+            }
+            foreach (var kvp in getProperties()) {
+                if (kvp.Value.getType() == Property.Type.NONE) {
+                    nodeRect.Height += nodeFont.Height;
+                }
+            }
         }
 
         public void rename(string newName) {
             properties["name"].setString(newName);
+            titleWidth = System.Windows.Forms.TextRenderer.MeasureText(newName, nodeTitleFont).Width;
+            updateGraphRect();
         }
 
         public void setExtra(string sExtra) {
             extra = sExtra;
+            updateGraphRect();
         }
 
         public string getName() {
@@ -65,14 +98,6 @@ namespace MpegCompressor {
         }
 
         protected virtual void createProperties() { }
-
-        protected virtual void createInputs() { }
-
-        protected virtual void createOutputs() { }
-
-        public Dictionary<string, Address> getInputs() {
-            return inputs;
-        }
 
         public static bool connect(Node from, string fromPort, Node to, string toPort) {
             if (!from.addOutput(fromPort, to, toPort))
@@ -91,14 +116,14 @@ namespace MpegCompressor {
 
         protected virtual bool addInput(string port, Node from, string fromPort) {
             //if the port is valid
-            if (inputs.ContainsKey(port)) {
+            if (properties.ContainsKey(port)) {
                 //if there's an old connection, disconnect both ends
-                if (inputs[port] != null) {
-                    inputs[port].node.removeOutput(inputs[port].port, this, port);
-                    inputs[port] = null;
+                if (properties[port].input != null) {
+                    properties[port].input.node.removeOutput(properties[port].input.port, this, port);
+                    properties[port].input = null;
                 }
                 //place the new connection
-                inputs[port] = new Address(from, fromPort);
+                properties[port].input = new Address(from, fromPort);
                 soil();
                 return true;
             }
@@ -109,8 +134,8 @@ namespace MpegCompressor {
         protected virtual bool addOutput(string port, Node to, string toPort) {
             //if there's an old connection, doesn't matter. Output can be 1..*
             HashSet<Address> cnx;
-            if (outputs.ContainsKey(port)) {
-                cnx = outputs[port];
+            if (properties.ContainsKey(port)) {
+                cnx = properties[port].output;
                 cnx.Add(new Address(to, toPort));
                 return true;
             }
@@ -119,8 +144,8 @@ namespace MpegCompressor {
 
         protected virtual void removeInput(string port) {
             //Note: only breaks this end of the connection.
-            if (inputs.ContainsKey(port)) {
-                inputs[port] = null;
+            if (properties.ContainsKey(port)) {
+                properties[port].input = null;
             }
             soil();
         }
@@ -128,9 +153,9 @@ namespace MpegCompressor {
         protected virtual void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
             Address match = new Address(to, toPort);
-            if (inputs.ContainsKey(port)) {
+            if (properties.ContainsKey(port)) {
                 //TODO: test this. It uses .Equals() to find the match right?
-                outputs[port].Remove(match);  //returns false if item not found.
+                properties[port].output.Remove(match);  //returns false if item not found.
             }
         }
 
@@ -147,8 +172,11 @@ namespace MpegCompressor {
 
         protected void soil() {
             isDirty = true;
-            foreach (KeyValuePair<string, HashSet<Address>> kvp in outputs) {
-                foreach (Address a in kvp.Value) {
+            foreach (KeyValuePair<string, Property> kvp in properties) {
+                if (!kvp.Value.isOutput) {
+                    return;
+                }
+                foreach (Address a in kvp.Value.output) {
                     a.node.soil();
                 }
             }
@@ -175,6 +203,101 @@ namespace MpegCompressor {
             }
             //Debug.Write("View missing in " + properties["name"].getString() + "\n");
             return null;
+        }
+        
+        public void viewExtra(Graphics g) {
+            if (state == null || state.bmp == null) {
+                return;
+            }
+            //draw corner crosses.
+            //bottom left
+            g.DrawLine(Pens.BlanchedAlmond, -0.5f, -10, -0.5f, 10);
+            g.DrawLine(Pens.BlanchedAlmond, -10, -0.5f, 10, -0.5f);
+
+            //bottom right
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width + 0.5f, -10, state.bmp.Width + 0.5f, 10);
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width - 10, -0.5f, state.bmp.Width + 10, -0.5f);
+
+            //top right
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width + 0.5f, state.bmp.Height - 10, state.bmp.Width + 0.5f, state.bmp.Height + 10);
+            g.DrawLine(Pens.BlanchedAlmond, state.bmp.Width - 10, state.bmp.Height + 0.5f, state.bmp.Width + 10, state.bmp.Height + 0.5f);
+
+            //top left
+            g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
+            g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
+        }
+
+        public Point getJointPos(string port, bool input) {
+            Point result = new Point(nodeRect.X, nodeRect.Y);
+            result.Y += nodeTitleFont.Height;
+            if (getExtra() != null) {
+                result.Y += nodeExtraFont.Height;
+            }
+            
+            foreach (var kvp in getProperties()) {
+                if (kvp.Key == port) {
+                    break;
+                }
+                if (kvp.Value.getType() == Property.Type.NONE) {
+                    result.Y += nodeFont.Height;
+                }
+            }
+            if (!input) {
+                result.X += Math.Max(100, titleWidth);
+            }
+            result.Y += nodeFont.Height / 2 - ballSize / 2;
+            return result;
+        }
+
+        public void drawGraphNode(Graphics g, bool isSelected) {
+            Point drawPos = nodeRect.Location;
+            //draw background
+            if (isSelected) {
+                g.FillRectangle(Brushes.Wheat, nodeRect);
+            } else {
+                g.FillRectangle(Brushes.CadetBlue, nodeRect);
+            }
+            g.DrawRectangle(Pens.Black, nodeRect);
+
+            //draw title
+            g.DrawString(getName(), nodeTitleFont, Brushes.Black, drawPos.X + (nodeRect.Width - titleWidth) / 2, drawPos.Y);
+            drawPos.Y += nodeFont.Height;
+            g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
+
+
+            //draw extra
+            if (getExtra() != null) {
+                g.DrawString(getExtra(), nodeExtraFont, Brushes.Black, drawPos);
+                drawPos.Y += nodeFont.Height;
+                g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
+            }
+
+            //draw properties
+            foreach (var kvp in getProperties()) {
+                if (kvp.Value.getType() == Property.Type.NONE) {
+                    g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, drawPos.Y);
+
+                    //draw bubbles
+                    if (kvp.Value.isInput) {
+                        if (kvp.Value.input != null) {
+                            g.FillEllipse(Brushes.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
+                        } else {
+                            g.DrawEllipse(Pens.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
+                        }
+                    } else if (kvp.Value.isOutput) {
+                        if (kvp.Value.output.Any()) {
+                            g.FillEllipse(Brushes.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
+                        } else {
+                            g.DrawEllipse(Pens.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
+                        }
+                    }
+                    drawPos.Y += nodeFont.Height;
+                }
+            }
+        }
+
+        public bool hitTest(int x, int y) {
+            return x >= nodeRect.Left && x < nodeRect.Right && y >= nodeRect.Top && y < nodeRect.Bottom;
         }
     }
 }

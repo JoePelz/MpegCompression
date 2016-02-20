@@ -81,12 +81,14 @@ namespace MpegCompressor {
         }
 
         protected override void createProperties() {
-            Property p = new Property();
+            base.createProperties();
+
+            Property p = new Property(false, false);
             p.createCheckbox("Inverse");
             p.eValueChanged += P_eValueChanged; ;
             properties["isInverse"] = p;
 
-            p = new Property();
+            p = new Property(false, false);
             p.createInt(50, 10, 100, "Quantization quality (%)");
             p.eValueChanged += (prop, b) => { soil(); };
             properties["quality"] = p;
@@ -117,22 +119,6 @@ namespace MpegCompressor {
                 state.quantizeQuality = properties["quality"].getInt();
             }
             generateQTables(state.quantizeQuality);
-
-            /*
-            byte[] test = {
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0,
-                128, 0, 0, 0, 0, 0, 0, 0
-            };
-            //sbyte[] test_dct = (sbyte[])(Array)doDCT(test, quantizationC);
-            byte[] test_dct = doDCT(test, quantizationC);
-            byte[] test_idct = doIDCT(test_dct, quantizationC);
-            */
             
             padChannels();
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);

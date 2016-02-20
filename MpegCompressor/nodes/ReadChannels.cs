@@ -16,52 +16,31 @@ namespace MpegCompressor {
             rename("ReadChannels");
             setPath("C:\\temp\\testfile.dct");
         }
-        
-        protected override void createOutputs() {
-            outputs.Add("outChannels", new HashSet<Address>());
-        }
 
         protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("WriteImage");
+            base.createProperties();
 
             //create filepath property
-            p = new Property();
+            Property p = new Property(false, false);
             p.createString("", "Image path to save");
             p.eValueChanged += pathChanged;
             properties.Add("path", p);
 
-            p = new Property();
+            p = new Property(false, false);
             p.createButton("open", "load channels from file");
             p.eValueChanged += open;
             properties.Add("open", p);
 
-            p = new Property();
+            p = new Property(false, false);
             p.createButton("info", "stats on the file read");
             p.eValueChanged += (a, b) => { check();  };
             properties.Add("info", p);
+
+            properties.Add("outChannels", new Property(false, true));
         }
 
         protected override void clean() {
             base.clean();
-
-            /*
-            Chunker c = new Chunker(8, 8, 8, 8, 1);
-            byte[] testData = {
-              0,  1,  2,  3,  4,  5,  6,  7,
-              8,  9, 10, 11, 12, 13, 14, 15,
-             16, 17, 18, 19, 20, 21, 22, 23,
-             24, 25, 26, 27, 28, 29, 30, 31,
-             32, 33, 34, 35, 36, 37, 38, 39,
-             40, 41, 42, 43, 44, 45, 46, 47,
-             48, 49, 50, 51, 52, 53, 54, 55,
-             56, 57, 58, 59, 60, 61, 62, 63
-            };
-            byte[] xform = new byte[64];
-            c.getZigZag8Block(testData, xform, 0);
-            byte[] result = new byte[64];
-            c.setZigZag8Block(result, 0, xform);
-            */
         }
 
         private void check() {
@@ -75,7 +54,8 @@ namespace MpegCompressor {
                 "\nimage height: " + state.imageHeight + 
                 "\nchannel width: " + state.channelWidth + 
                 "\nchannel height: " + state.channelHeight +
-                "\nsamples: " + state.samplingMode + " = "
+                "\nquality setting: " + state.quantizeQuality +
+                "\nsampling mode: " + state.samplingMode
                 , "File Information");
         }
 

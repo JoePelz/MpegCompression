@@ -53,7 +53,9 @@ namespace MpegCompressor {
         public void addProperties(Dictionary<string, Property> props) {
             SuspendLayout();
             foreach (Property p in props.Values) {
-                addProperty(p);
+                if (p.getType() != Property.Type.NONE) {
+                    addProperty(p);
+                }
             }
             ResumeLayout();
         }

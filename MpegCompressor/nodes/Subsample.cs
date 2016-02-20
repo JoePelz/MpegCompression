@@ -17,6 +17,10 @@ namespace MpegCompressor {
                 "4:2:0" };
         private Samples outSamples;
 
+        public Subsample() {
+            rename("Subsample");
+        }
+
         public static Size getCbCrSize(Size ySize, Samples mode) {
             switch (mode) {
                 case Samples.s444:
@@ -86,11 +90,10 @@ namespace MpegCompressor {
         }
 
         protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("SubSample");
+            base.createProperties();
             
             //Will need to choose output sample space.
-            p = new Property();
+            Property p = new Property(false, false);
             p.createChoices(options, (int)outSamples, "output sample space");
             p.eValueChanged += P_eValueChanged;
             properties["outSamples"] = p;

@@ -26,19 +26,59 @@ namespace MpegCompressor {
             viewNodes.focusView();
         }
 
-        public void buildGraph() {
+        public void DCTTest() {
             Node nRead = new ReadImage();
             Node nCS1 = new ColorSpace();
             Node nCtCH = new ColorToChannels();
             Node nSS = new Subsample();
             Node nDCT = new DCT();
             Node nIDCT = new DCT();
-            Node nCHtC = new ChannelsToColor();
             Node nCHtC2 = new ChannelsToColor();
             Node nCHtC3 = new ChannelsToColor();
             Node nCS3 = new ColorSpace();
-            Node nCS2 = new ColorSpace();
-            Node nChunkTest = new TestChunker();
+            
+            nRead.setPos(-160, 0);
+            nCS1.setPos(-35, 0);
+            nCtCH.setPos(90, 0);
+            nSS.setPos(200, 0);
+            nDCT.setPos(320, 0);
+            nCHtC2.setPos(440, -60);
+            nIDCT.setPos(440, 60);
+            nCHtC3.setPos(550, 60);
+            nCS3.setPos(660, 60);
+
+            (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
+            (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nIDCT as DCT).setInverse(true);
+            
+            Node.connect(nRead, "outColor", nCS1, "inColor");
+            Node.connect(nCS1, "outColor", nCtCH, "inColor");
+            Node.connect(nCtCH, "outChannels", nSS, "inChannels");
+            Node.connect(nSS, "outChannels", nDCT, "inChannels");
+            Node.connect(nDCT, "outChannels", nCHtC2, "inChannels");
+            Node.connect(nDCT, "outChannels", nIDCT, "inChannels");
+            Node.connect(nIDCT, "outChannels", nCHtC3, "inChannels");
+            Node.connect(nCHtC3, "outColor", nCS3, "inColor");
+
+            viewNodes.addNode(nRead);
+            viewNodes.addNode(nCS1);
+            viewNodes.addNode(nCtCH);
+            viewNodes.addNode(nSS);
+            viewNodes.addNode(nDCT);
+            viewNodes.addNode(nIDCT);
+            viewNodes.addNode(nCHtC2);
+            viewNodes.addNode(nCHtC3);
+            viewNodes.addNode(nCS3);
+        }
+
+        public void readWriteTest() {
+            Node nRead = new ReadImage();
+            Node nCS1 = new ColorSpace();
+            Node nCtCH = new ColorToChannels();
+            Node nSS = new Subsample();
+            Node nDCT = new DCT();
             Node nWriter = new WriteChannels();
 
             Node nReader = new ReadChannels();
@@ -46,46 +86,31 @@ namespace MpegCompressor {
             Node nIDCT2 = new DCT();
             Node nCS4 = new ColorSpace();
 
-            nRead.pos = new System.Drawing.Point(-110, 25);
-            nChunkTest.pos = new System.Drawing.Point(0, -10);
-            nCS1.pos = new System.Drawing.Point(0, 50);
-            nCtCH.pos = new System.Drawing.Point(110, 50);
-            nSS.pos = new System.Drawing.Point(220, 75);
-            nCHtC.pos = new System.Drawing.Point(330, 50);
-            nCS2.pos = new System.Drawing.Point(440, 50);
-            nDCT.pos = new System.Drawing.Point(330, 110);
-            nCHtC2.pos = new System.Drawing.Point(440, 110);
-            nIDCT.pos = new System.Drawing.Point(440, 170);
-            nWriter.pos = new System.Drawing.Point(440, 230);
-            nCHtC3.pos = new System.Drawing.Point(550, 170);
-            nCS3.pos = new System.Drawing.Point(660, 170);
 
-            nReader.pos = new System.Drawing.Point(-110, 290);
-            nIDCT2.pos = new System.Drawing.Point(10, 290);
-            nCHtC4.pos = new System.Drawing.Point(130, 290);
-            nCS4.pos = new System.Drawing.Point(250, 290);
-            
-            (nRead as ReadImage).setPath("C:\\temp\\strip.bmp");
+
+            nRead.setPos(-150, 0);
+            nCS1.setPos(10, 0);
+            nCtCH.setPos(130, 0);
+            nSS.setPos(250, 0);
+            nDCT.setPos(370, 0);
+            nWriter.setPos(490, 0);
+
+            nReader.setPos(-150, 100);
+            nIDCT2.setPos(10, 100);
+            nCHtC4.setPos(130, 100);
+            nCS4.setPos(250, 100);
+
+            (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
-            (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
-            (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nCS4 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
-            (nIDCT as DCT).setInverse(true);
             (nIDCT2 as DCT).setInverse(true);
-
-            Node.connect(nRead, "outColor", nChunkTest, "inColor");
+            
             Node.connect(nRead, "outColor", nCS1, "inColor");
             Node.connect(nCS1, "outColor", nCtCH, "inColor");
             Node.connect(nCtCH, "outChannels", nSS, "inChannels");
             Node.connect(nSS, "outChannels", nDCT, "inChannels");
-            Node.connect(nSS, "outChannels", nCHtC, "inChannels");
-            Node.connect(nDCT, "outChannels", nCHtC2, "inChannels");
-            Node.connect(nCHtC, "outColor", nCS2, "inColor");
-            Node.connect(nDCT, "outChannels", nIDCT, "inChannels");
             Node.connect(nDCT, "outChannels", nWriter, "inChannels");
-            Node.connect(nIDCT, "outChannels", nCHtC3, "inChannels");
-            Node.connect(nCHtC3, "outColor", nCS3, "inColor");
 
             Node.connect(nReader, "outChannels", nIDCT2, "inChannels");
             Node.connect(nIDCT2, "outChannels", nCHtC4, "inChannels");
@@ -96,19 +121,16 @@ namespace MpegCompressor {
             viewNodes.addNode(nCtCH);
             viewNodes.addNode(nSS);
             viewNodes.addNode(nDCT);
-            viewNodes.addNode(nIDCT);
-            viewNodes.addNode(nCHtC);
-            viewNodes.addNode(nCHtC2);
-            viewNodes.addNode(nCHtC3);
-            viewNodes.addNode(nCS3);
-            viewNodes.addNode(nCS2);
             viewNodes.addNode(nWriter);
-            viewNodes.addNode(nChunkTest);
 
             viewNodes.addNode(nReader);
             viewNodes.addNode(nIDCT2);
             viewNodes.addNode(nCHtC4);
             viewNodes.addNode(nCS4);
+        }
+
+        public void buildGraph() {
+            readWriteTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

@@ -14,8 +14,7 @@ namespace MpegCompressor {
 
         private Node selectedNode;
         private LinkedList<Node> selectedNodes;
-        private Pen linePen;
-        private Font nodeFont;
+        private static Pen linePen = new Pen(Color.Black, 3);
         private LinkedList<Node> nodes;
         private Point mdown;
         private bool bDragging;
@@ -35,8 +34,6 @@ namespace MpegCompressor {
         private void init() {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
-            nodeFont = new Font("Tahoma", 11.0f);
-            linePen = new Pen(Color.Black, 3);
             nodes = new LinkedList<Node>();
             mdown = new Point();
             selectedNodes = new LinkedList<Node>();
@@ -57,10 +54,11 @@ namespace MpegCompressor {
         private void recalcFocus() {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
             foreach (Node d in nodes) {
-                if (d.pos.X < left) left = d.pos.X;
-                if (d.pos.X > right) right = d.pos.X;
-                if (d.pos.Y < top) top = d.pos.Y;
-                if (d.pos.Y > bottom) bottom = d.pos.Y;
+                Rectangle r = d.getNodeRect();
+                if (r.Left < left) left = r.Left;
+                if (r.Right > right) right = r.Right;
+                if (r.Top < top) top = r.Top;
+                if (r.Bottom > bottom) bottom = r.Bottom;
             }
             setFocusRect(left, top, right - left + 100, bottom - top + 50);
         }
@@ -87,44 +85,20 @@ namespace MpegCompressor {
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
             Graphics g = e.Graphics;
-            Rectangle r = new Rectangle();
-            r.Width = 100;
-            r.Height = 50;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
-                foreach (Node.Address a in n.getInputs().Values) {
-                    if (a == null) {
-                        continue;
+                foreach (var kvp in n.getProperties()) {
+                    //This may be redundant.
+                    if (kvp.Value.isInput && kvp.Value.input != null) {
+                        g.DrawLine(linePen, kvp.Value.input.node.getJointPos(kvp.Value.input.port, false), n.getJointPos(kvp.Key, true));
                     }
-                    drawLink(g, a.node, n);
                 }
             }
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 
             foreach (Node n in nodes) {
-                r.Location = n.pos;
-                g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X - 5, n.pos.Y + 18, 10, 14));
-                g.FillEllipse(Brushes.Black, new Rectangle(n.pos.X + 95, n.pos.Y + 18, 10, 14));
-
-                if (selectedNodes.Contains(n)) {
-                    g.FillRectangle(Brushes.Wheat, r);
-                } else {
-                    g.FillRectangle(Brushes.CadetBlue, r);
-                }
-                g.DrawRectangle(Pens.Black, r);
-
-                g.DrawString(n.getName(), nodeFont, Brushes.Black, r.Location);
-                r.Offset(0, nodeFont.Height);
-                g.DrawString(n.getExtra(), nodeFont, Brushes.Black, r.Location);
+                n.drawGraphNode(g, selectedNodes.Contains(n));
             }
-        }
-
-        private void drawLink(Graphics g, Node a, Node b) {
-            Point p1 = a.pos;
-            Point p2 = b.pos;
-            p1.Offset(100, 25);
-            p2.Offset(0, 25);
-            g.DrawLine(linePen, p1, p2);
         }
 
         public Node getSelection() {
@@ -144,7 +118,9 @@ namespace MpegCompressor {
             //if the mouse is over a node, selected it and begin dragging. otherwise do base.
             //  if shift is selected, toggle selection instead of replacing
             if ((n = hitTest(e.X, e.Y)) != null) {
-                select(n, Control.ModifierKeys == Keys.Shift);
+                if (!selectedNodes.Contains(n)) {
+                    select(n, Control.ModifierKeys == Keys.Shift);
+                }
                 bDragging = true;
                 ScreenToCanvas(ref mdown);
             } else {
@@ -158,7 +134,7 @@ namespace MpegCompressor {
                 Point newPos = e.Location;
                 ScreenToCanvas(ref newPos);
                 foreach (Node n in selectedNodes) {
-                    n.pos.Offset(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                    n.offsetPos(newPos.X - mdown.X, newPos.Y - mdown.Y);
                 }
                 mdown = newPos;
                 Invalidate();
@@ -184,11 +160,9 @@ namespace MpegCompressor {
             //x and y are in screen coordinates where 
             //  (0, 0) is the top left of the panel
             ScreenToCanvas(ref x, ref y);
-            Point pos;
 
             foreach (Node n in nodes) {
-                pos = n.pos;
-                if (x > pos.X && y > pos.Y && x < (pos.X + 100) && y < (pos.Y + 50)) {
+                if (n.hitTest(x, y)) {
                     return n;
                 }
             }

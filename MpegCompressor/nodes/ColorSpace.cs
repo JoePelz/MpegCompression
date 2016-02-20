@@ -17,19 +17,22 @@ namespace MpegCompressor {
         private Space inSpace = Space.RGB;
         private Space outSpace = Space.RGB;
         
+        public ColorSpace() {
+            rename("ColorSpace");
+        }
+
         protected override void createProperties() {
-            Property p = properties["name"];
-            p.setString("ColorSpace");
+            base.createProperties();
 
             setExtra(inSpace.ToString() + " to " + outSpace.ToString());
 
             //Will need to choose input color space
             //and output color space.
-            p = new Property();
+            Property p = new Property(false, false);
             p.createChoices(options, (int)inSpace, "input color space");
             p.eValueChanged += P_eValueChanged;
             properties["inSpace"] = p;
-            p = new Property();
+            p = new Property(false, false);
             p.createChoices(options, (int)outSpace, "output color space");
             p.eValueChanged += P_eValueChanged;
             properties["outSpace"] = p;

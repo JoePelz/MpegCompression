@@ -10,8 +10,8 @@ namespace MpegCompressor.Nodes {
     class ChannelsToColor : Node {
 
         public ChannelsToColor() {
-            rename("Channels");
-            setExtra("to Color");
+            rename("To Color");
+            setExtra("from Channels");
         }
 
 

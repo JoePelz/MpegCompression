@@ -150,10 +150,39 @@ namespace MpegCompressor {
             viewNodes.addNode(nM);
         }
 
+        public void moVecTest() {
+            Node nR1 = new ReadImage();
+            Node nCtCh1 = new ColorToChannels();
+            Node nR2 = new ReadImage();
+            Node nCtCh2 = new ColorToChannels();
+            Node nM = new MoVec();
+
+            nR1.setPos(0, -50);
+            nCtCh1.setPos(180, -50);
+            nR2.setPos(0, 50);
+            nCtCh2.setPos(180, 50);
+            nM.setPos(330, 0);
+
+            (nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
+            (nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+
+            Node.connect(nR1, "outColor", nCtCh1, "inColor");
+            Node.connect(nR2, "outColor", nCtCh2, "inColor");
+            Node.connect(nCtCh1, "outChannels", nM, "inChannelNow");
+            Node.connect(nCtCh2, "outChannels", nM, "inChannelPast");
+
+            viewNodes.addNode(nR1);
+            viewNodes.addNode(nCtCh1);
+            viewNodes.addNode(nR2);
+            viewNodes.addNode(nCtCh2);
+            viewNodes.addNode(nM);
+        }
+
         public void buildGraph() {
             //DCTTest();
             //readWriteTest();
-            mergeTest();
+            //mergeTest();
+            moVecTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

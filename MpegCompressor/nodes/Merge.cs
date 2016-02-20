@@ -74,7 +74,7 @@ namespace MpegCompressor.Nodes {
             if (state == null) {
                 return;
             }
-            DataBlob stateB = upstreamB.node.getData(upstreamA.port);
+            DataBlob stateB = upstreamB.node.getData(upstreamB.port);
             if (stateB == null) {
                 return;
             }

@@ -7,12 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor.Nodes {
-    public class MoVec : Node {
+    public class MoVecDecompose : Node {
         private const int searchRange = 15;
         private const int chunkSize = 8;
-        private byte[] vectors;
+        private byte[][] diffChannels;
+        private byte[][] vectors;
 
-        public MoVec() {
+        public MoVecDecompose() {
             rename("Motion Vectors");
         }
 
@@ -64,11 +65,11 @@ namespace MpegCompressor.Nodes {
             }
 
             //create copy of channels for local use.
-            byte[][] newChannels = new byte[state.channels.Length][];
-            for (int channel = 0; channel < newChannels.Length; channel++) {
-                newChannels[channel] = (byte[])state.channels[channel].Clone();
-            }
-            state.channels = newChannels;
+            diffChannels = new byte[state.channels.Length][];
+            diffChannels[0] = new byte[state.channels[0].Length];
+            diffChannels[1] = new byte[state.channels[1].Length];
+            diffChannels[2] = new byte[state.channels[2].Length];
+            vectors = new byte[3][];
 
             calcMoVec(statePast.channels);
         }
@@ -79,26 +80,41 @@ namespace MpegCompressor.Nodes {
             //compare each block with blocks surrounding them in the arg channels 
             //over x = [-7,7] (range 15 values)
             //and  y = [-7,7] (range 15 values)
+
+
+            //Do the first channel
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int pixelTL;
             byte offset;
-            vectors = new byte[c.getNumChunks()];
+            vectors[0] = new byte[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
-                if (i == 7) {
-                    pixelTL = 100;
-                }
-
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 //find best match given search area
                 offset = findOffsetVector(state.channels[0], channels[0], pixelTL, state.channelWidth);
                 //save best match vector
-                vectors[i] = offset;
+                vectors[0][i] = offset;
                 //update channels to be difference.
-                setDiff(state.channels[0], channels[0], pixelTL, offset, state.channelWidth);
+                setDiff(diffChannels[0], state.channels[0], channels[0], pixelTL, offset, state.channelWidth);
+            }
+
+            //Do the second two channels
+            Size smaller = Subsample.deduceCbCrSize(state);
+            c = new Chunker(chunkSize, smaller.Width, smaller.Height, smaller.Width, 1);
+            vectors[1] = new byte[c.getNumChunks()];
+            vectors[2] = new byte[c.getNumChunks()];
+            for (int i = 0; i < c.getNumChunks(); i++) {
+                pixelTL = c.chunkIndexToPixelIndex(i);
+                offset = findOffsetVector(state.channels[1], channels[1], pixelTL, state.channelWidth);
+                vectors[1][i] = offset;
+                setDiff(diffChannels[1], state.channels[1], channels[1], pixelTL, offset, state.channelWidth);
+                //offset = findOffsetVector(state.channels[2], channels[2], pixelTL, state.channelWidth);
+                //Just use the same vectors for channel 3 as channel 2. Probably okay.
+                vectors[2][i] = offset;
+                setDiff(diffChannels[2], state.channels[2], channels[2], pixelTL, offset, state.channelWidth);
             }
         }
 
-        private void setDiff(byte[] goal, byte[] searchArea, int indexTopLeft, byte offset, int stride) {
+        private void setDiff(byte[] dest, byte[] goal, byte[] searchArea, int indexTopLeft, byte offset, int stride) {
             int offsetX = ((offset & 0xf0) >> 4) - 7;
             int offsetY = (offset & 0x0f) - 7;
             int pixelGoal, pixelSearchArea;
@@ -123,7 +139,7 @@ namespace MpegCompressor.Nodes {
                         continue; //out of bounds in search area. Equivalent to: goal[pixelGoal] -= 0
                     }
                     diff = (goal[pixelGoal] - searchArea[pixelSearchArea]);
-                    goal[pixelGoal] = (byte)diff;
+                    dest[pixelGoal] = (byte)diff;
                 }
             }
         }
@@ -136,9 +152,6 @@ namespace MpegCompressor.Nodes {
             int offY = 0;
             for (int yo = -7; yo < 8; yo++) {
                 for (int xo = -7; xo < 8; xo++) {
-                    if (yo == 0 && xo == 0) {
-                        pixel = 0;
-                    }
                     pixel = indexTopLeft + yo * stride + xo;
                     diff = SAD(goal, indexTopLeft, searchArea, pixel, stride);
                     if (diff < minDiff) {
@@ -181,6 +194,8 @@ namespace MpegCompressor.Nodes {
             base.view();
             if (state == null) {
                 return null;
+            } else if (state.bmp != null) {
+                return state.bmp;
             }
             Bitmap bmp = new Bitmap(state.imageWidth, state.imageHeight, PixelFormat.Format24bppRgb);
             BitmapData bmpData = bmp.LockBits(
@@ -201,9 +216,9 @@ namespace MpegCompressor.Nodes {
                 channelIndex = y * state.channelWidth;
                 counter = y * bmpData.Stride;
                 for (int x = 0; x < state.imageWidth; x++) {
-                    rgbValues[counter] = state.channels[0][channelIndex];
-                    rgbValues[counter + 1] = state.channels[0][channelIndex];
-                    rgbValues[counter + 2] = state.channels[0][channelIndex];
+                    rgbValues[counter] = diffChannels[0][channelIndex];
+                    rgbValues[counter + 1] = diffChannels[0][channelIndex];
+                    rgbValues[counter + 2] = diffChannels[0][channelIndex];
                     counter += 3;
                     channelIndex += 1;
                 }
@@ -216,22 +231,18 @@ namespace MpegCompressor.Nodes {
         }
 
         public override void viewExtra(Graphics g) {
-            base.viewExtra(g);
+            //base.viewExtra(g);
             if (state == null) {
                 return;
             }
-            /* Vectors:
-                0 1
-                2 3
-            */
             Chunker c = new Chunker(8, state.imageWidth, state.imageHeight, state.imageWidth, 1);
             int offsetX, offsetY;
             int y = state.imageHeight - 4;
             int x = 4;
 
-            for (int i = 0; i < vectors.Length; i++) {
-                offsetX = ((vectors[i] & 0xF0) >> 4) - 7;
-                offsetY = (vectors[i] & 0x0F) - 7;
+            for (int i = 0; i < vectors[0].Length; i++) {
+                offsetX = ((vectors[0][i] & 0xF0) >> 4) - 7;
+                offsetY = (vectors[0][i] & 0x0F) - 7;
                 if (offsetX == 0 && offsetY == 0) {
                     g.FillRectangle(Brushes.BlanchedAlmond, x-1, y-1, 2, 2);
                 } else {
@@ -243,6 +254,18 @@ namespace MpegCompressor.Nodes {
                     y -= 8;
                 }
             }
+        }
+
+        public override DataBlob getData(string port) {
+            base.getData(port);
+            if (port == "outChannels") {
+                state.channels = diffChannels;
+                state.type = DataBlob.Type.Channels;
+            } else if (port == "outVectors") {
+                state.channels = vectors;
+                state.type = DataBlob.Type.Vectors;
+            }
+            return state;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace MpegCompressor {
     public class DataBlob {
-        public enum Type { Image, Channels };
+        public enum Type { Image, Channels, Vectors };
         public enum Samples { s444, s422, s411, s420 };
 
 

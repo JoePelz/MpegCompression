@@ -155,7 +155,7 @@ namespace MpegCompressor {
             Node nCtCh1 = new ColorToChannels();
             Node nR2 = new ReadImage();
             Node nCtCh2 = new ColorToChannels();
-            Node nM = new MoVec();
+            Node nM = new MoVecDecompose();
             Node nC = new TestChunker();
 
             nR1.setPos(0, -50);

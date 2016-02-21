@@ -163,8 +163,10 @@ namespace MpegCompressor {
             nCtCh2.setPos(180, 50);
             nM.setPos(330, 0);
 
-            (nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
-            (nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+            //(nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
+            //(nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+            (nR1 as ReadImage).setPath("C:\\temp\\stripA.bmp");
+            (nR2 as ReadImage).setPath("C:\\temp\\stripB.bmp");
 
             Node.connect(nR1, "outColor", nCtCh1, "inColor");
             Node.connect(nR2, "outColor", nCtCh2, "inColor");

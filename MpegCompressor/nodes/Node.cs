@@ -205,7 +205,7 @@ namespace MpegCompressor.Nodes {
             return null;
         }
         
-        public void viewExtra(Graphics g) {
+        public virtual void viewExtra(Graphics g) {
             if (state == null || state.bmp == null) {
                 return;
             }

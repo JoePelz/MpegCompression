@@ -84,6 +84,10 @@ namespace MpegCompressor.Nodes {
             byte offset;
             vectors = new byte[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
+                if (i == 7) {
+                    pixelTL = 100;
+                }
+
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 //find best match given search area
                 offset = findOffsetVector(state.channels[0], channels[0], pixelTL, state.channelWidth);
@@ -98,16 +102,25 @@ namespace MpegCompressor.Nodes {
             int offsetX = ((offset & 0xf0) >> 4) - 7;
             int offsetY = (offset & 0x0f) - 7;
             int pixelGoal, pixelSearchArea;
+            int xLimit;
+            int xMax, xMin;
             int diff = 0;
             for(int y = 0; y < 8; y++) {
+                xLimit = indexTopLeft / stride * stride + y * stride + stride;
+                if (indexTopLeft / stride + y >= goal.Length / stride) {
+                    break;
+                }
+                xMin = indexTopLeft / stride * stride + y * stride + offsetX;
+                xMax = xMin + stride;
+
                 for (int x = 0; x < 8; x++) {
                     pixelGoal = indexTopLeft + y * stride + x;
                     pixelSearchArea = pixelGoal + offsetY * stride + offsetX;
-                    if (pixelGoal < 0 || pixelGoal >= goal.Length) {
-                        continue;
+                    if (pixelGoal >= xLimit) {
+                        continue; //out of bounds in the goal. ignore.
                     }
-                    if (pixelSearchArea < 0 || pixelSearchArea >= searchArea.Length) {
-                        continue;
+                    if (pixelSearchArea < xMin || pixelSearchArea >= xMax) {
+                        continue; //out of bounds in search area. Equivalent to: goal[pixelGoal] -= 0
                     }
                     diff = (goal[pixelGoal] - searchArea[pixelSearchArea]);
                     goal[pixelGoal] = (byte)diff;
@@ -123,6 +136,9 @@ namespace MpegCompressor.Nodes {
             int offY = 0;
             for (int yo = -7; yo < 8; yo++) {
                 for (int xo = -7; xo < 8; xo++) {
+                    if (yo == 0 && xo == 0) {
+                        pixel = 0;
+                    }
                     pixel = indexTopLeft + yo * stride + xo;
                     diff = SAD(goal, indexTopLeft, searchArea, pixel, stride);
                     if (diff < minDiff) {
@@ -139,17 +155,23 @@ namespace MpegCompressor.Nodes {
         }
 
         private int SAD(byte[] a, int startA, byte[] b, int startB, int stride) {
-            int sad = 0, ia, ib;
+            int sad = 0, ia, ib, xLimit;
             for (int y = 0; y < 8; y++) {
+                xLimit = startA / stride * stride + (y + 1) * stride;
+                if (startA / stride + y >= a.Length / stride) {
+                    break;
+                }
                 for (int x = 0; x < 8; x++) {
                     ia = y * stride + x;
                     ib = ia + startB;
                     ia = ia + startA;
-                    if (ia < 0 || ia >= a.Length ||
-                        ib < 0 || ib >= b.Length) {
+                    if (ia < 0 || ia >= xLimit) {
                         continue;
+                    } else if (ib < 0 || ib >= b.Length) {
+                        sad += a[ia];
+                    } else {
+                        sad += a[ia] > b[ib] ? a[ia] - b[ib] : b[ib] - a[ia];
                     }
-                    sad += a[ia] > b[ib] ? a[ia] - b[ib] : b[ib] - a[ia];
                 }
             }
             return sad;
@@ -167,18 +189,17 @@ namespace MpegCompressor.Nodes {
                 bmp.PixelFormat);
 
             IntPtr ptr = bmpData.Scan0;
-
             //copy bytes
             int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
             byte[] rgbValues = new byte[nBytes];
-
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
+
 
             //order: B,G,R,  B,G,R,  ...
             int channelIndex = 0, counter = 0;
             for (int y = 0; y < state.imageHeight; y++) {
                 channelIndex = y * state.channelWidth;
-                counter = y * state.imageWidth;
+                counter = y * bmpData.Stride;
                 for (int x = 0; x < state.imageWidth; x++) {
                     rgbValues[counter] = state.channels[0][channelIndex];
                     rgbValues[counter + 1] = state.channels[0][channelIndex];
@@ -196,6 +217,9 @@ namespace MpegCompressor.Nodes {
 
         public override void viewExtra(Graphics g) {
             base.viewExtra(g);
+            if (state == null) {
+                return;
+            }
             /* Vectors:
                 0 1
                 2 3
@@ -208,9 +232,13 @@ namespace MpegCompressor.Nodes {
             for (int i = 0; i < vectors.Length; i++) {
                 offsetX = ((vectors[i] & 0xF0) >> 4) - 7;
                 offsetY = (vectors[i] & 0x0F) - 7;
-                g.DrawLine(Pens.BlanchedAlmond, x, y, x + offsetX, y + offsetY);
+                if (offsetX == 0 && offsetY == 0) {
+                    g.FillRectangle(Brushes.BlanchedAlmond, x-1, y-1, 2, 2);
+                } else {
+                    g.DrawLine(Pens.BlanchedAlmond, x, y, x + offsetX, y - offsetY);
+                }
                 x += 8;
-                if (x + 4 > state.imageWidth) {
+                if (x - 4 > state.imageWidth) {
                     x = 4;
                     y -= 8;
                 }

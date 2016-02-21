@@ -72,6 +72,7 @@
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
     <Compile Include="nodes\Merge.cs" />
+    <Compile Include="nodes\Mix.cs" />
     <Compile Include="nodes\MoVec.cs" />
     <Compile Include="nodes\Node.cs" />
     <Compile Include="NodeView.cs">

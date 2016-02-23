@@ -156,14 +156,14 @@ namespace MpegCompressor {
             Node nR2 = new ReadImage();
             Node nCtCh2 = new ColorToChannels();
             Node nM = new MoVecDecompose();
-            Node nC = new TestChunker();
+            Node nC = new MoVecCompose();
 
             nR1.setPos(0, -50);
             nCtCh1.setPos(180, -50);
             nR2.setPos(0, 50);
             nCtCh2.setPos(180, 50);
-            nM.setPos(330, -50);
-            nC.setPos(330, 70);
+            nM.setPos(330, 0);
+            nC.setPos(520, 50);
 
             (nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
             (nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
@@ -172,9 +172,12 @@ namespace MpegCompressor {
 
             Node.connect(nR1, "outColor", nCtCh1, "inColor");
             Node.connect(nR2, "outColor", nCtCh2, "inColor");
-            Node.connect(nCtCh1, "outChannels", nM, "inChannelNow");
-            Node.connect(nCtCh2, "outChannels", nM, "inChannelPast");
-            Node.connect(nR2, "outColor", nC, "inColor");
+            Node.connect(nCtCh1, "outChannels", nM, "inChannelsNow");
+            Node.connect(nCtCh2, "outChannels", nM, "inChannelsPast");
+
+            Node.connect(nM, "outVectors", nC, "inVectors");
+            Node.connect(nM, "outChannels", nC, "inChannels");
+            Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
 
             viewNodes.addNode(nR1);
             viewNodes.addNode(nCtCh1);

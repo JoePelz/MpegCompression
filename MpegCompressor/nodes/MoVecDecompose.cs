@@ -5,13 +5,13 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.Nodes;
 
 namespace MpegCompressor.Nodes {
     public class MoVecDecompose : Node {
         private const int searchRange = 15;
         private const int chunkSize = 8;
-        private byte[][] diffChannels;
-        private byte[][] vectors;
+        private DataBlob vState;
 
         public MoVecDecompose() {
             rename("Motion Vectors");
@@ -20,8 +20,8 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            properties.Add("inChannelNow",  new Property(true, false));
-            properties.Add("inChannelPast", new Property(true, false));
+            properties.Add("inChannelsNow",  new Property(true, false));
+            properties.Add("inChannelsPast", new Property(true, false));
             properties.Add("outVectors",    new Property(false, true));
             properties.Add("outChannels",   new Property(false, true));
         }
@@ -29,16 +29,16 @@ namespace MpegCompressor.Nodes {
         protected override void clean() {
             base.clean();
 
-            Address upstreamNow = properties["inChannelNow"].input;
+            Address upstreamNow = properties["inChannelsNow"].input;
             if (upstreamNow == null) {
                 return;
             }
-            Address upstreamPast = properties["inChannelPast"].input;
+            Address upstreamPast = properties["inChannelsPast"].input;
             if (upstreamPast == null) {
                 return;
             }
 
-            state = upstreamNow.node.getData(upstreamNow.port);
+            DataBlob stateNow = upstreamNow.node.getData(upstreamNow.port);
             if (state == null) {
                 return;
             }
@@ -47,9 +47,7 @@ namespace MpegCompressor.Nodes {
                 return;
             }
 
-            state = state.clone();
-
-            if (state.type != DataBlob.Type.Channels || state.channels == null) {
+            if (stateNow.type != DataBlob.Type.Channels || stateNow.channels == null) {
                 state = null;
                 return;
             }
@@ -58,23 +56,30 @@ namespace MpegCompressor.Nodes {
             }
 
             //check resolutions match
-            if (state.channels[0].Length != statePast.channels[0].Length
-                || state.channels[1].Length != statePast.channels[1].Length
-                || state.channels[2].Length != statePast.channels[2].Length) {
+            if (stateNow.channels[0].Length != statePast.channels[0].Length
+                || stateNow.channels[1].Length != statePast.channels[1].Length
+                || stateNow.channels[2].Length != statePast.channels[2].Length) {
                 return;
             }
 
+            state = stateNow.clone();
+            vState = stateNow.clone();
+
             //create copy of channels for local use.
-            diffChannels = new byte[state.channels.Length][];
+            byte[][] diffChannels = new byte[state.channels.Length][];
             diffChannels[0] = new byte[state.channels[0].Length];
             diffChannels[1] = new byte[state.channels[1].Length];
             diffChannels[2] = new byte[state.channels[2].Length];
-            vectors = new byte[3][];
+            byte[][] vectors = new byte[3][];
+            state.channels = diffChannels;
+            vState.channels = vectors;
+            state.type = DataBlob.Type.Channels;
+            vState.type = DataBlob.Type.Vectors;
 
-            calcMoVec(statePast.channels);
+            calcMoVec(statePast.channels, stateNow.channels);
         }
 
-        private void calcMoVec(byte[][] channels) {
+        private void calcMoVec(byte[][] chOld, byte[][] chNew) {
             //for each channel
             //chunk state.channels into 8x8 blocks
             //compare each block with blocks surrounding them in the arg channels 
@@ -86,31 +91,31 @@ namespace MpegCompressor.Nodes {
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int pixelTL;
             byte offset;
-            vectors[0] = new byte[c.getNumChunks()];
+            vState.channels[0] = new byte[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 //find best match given search area
-                offset = findOffsetVector(state.channels[0], channels[0], pixelTL, state.channelWidth);
+                offset = findOffsetVector(chNew[0], chOld[0], pixelTL, state.channelWidth);
                 //save best match vector
-                vectors[0][i] = offset;
+                vState.channels[0][i] = offset;
                 //update channels to be difference.
-                setDiff(diffChannels[0], state.channels[0], channels[0], pixelTL, offset, state.channelWidth);
+                setDiff(state.channels[0], chNew[0], chOld[0], pixelTL, offset, state.channelWidth);
             }
 
             //Do the second two channels
             Size smaller = Subsample.deduceCbCrSize(state);
             c = new Chunker(chunkSize, smaller.Width, smaller.Height, smaller.Width, 1);
-            vectors[1] = new byte[c.getNumChunks()];
-            vectors[2] = new byte[c.getNumChunks()];
+            vState.channels[1] = new byte[c.getNumChunks()];
+            vState.channels[2] = new byte[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
-                offset = findOffsetVector(state.channels[1], channels[1], pixelTL, state.channelWidth);
-                vectors[1][i] = offset;
-                setDiff(diffChannels[1], state.channels[1], channels[1], pixelTL, offset, state.channelWidth);
+                offset = findOffsetVector(chNew[1], chOld[1], pixelTL, state.channelWidth);
+                vState.channels[1][i] = offset;
+                setDiff(state.channels[1], chNew[1], chOld[1], pixelTL, offset, state.channelWidth);
                 //offset = findOffsetVector(state.channels[2], channels[2], pixelTL, state.channelWidth);
                 //Just use the same vectors for channel 3 as channel 2. Probably okay.
-                vectors[2][i] = offset;
-                setDiff(diffChannels[2], state.channels[2], channels[2], pixelTL, offset, state.channelWidth);
+                vState.channels[2][i] = offset;
+                setDiff(state.channels[2], chNew[2], chOld[2], pixelTL, offset, state.channelWidth);
             }
         }
 
@@ -216,9 +221,9 @@ namespace MpegCompressor.Nodes {
                 channelIndex = y * state.channelWidth;
                 counter = y * bmpData.Stride;
                 for (int x = 0; x < state.imageWidth; x++) {
-                    rgbValues[counter] = diffChannels[0][channelIndex];
-                    rgbValues[counter + 1] = diffChannels[0][channelIndex];
-                    rgbValues[counter + 2] = diffChannels[0][channelIndex];
+                    rgbValues[counter] = state.channels[0][channelIndex];
+                    rgbValues[counter + 1] = state.channels[0][channelIndex];
+                    rgbValues[counter + 2] = state.channels[0][channelIndex];
                     counter += 3;
                     channelIndex += 1;
                 }
@@ -240,9 +245,9 @@ namespace MpegCompressor.Nodes {
             int y = state.imageHeight - 4;
             int x = 4;
 
-            for (int i = 0; i < vectors[0].Length; i++) {
-                offsetX = ((vectors[0][i] & 0xF0) >> 4) - 7;
-                offsetY = (vectors[0][i] & 0x0F) - 7;
+            for (int i = 0; i < vState.channels[0].Length; i++) {
+                offsetX = ((vState.channels[0][i] & 0xF0) >> 4) - 7;
+                offsetY = (vState.channels[0][i] & 0x0F) - 7;
                 if (offsetX == 0 && offsetY == 0) {
                     g.FillRectangle(Brushes.BlanchedAlmond, x-1, y-1, 2, 2);
                 } else {
@@ -259,11 +264,9 @@ namespace MpegCompressor.Nodes {
         public override DataBlob getData(string port) {
             base.getData(port);
             if (port == "outChannels") {
-                state.channels = diffChannels;
-                state.type = DataBlob.Type.Channels;
+                return state;
             } else if (port == "outVectors") {
-                state.channels = vectors;
-                state.type = DataBlob.Type.Vectors;
+                return vState;
             }
             return state;
         }

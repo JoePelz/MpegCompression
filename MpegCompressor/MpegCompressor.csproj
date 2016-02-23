@@ -61,29 +61,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="nodes\ChannelNode.cs" />
-    <Compile Include="nodes\ChannelsToColor.cs" />
+    <Compile Include="Nodes\ChannelNode.cs" />
+    <Compile Include="Nodes\ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
-    <Compile Include="nodes\ColorSpace.cs" />
-    <Compile Include="nodes\ColorToChannels.cs" />
+    <Compile Include="Nodes\ColorSpace.cs" />
+    <Compile Include="Nodes\ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
-    <Compile Include="nodes\DCT.cs" />
+    <Compile Include="Nodes\DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
-    <Compile Include="nodes\Merge.cs" />
-    <Compile Include="nodes\Mix.cs" />
-    <Compile Include="nodes\MoVecDecompose.cs" />
-    <Compile Include="nodes\MoVecCompose.cs" />
-    <Compile Include="nodes\Node.cs" />
+    <Compile Include="Nodes\Merge.cs" />
+    <Compile Include="Nodes\Mix.cs" />
+    <Compile Include="Nodes\MoVecDecompose.cs" />
+    <Compile Include="Nodes\MoVecCompose.cs" />
+    <Compile Include="Nodes\Node.cs" />
     <Compile Include="NodeView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="NodeView.Designer.cs">
       <DependentUpon>NodeView.cs</DependentUpon>
     </Compile>
-    <Compile Include="nodes\NoOp.cs" />
-    <Compile Include="nodes\ColorNode.cs" />
+    <Compile Include="Nodes\NoOp.cs" />
+    <Compile Include="Nodes\ColorNode.cs" />
     <Compile Include="Property.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -101,10 +101,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="nodes\ReadChannels.cs" />
-    <Compile Include="nodes\ReadImage.cs" />
-    <Compile Include="nodes\Subsample.cs" />
-    <Compile Include="nodes\TestChunker.cs" />
+    <Compile Include="Nodes\ReadChannels.cs" />
+    <Compile Include="Nodes\ReadImage.cs" />
+    <Compile Include="Nodes\Subsample.cs" />
+    <Compile Include="Nodes\TestChunker.cs" />
     <Compile Include="TransformPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -114,7 +114,7 @@
     <Compile Include="Viewport.Designer.cs">
       <DependentUpon>Viewport.cs</DependentUpon>
     </Compile>
-    <Compile Include="nodes\WriteChannels.cs" />
+    <Compile Include="Nodes\WriteChannels.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

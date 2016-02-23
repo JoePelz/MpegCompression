@@ -157,6 +157,7 @@ namespace MpegCompressor {
             Node nCtCh2 = new ColorToChannels();
             Node nM = new MoVecDecompose();
             Node nC = new MoVecCompose();
+            Node nChtC = new ChannelsToColor();
 
             nR1.setPos(0, -50);
             nCtCh1.setPos(180, -50);
@@ -164,6 +165,7 @@ namespace MpegCompressor {
             nCtCh2.setPos(180, 50);
             nM.setPos(330, 0);
             nC.setPos(520, 50);
+            nChtC.setPos(700, 50);
 
             (nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
             (nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
@@ -178,6 +180,7 @@ namespace MpegCompressor {
             Node.connect(nM, "outVectors", nC, "inVectors");
             Node.connect(nM, "outChannels", nC, "inChannels");
             Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
+            Node.connect(nC, "outChannels", nChtC, "inChannels");
 
             viewNodes.addNode(nR1);
             viewNodes.addNode(nCtCh1);
@@ -185,6 +188,7 @@ namespace MpegCompressor {
             viewNodes.addNode(nCtCh2);
             viewNodes.addNode(nM);
             viewNodes.addNode(nC);
+            viewNodes.addNode(nChtC);
         }
 
         public void buildGraph() {

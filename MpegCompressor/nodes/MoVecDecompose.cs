@@ -9,7 +9,6 @@ using MpegCompressor.Nodes;
 
 namespace MpegCompressor.Nodes {
     public class MoVecDecompose : Node {
-        private const int searchRange = 15;
         private const int chunkSize = 8;
         private DataBlob vState;
 
@@ -99,6 +98,9 @@ namespace MpegCompressor.Nodes {
                 //save best match vector
                 vState.channels[0][i] = offset;
                 //update channels to be difference.
+                if (i == 11) {
+                    i = 11;
+                }
                 setDiff(state.channels[0], chNew[0], chOld[0], pixelTL, offset, state.channelWidth);
             }
 
@@ -131,7 +133,7 @@ namespace MpegCompressor.Nodes {
                 if (indexTopLeft / stride + y >= goal.Length / stride) {
                     break;
                 }
-                xMin = indexTopLeft / stride * stride + y * stride + offsetX;
+                xMin = indexTopLeft / stride * stride + y * stride + offsetY * stride + offsetX;
                 xMax = xMin + stride;
 
                 for (int x = 0; x < 8; x++) {
@@ -143,7 +145,7 @@ namespace MpegCompressor.Nodes {
                     if (pixelSearchArea < xMin || pixelSearchArea >= xMax) {
                         continue; //out of bounds in search area. Equivalent to: goal[pixelGoal] -= 0
                     }
-                    diff = (goal[pixelGoal] - searchArea[pixelSearchArea]);
+                    diff = (127 + goal[pixelGoal] - searchArea[pixelSearchArea]);
                     dest[pixelGoal] = (byte)diff;
                 }
             }

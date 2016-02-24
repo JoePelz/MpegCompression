@@ -38,9 +38,9 @@ namespace MpegCompressor {
             Node nCHtC3 = new ChannelsToColor();
             Node nCS3 = new ColorSpace();
             
-            nRead.setPos(-160, 0);
-            nCS1.setPos(-35, 0);
-            nCtCH.setPos(90, 0);
+            nRead.setPos(-180, 0);
+            nCS1.setPos(-55, 0);
+            nCtCH.setPos(65, 0);
             nSS.setPos(200, 0);
             nDCT.setPos(320, 0);
             nCHtC2.setPos(440, -60);
@@ -196,10 +196,10 @@ namespace MpegCompressor {
         }
 
         public void buildGraph() {
-            //DCTTest();
+            DCTTest();
             //readWriteTest();
             //mergeTest();
-            moVecTest();
+            //moVecTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

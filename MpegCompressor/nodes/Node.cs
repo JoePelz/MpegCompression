@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -198,11 +199,58 @@ namespace MpegCompressor.Nodes {
             if (isDirty) {
                 clean();
             }
-            if (state != null) {
+            if (state != null && (state.type == DataBlob.Type.Image || state.bmp != null)) {
                 return state.bmp;
             }
+            if (state != null && state.type == DataBlob.Type.Channels && state.channels != null) {
+                Size s = Subsample.deduceCbCrSize(state);
+
+                Bitmap bmp = new Bitmap(state.channelWidth, state.channelHeight, PixelFormat.Format24bppRgb);
+                BitmapData bmpData = bmp.LockBits(
+                    new Rectangle(0, 0, bmp.Width, bmp.Height),
+                    System.Drawing.Imaging.ImageLockMode.ReadWrite,
+                    bmp.PixelFormat);
+
+                IntPtr ptr = bmpData.Scan0;
+                //copy bytes
+                int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
+                byte[] rgbValues = new byte[nBytes];
+                System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
+
+
+                //order: B,G,R,  B,G,R,  ...
+                int channelIndex = 0;
+                int counter = 0;
+                int channelIndexRB = 0;
+                for (int y = 0; y < state.imageHeight; y++) {
+                    channelIndex = y * state.channelWidth;
+                    channelIndexRB = y * s.Width;
+                    counter = y * bmpData.Stride;
+
+                    for (int x = 0; x < state.imageWidth; x++) {
+                        rgbValues[counter + 2] = state.channels[0][channelIndex];
+                        if (y < s.Height && x < s.Width) {
+                            rgbValues[counter + 1] = state.channels[1][channelIndexRB];
+                            rgbValues[counter + 0] = state.channels[2][channelIndexRB];
+                            channelIndexRB++;
+                        }
+                        counter += 3;
+                        channelIndex++;
+                    }
+                }
+                System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
+
+                bmp.UnlockBits(bmpData);
+                state.bmp = bmp;
+                return bmp;
+            }
+            
             //Debug.Write("View missing in " + properties["name"].getString() + "\n");
             return null;
+        }
+
+        public override string ToString() {
+            return properties["name"].getString();
         }
         
         public virtual void viewExtra(Graphics g) {

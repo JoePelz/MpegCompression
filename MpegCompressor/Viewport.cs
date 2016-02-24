@@ -137,7 +137,7 @@ namespace MpegCompressor {
 
             if (img != null) {
                 g.ResetTransform();
-                g.DrawString("Size: " + img.Width + "x" + img.Height, new Font("arial", 10.0f), Brushes.Black, 0, 0);
+                g.DrawString(content + ": " + img.Width + "x" + img.Height, new Font("arial", 10.0f), Brushes.Black, 0, 0);
             }
         }
 

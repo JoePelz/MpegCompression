@@ -130,7 +130,7 @@ namespace MpegCompressor {
         }
 
         public void buildGraph() {
-            readWriteTest();
+            DCTTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

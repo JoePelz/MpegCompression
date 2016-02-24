@@ -198,13 +198,21 @@ namespace MpegCompressor {
             if (isDirty) {
                 clean();
             }
-            if (state != null) {
+            if (state != null && (state.type == DataBlob.Type.Image || state.bmp != null)) {
                 return state.bmp;
             }
+            if (state.type == DataBlob.Type.Channels) {
+
+            }
+            
             //Debug.Write("View missing in " + properties["name"].getString() + "\n");
             return null;
         }
-        
+
+        public override string ToString() {
+            return properties["name"].getString();
+        }
+
         public void viewExtra(Graphics g) {
             if (state == null || state.bmp == null) {
                 return;

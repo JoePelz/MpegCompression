@@ -12,7 +12,13 @@ namespace MpegCompressor.Nodes {
         //byte values are -128 to 127, but stored in a uint type
         private byte rleToken = 128;
 
-        public ReadChannels() {
+        public ReadChannels(): base() { }
+        public ReadChannels(NodeView graph) : base(graph) { }
+        public ReadChannels(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("ReadChannels");
             setPath("C:\\temp\\testfile.dct");
         }

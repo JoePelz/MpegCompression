@@ -16,7 +16,13 @@ namespace MpegCompressor.Nodes {
                 "4:2:0" };
         private DataBlob.Samples outSamples;
 
-        public Subsample() {
+        public Subsample(): base() { }
+        public Subsample(NodeView graph) : base(graph) { }
+        public Subsample(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("Subsample");
         }
 

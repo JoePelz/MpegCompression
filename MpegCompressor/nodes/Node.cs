@@ -38,6 +38,21 @@ namespace MpegCompressor.Nodes {
         public event EventHandler eViewChanged;
 
         public Node() {
+            init();
+        }
+
+        public Node(NodeView graph) {
+            init();
+            graph.addNode(this);
+        }
+
+        public Node(NodeView graph, int posX, int posY) {
+            init();
+            graph.addNode(this);
+            setPos(posX, posY);
+        }
+
+        protected virtual void init() {
             properties = new Dictionary<string, Property>();
             state = new DataBlob();
             titleWidth = 100;
@@ -48,6 +63,7 @@ namespace MpegCompressor.Nodes {
             createProperties();
 
             nodeRect = new Rectangle(0, 0, 100, 100);
+
         }
 
         internal Rectangle getNodeRect() {

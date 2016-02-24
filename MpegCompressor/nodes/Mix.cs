@@ -10,7 +10,13 @@ namespace MpegCompressor.Nodes {
     public class Mix : Node {
         private float ratio;
 
-        public Mix() {
+        public Mix(): base() { }
+        public Mix(NodeView graph) : base(graph) { }
+        public Mix(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             ratio = 0.5f;
             rename("Merge");
         }

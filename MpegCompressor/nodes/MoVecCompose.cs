@@ -9,7 +9,14 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     public class MoVecCompose : Node {
         private const int chunkSize = 8;
-        public MoVecCompose() {
+
+        public MoVecCompose(): base() { }
+        public MoVecCompose(NodeView graph) : base(graph) { }
+        public MoVecCompose(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("Rebuild Frame");
             setExtra("from vectors");
         }
@@ -127,46 +134,6 @@ namespace MpegCompressor.Nodes {
             }
 
         }
-
-        public override Bitmap view() {
-            base.view();
-            if (state == null) {
-                return null;
-            } else if (state.bmp != null) {
-                return state.bmp;
-            }
-            Bitmap bmp = new Bitmap(state.imageWidth, state.imageHeight, PixelFormat.Format24bppRgb);
-            BitmapData bmpData = bmp.LockBits(
-                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                System.Drawing.Imaging.ImageLockMode.ReadWrite,
-                bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
-
-            //order: B,G,R,  B,G,R,  ...
-            int channelIndex = 0, counter = 0;
-            for (int y = 0; y < state.imageHeight; y++) {
-                channelIndex = y * state.channelWidth;
-                counter = y * bmpData.Stride;
-                for (int x = 0; x < state.imageWidth; x++) {
-                    rgbValues[counter] = state.channels[0][channelIndex];
-                    rgbValues[counter + 1] = state.channels[0][channelIndex];
-                    rgbValues[counter + 2] = state.channels[0][channelIndex];
-                    counter += 3;
-                    channelIndex += 1;
-                }
-            }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
-            state.bmp = bmp;
-            return bmp;
-        }
-
+        
     }
 }

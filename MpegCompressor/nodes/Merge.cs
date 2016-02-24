@@ -17,7 +17,13 @@ namespace MpegCompressor.Nodes {
                 "Divide" };
         private Method method;
 
-        public Merge() {
+        public Merge(): base() { }
+        public Merge(NodeView graph) : base(graph) { }
+        public Merge(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             method = 0;
             rename("Merge");
         }

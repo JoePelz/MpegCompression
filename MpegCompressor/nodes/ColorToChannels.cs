@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor.Nodes {
     class ColorToChannels : Node {
-        
-        public ColorToChannels() {
+
+        public ColorToChannels(): base() { }
+        public ColorToChannels(NodeView graph) : base(graph) { }
+        public ColorToChannels(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("To Channels");
             setExtra("from Color");
         }

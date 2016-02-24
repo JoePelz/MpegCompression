@@ -10,9 +10,14 @@ namespace MpegCompressor.Nodes {
     class TestChunker : ColorNode {
         int chunkSize;
 
-        public TestChunker() {
+        public TestChunker(): base() { }
+        public TestChunker(NodeView graph) : base(graph) { }
+        public TestChunker(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+        protected override void init() {
+            base.init();
             rename("Chunk Tester!");
-            setChunkSize(4);
+            setChunkSize(8);
         }
 
         protected override void createProperties() {

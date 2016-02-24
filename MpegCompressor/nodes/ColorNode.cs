@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     public abstract class ColorNode : Node {
 
+        public ColorNode(): base() { }
+        public ColorNode(NodeView graph) : base(graph) { }
+        public ColorNode(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
         protected override void createProperties() {
             base.createProperties();
             properties.Add("inColor", new Property(true, false));

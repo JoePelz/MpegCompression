@@ -179,8 +179,8 @@ namespace MpegCompressor {
             Node.connect(nM2, "outChannels", nC2, "inChannels");
             Node.connect(nSS2, "outChannels", nC2, "inChannelsPast");
 
-            (nR1 as ReadImage).setPath("C:\\temp\\lena.tif");
-            (nR2 as ReadImage).setPath("C:\\temp\\uv.jpg");
+            (nR1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
+            (nR2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
             //(nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
             //(nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
             //(nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
@@ -194,6 +194,7 @@ namespace MpegCompressor {
         }
 
         public void mpegTest() {
+            //first frame
             Node nRead1 = new ReadImage(viewNodes, 0, 0);
             Node nCS1 = new ColorSpace(viewNodes, 130, 0);
             Node nCtCh1 = new ColorToChannels(viewNodes, 260, 0);
@@ -201,6 +202,7 @@ namespace MpegCompressor {
             Node nDCT1 = new DCT(viewNodes, 520, 0);
             Node nIDCT1 = new DCT(viewNodes, 520, 100);
 
+            //second frame
             Node nRead2 = new ReadImage(viewNodes, 0, 200);
             Node nCS2 = new ColorSpace(viewNodes, 130, 200);
             Node nCtCh2 = new ColorToChannels(viewNodes, 260, 200);
@@ -208,8 +210,9 @@ namespace MpegCompressor {
             Node nMoVec2 = new MoVecDecompose(viewNodes, 520, 200);
             Node nDCT2 = new DCT(viewNodes, 680, 200);
             Node nIDCT2 = new DCT(viewNodes, 680, 270);
-            Node nIMoVec = new MoVecCompose(viewNodes, 680, 360);
+            Node nIMoVec2 = new MoVecCompose(viewNodes, 680, 360);
             
+            //Third frame
             Node nRead3 = new ReadImage(viewNodes, 0, 500);
             Node nCS3 = new ColorSpace(viewNodes, 130, 500);
             Node nCtCh3 = new ColorToChannels(viewNodes, 260, 500);
@@ -225,7 +228,7 @@ namespace MpegCompressor {
             Node.connect(nSS1, "outChannels", nDCT1, "inChannels");
             Node.connect(nDCT1, "outChannels", nIDCT1, "inChannels");
             Node.connect(nIDCT1, "outChannels", nMoVec2, "inChannelsPast");
-            Node.connect(nIDCT1, "outChannels", nIMoVec, "inChannelsPast");
+            Node.connect(nIDCT1, "outChannels", nIMoVec2, "inChannelsPast");
 
             Node.connect(nRead2, "outColor", nCS2, "inColor");
             Node.connect(nCS2, "outColor", nCtCh2, "inColor");
@@ -233,9 +236,10 @@ namespace MpegCompressor {
             Node.connect(nSS2, "outChannels", nMoVec2, "inChannelsNow");
             Node.connect(nMoVec2, "outChannels", nDCT2, "inChannels");
             Node.connect(nDCT2, "outChannels", nIDCT2, "inChannels");
-            Node.connect(nIDCT2, "outChannels", nIMoVec, "inChannels");
-            Node.connect(nMoVec2, "outVectors", nIMoVec, "inVectors");
-            Node.connect(nIMoVec, "outChannels", nMoVec3, "inChannelsPast");
+            Node.connect(nIDCT2, "outChannels", nIMoVec2, "inChannels");
+            //Node.connect(nMoVec2, "outChannels", nIMoVec2, "inChannels");
+            Node.connect(nMoVec2, "outVectors", nIMoVec2, "inVectors");
+            Node.connect(nIMoVec2, "outChannels", nMoVec3, "inChannelsPast");
 
             Node.connect(nRead3, "outColor", nCS3, "inColor");
             Node.connect(nCS3, "outColor", nCtCh3, "inColor");
@@ -272,8 +276,8 @@ namespace MpegCompressor {
             //DCTTest();
             //readWriteTest();
             //mergeTest();
-            moVecTest();
-            //mpegTest();
+            //moVecTest();
+            mpegTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

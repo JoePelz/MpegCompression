@@ -112,6 +112,7 @@ namespace MpegCompressor.Nodes {
             int initialX = pixelTL % channelWidth;
             int initialY = pixelTL / channelWidth;
             int maxY = dest.Length / channelWidth;
+            int temp;
             for (int y = 0; y < chunkSize; y++) {
                 if (initialY + y >= maxY) {
                     break;
@@ -129,7 +130,9 @@ namespace MpegCompressor.Nodes {
                         initialX + x + offX < 0) {
                         dest[dstPixel] = (byte)(diff[dstPixel] - 127);
                     } else {
-                        dest[dstPixel] = (byte)(past[srcPixel] + diff[dstPixel] - 127);
+                        temp = past[srcPixel] + diff[dstPixel] - 127;
+                        temp = temp > 255 ? 255 : (temp < 0 ? 0 : temp);
+                        dest[dstPixel] = (byte)(temp);
                     }
                 }
             }

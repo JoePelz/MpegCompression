@@ -100,7 +100,11 @@ namespace MpegCompressor.Nodes {
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int pixelTL;
             byte offset;
+            //need to set vState.channelWidth and vState.channelHeight correctly, I think....
             vState.channels[0] = new byte[c.getNumChunks()];
+            vState.channelWidth = c.getChunksWide();
+            vState.channelHeight = c.getChunksHigh();
+            
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 //find best match given search area

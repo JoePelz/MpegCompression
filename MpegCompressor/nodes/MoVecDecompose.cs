@@ -80,6 +80,8 @@ namespace MpegCompressor.Nodes {
             byte[][] vectors = new byte[3][];
             state.channels = diffChannels;
             vState.channels = vectors;
+            state.bmp = null;
+            vState.bmp = null;
             state.type = DataBlob.Type.Channels;
             vState.type = DataBlob.Type.Vectors;
 
@@ -116,13 +118,13 @@ namespace MpegCompressor.Nodes {
             vState.channels[2] = new byte[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
-                offset = findOffsetVector(chNew[1], chOld[1], pixelTL, state.channelWidth);
+                offset = findOffsetVector(chNew[1], chOld[1], pixelTL, smaller.Width);
                 vState.channels[1][i] = offset;
-                setDiff(state.channels[1], chNew[1], chOld[1], pixelTL, offset, state.channelWidth);
+                setDiff(state.channels[1], chNew[1], chOld[1], pixelTL, offset, smaller.Width);
                 //offset = findOffsetVector(state.channels[2], channels[2], pixelTL, state.channelWidth);
                 //Just use the same vectors for channel 3 as channel 2. Probably okay.
                 vState.channels[2][i] = offset;
-                setDiff(state.channels[2], chNew[2], chOld[2], pixelTL, offset, state.channelWidth);
+                setDiff(state.channels[2], chNew[2], chOld[2], pixelTL, offset, smaller.Width);
             }
         }
 
@@ -209,7 +211,7 @@ namespace MpegCompressor.Nodes {
             if (state == null) {
                 return;
             }
-            Chunker c = new Chunker(8, state.imageWidth, state.imageHeight, state.imageWidth, 1);
+            Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int offsetX, offsetY;
             int y = state.imageHeight - 4;
             int x = 4;
@@ -223,7 +225,7 @@ namespace MpegCompressor.Nodes {
                     g.DrawLine(Pens.BlanchedAlmond, x, y, x + offsetX, y - offsetY);
                 }
                 x += 8;
-                if (x - 4 > state.imageWidth) {
+                if (x - 4 >= state.channelWidth) {
                     x = 4;
                     y -= 8;
                 }

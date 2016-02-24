@@ -13,6 +13,7 @@ using System.Drawing.Imaging;
 namespace MpegCompressor {
     public partial class Viewport : TransformPanel {
         private char viewChannel;
+        private bool viewExtra;
 
         private IViewable content;
 
@@ -31,6 +32,7 @@ namespace MpegCompressor {
         private void init() {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
+            viewExtra = true;
         }
 
         protected override void OnMouseEnter(EventArgs e) {
@@ -58,6 +60,10 @@ namespace MpegCompressor {
                     viewChannel = '\0';
                 else
                     viewChannel = 'b';
+                Invalidate();
+                return true;
+            } else if (keyData == Keys.O) {
+                viewExtra = !viewExtra;
                 Invalidate();
                 return true;
             }
@@ -132,7 +138,9 @@ namespace MpegCompressor {
                 setFocusRect(0, -img.Height, img.Width, img.Height);
                 g.DrawImage(img, 0, -img.Height, img.Width, img.Height);
                 g.ScaleTransform(1, -1);
-                content.viewExtra(g);
+                if (viewExtra) {
+                    content.viewExtra(g);
+                }
             }
 
             if (img != null) {

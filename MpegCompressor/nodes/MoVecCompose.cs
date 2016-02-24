@@ -76,6 +76,7 @@ namespace MpegCompressor.Nodes {
             newChannels[1] = new byte[state.channels[1].Length];
             newChannels[2] = new byte[state.channels[2].Length];
             state.channels = newChannels;
+            state.bmp = null;
 
             reassemble(statePast.channels, stateDiff.channels, stateVectors.channels);
         }
@@ -97,8 +98,8 @@ namespace MpegCompressor.Nodes {
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 
-                restoreChunk(state.channels[1], past[1], diff[1], vectors[1][i], pixelTL, state.channelWidth);
-                restoreChunk(state.channels[2], past[2], diff[2], vectors[2][i], pixelTL, state.channelWidth);
+                restoreChunk(state.channels[1], past[1], diff[1], vectors[1][i], pixelTL, smaller.Width);
+                restoreChunk(state.channels[2], past[2], diff[2], vectors[2][i], pixelTL, smaller.Width);
             }
         }
 

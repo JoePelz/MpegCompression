@@ -151,21 +151,33 @@ namespace MpegCompressor {
         }
 
         public void moVecTest() {
-            Node nR1 = new ReadImage();
-            Node nCtCh1 = new ColorToChannels();
-            Node nR2 = new ReadImage();
-            Node nCtCh2 = new ColorToChannels();
-            Node nM = new MoVecDecompose();
-            Node nC = new MoVecCompose();
-            Node nChtC = new ChannelsToColor();
+            Node nR1 = new ReadImage(viewNodes, 0, -50);
+            Node nCtCh1 = new ColorToChannels(viewNodes, 180, -50);
+            Node nR2 = new ReadImage(viewNodes, 0, 50);
+            Node nCtCh2 = new ColorToChannels(viewNodes, 180, 50);
+            Node nM = new MoVecDecompose(viewNodes, 330, 0);
+            Node nC = new MoVecCompose(viewNodes, 520, 20);
 
-            nR1.setPos(0, -50);
-            nCtCh1.setPos(180, -50);
-            nR2.setPos(0, 50);
-            nCtCh2.setPos(180, 50);
-            nM.setPos(330, 0);
-            nC.setPos(520, 50);
-            nChtC.setPos(700, 50);
+            Node nSS1 = new Subsample(viewNodes, 330, 150);
+            Node nSS2 = new Subsample(viewNodes, 330, 250);
+            Node nM2 = new MoVecDecompose(viewNodes, 470, 150);
+            Node nC2 = new MoVecCompose(viewNodes, 650, 200);
+
+            Node.connect(nR1, "outColor", nCtCh1, "inColor");
+            Node.connect(nR2, "outColor", nCtCh2, "inColor");
+            Node.connect(nCtCh1, "outChannels", nM, "inChannelsNow");
+            Node.connect(nCtCh2, "outChannels", nM, "inChannelsPast");
+            Node.connect(nM, "outVectors", nC, "inVectors");
+            Node.connect(nM, "outChannels", nC, "inChannels");
+            Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
+
+            Node.connect(nCtCh1, "outChannels", nSS1, "inChannels");
+            Node.connect(nCtCh2, "outChannels", nSS2, "inChannels");
+            Node.connect(nSS1, "outChannels", nM2, "inChannelsNow");
+            Node.connect(nSS2, "outChannels", nM2, "inChannelsPast");
+            Node.connect(nM2, "outVectors", nC2, "inVectors");
+            Node.connect(nM2, "outChannels", nC2, "inChannels");
+            Node.connect(nSS2, "outChannels", nC2, "inChannelsPast");
 
             (nR1 as ReadImage).setPath("C:\\temp\\lena.tif");
             (nR2 as ReadImage).setPath("C:\\temp\\uv.jpg");
@@ -175,24 +187,10 @@ namespace MpegCompressor {
             //(nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
             //(nR1 as ReadImage).setPath("C:\\temp\\stripA.bmp");
             //(nR2 as ReadImage).setPath("C:\\temp\\stripB.bmp");
-
-            Node.connect(nR1, "outColor", nCtCh1, "inColor");
-            Node.connect(nR2, "outColor", nCtCh2, "inColor");
-            Node.connect(nCtCh1, "outChannels", nM, "inChannelsNow");
-            Node.connect(nCtCh2, "outChannels", nM, "inChannelsPast");
-
-            Node.connect(nM, "outVectors", nC, "inVectors");
-            Node.connect(nM, "outChannels", nC, "inChannels");
-            Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
-            Node.connect(nC, "outChannels", nChtC, "inChannels");
-
-            viewNodes.addNode(nR1);
-            viewNodes.addNode(nCtCh1);
-            viewNodes.addNode(nR2);
-            viewNodes.addNode(nCtCh2);
-            viewNodes.addNode(nM);
-            viewNodes.addNode(nC);
-            viewNodes.addNode(nChtC);
+            (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS1 as Subsample).setPadded(true);
+            (nSS2 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS2 as Subsample).setPadded(true);
         }
 
         public void mpegTest() {
@@ -246,9 +244,9 @@ namespace MpegCompressor {
             Node.connect(nMoVec3, "outChannels", nDCT3, "inChannels");
 
             Node.connect(nDCT1, "outChannels", nWrite, "inChannels1");
-            Node.connect(nMoVec2, "outChannels", nWrite, "inChannels2");
+            Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
-            Node.connect(nMoVec3, "outChannels", nWrite, "inChannels3");
+            Node.connect(nDCT3, "outChannels", nWrite, "inChannels3");
             Node.connect(nMoVec3, "outVectors", nWrite, "inVectors3");
 
 
@@ -261,7 +259,9 @@ namespace MpegCompressor {
             (nIDCT2 as DCT).rename("IDCT");
             (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);
             (nSS2 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS2 as Subsample).setPadded(true);
             (nSS3 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS3 as Subsample).setPadded(true);
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS3 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
@@ -272,8 +272,8 @@ namespace MpegCompressor {
             //DCTTest();
             //readWriteTest();
             //mergeTest();
-            //moVecTest();
-            mpegTest();
+            moVecTest();
+            //mpegTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

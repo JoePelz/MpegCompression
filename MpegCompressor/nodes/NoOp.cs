@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class NoOp : Node {
 
         public NoOp() {

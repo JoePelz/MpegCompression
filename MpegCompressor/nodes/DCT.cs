@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     class DCT : ChannelNode {
         private const int chunkSize = 8;
         private bool isInverse;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.Nodes;
 
 namespace MpegCompressor {
     class Controller {
@@ -49,7 +50,7 @@ namespace MpegCompressor {
 
             (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nSS as Subsample).setOutSamples(DataBlob.Samples.s420);
             (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT as DCT).setInverse(true);
             
@@ -102,7 +103,7 @@ namespace MpegCompressor {
 
             (nRead as ReadImage).setPath("C:\\temp\\sunmid.bmp");
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nSS as Subsample).setOutSamples(Subsample.Samples.s420);
+            (nSS as Subsample).setOutSamples(DataBlob.Samples.s420);
             (nCS4 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nIDCT2 as DCT).setInverse(true);
             
@@ -129,8 +130,76 @@ namespace MpegCompressor {
             viewNodes.addNode(nCS4);
         }
 
+        public void mergeTest() {
+            Node nR1 = new ReadImage();
+            Node nR2 = new ReadImage();
+            Node nM = new Merge();
+
+            nR1.setPos(0, -50);
+            nR2.setPos(0, 50);
+            nM.setPos(180, 0);
+
+            (nR1 as ReadImage).setPath("C:\\temp\\uv.jpg");
+            (nR2 as ReadImage).setPath("C:\\temp\\lena.tif");
+
+            Node.connect(nR1, "outColor", nM, "inColorA");
+            Node.connect(nR2, "outColor", nM, "inColorB");
+
+            viewNodes.addNode(nR1);
+            viewNodes.addNode(nR2);
+            viewNodes.addNode(nM);
+        }
+
+        public void moVecTest() {
+            Node nR1 = new ReadImage();
+            Node nCtCh1 = new ColorToChannels();
+            Node nR2 = new ReadImage();
+            Node nCtCh2 = new ColorToChannels();
+            Node nM = new MoVecDecompose();
+            Node nC = new MoVecCompose();
+            Node nChtC = new ChannelsToColor();
+
+            nR1.setPos(0, -50);
+            nCtCh1.setPos(180, -50);
+            nR2.setPos(0, 50);
+            nCtCh2.setPos(180, 50);
+            nM.setPos(330, 0);
+            nC.setPos(520, 50);
+            nChtC.setPos(700, 50);
+
+            (nR1 as ReadImage).setPath("C:\\temp\\lena.tif");
+            (nR2 as ReadImage).setPath("C:\\temp\\uv.jpg");
+            //(nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
+            //(nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+            //(nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
+            //(nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
+            //(nR1 as ReadImage).setPath("C:\\temp\\stripA.bmp");
+            //(nR2 as ReadImage).setPath("C:\\temp\\stripB.bmp");
+
+            Node.connect(nR1, "outColor", nCtCh1, "inColor");
+            Node.connect(nR2, "outColor", nCtCh2, "inColor");
+            Node.connect(nCtCh1, "outChannels", nM, "inChannelsNow");
+            Node.connect(nCtCh2, "outChannels", nM, "inChannelsPast");
+
+            Node.connect(nM, "outVectors", nC, "inVectors");
+            Node.connect(nM, "outChannels", nC, "inChannels");
+            Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
+            Node.connect(nC, "outChannels", nChtC, "inChannels");
+
+            viewNodes.addNode(nR1);
+            viewNodes.addNode(nCtCh1);
+            viewNodes.addNode(nR2);
+            viewNodes.addNode(nCtCh2);
+            viewNodes.addNode(nM);
+            viewNodes.addNode(nC);
+            viewNodes.addNode(nChtC);
+        }
+
         public void buildGraph() {
-            readWriteTest();
+            //DCTTest();
+            //readWriteTest();
+            //mergeTest();
+            moVecTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

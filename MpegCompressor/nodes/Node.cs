@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     //TODO: have node not extend panel, and be drawn purely by NodeView.
     public abstract class Node : IViewable, IProperties {
         public class Address {
@@ -174,7 +174,7 @@ namespace MpegCompressor {
             isDirty = true;
             foreach (KeyValuePair<string, Property> kvp in properties) {
                 if (!kvp.Value.isOutput) {
-                    return;
+                    continue;
                 }
                 foreach (Address a in kvp.Value.output) {
                     a.node.soil();
@@ -212,8 +212,8 @@ namespace MpegCompressor {
         public override string ToString() {
             return properties["name"].getString();
         }
-
-        public void viewExtra(Graphics g) {
+        
+        public virtual void viewExtra(Graphics g) {
             if (state == null || state.bmp == null) {
                 return;
             }
@@ -283,21 +283,23 @@ namespace MpegCompressor {
             //draw properties
             foreach (var kvp in getProperties()) {
                 if (kvp.Value.getType() == Property.Type.NONE) {
-                    g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, drawPos.Y);
-
                     //draw bubbles
                     if (kvp.Value.isInput) {
+                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + ballSize / 2, drawPos.Y);
                         if (kvp.Value.input != null) {
                             g.FillEllipse(Brushes.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
                         } else {
                             g.DrawEllipse(Pens.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
                         }
                     } else if (kvp.Value.isOutput) {
+                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width), drawPos.Y);
                         if (kvp.Value.output.Any()) {
                             g.FillEllipse(Brushes.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
                         } else {
                             g.DrawEllipse(Pens.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
                         }
+                    } else {
+                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, drawPos.Y);
                     }
                     drawPos.Y += nodeFont.Height;
                 }

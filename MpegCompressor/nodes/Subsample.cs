@@ -6,51 +6,50 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class Subsample : ChannelNode {
-        public enum Samples { s444, s422, s411, s420 }
         private static string[] options
             = new string[4] {
                 "4:4:4",
                 "4:2:2",
                 "4:1:1",
                 "4:2:0" };
-        private Samples outSamples;
+        private DataBlob.Samples outSamples;
 
         public Subsample() {
             rename("Subsample");
         }
 
-        public static Size getCbCrSize(Size ySize, Samples mode) {
+        public static Size getCbCrSize(Size ySize, DataBlob.Samples mode) {
             switch (mode) {
-                case Samples.s444:
+                case DataBlob.Samples.s444:
                     break;
-                case Samples.s422:
+                case DataBlob.Samples.s422:
                     ySize.Width = (ySize.Width + 1) / 2;
                     break;
-                case Samples.s420:
+                case DataBlob.Samples.s420:
                     ySize.Width = (ySize.Width + 1) / 2;
                     ySize.Height = (ySize.Height + 1) / 2;
                     break;
-                case Samples.s411:
+                case DataBlob.Samples.s411:
                     ySize.Width = (ySize.Width + 3) / 4;
                     break;
             }
             return ySize;
         }
 
-        public static Size getPaddedCbCrSize(Size ySize, Samples mode) {
+        public static Size getPaddedCbCrSize(Size ySize, DataBlob.Samples mode) {
             switch (mode) {
-                case Samples.s444:
+                case DataBlob.Samples.s444:
                     break;
-                case Samples.s422:
+                case DataBlob.Samples.s422:
                     ySize.Width = (ySize.Width + 1) / 2;
                     break;
-                case Samples.s420:
+                case DataBlob.Samples.s420:
                     ySize.Width = (ySize.Width + 1) / 2;
                     ySize.Height = (ySize.Height + 1) / 2;
                     break;
-                case Samples.s411:
+                case DataBlob.Samples.s411:
                     ySize.Width = (ySize.Width + 3) / 4;
                     break;
             }
@@ -99,7 +98,7 @@ namespace MpegCompressor {
             properties["outSamples"] = p;
         }
 
-        public void setOutSamples(Samples samples) {
+        public void setOutSamples(DataBlob.Samples samples) {
             outSamples = samples;
             properties["outSamples"].setSelection((int)samples);
             setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
@@ -107,7 +106,7 @@ namespace MpegCompressor {
         }
         
         private void P_eValueChanged(object sender, EventArgs e) {
-            setOutSamples((Samples)properties["outSamples"].getSelection());
+            setOutSamples((DataBlob.Samples)properties["outSamples"].getSelection());
         }
         
         protected override void clean() {
@@ -137,14 +136,14 @@ namespace MpegCompressor {
             int iNew, iOld;
 
             switch (state.samplingMode) {
-                case Samples.s444:
+                case DataBlob.Samples.s444:
                     //4:4:4 should have channels 1 and 2 be size4
                     if (state.channels[1].Length != size444 || state.channels[2].Length != size444) {
                         state.channels = null;
                         return;
                     }
                     break;
-                case Samples.s422:
+                case DataBlob.Samples.s422:
                     //4:2:2 should have channels 1 and 2 be size422
                     if (state.channels[1].Length != size422 || state.channels[2].Length != size422) {
                         state.channels = null;
@@ -172,7 +171,7 @@ namespace MpegCompressor {
                     state.channels[1] = newG;
                     state.channels[2] = newB;
                     break;
-                case Samples.s420:
+                case DataBlob.Samples.s420:
                     //4:2:0 should have channels 1 and 2 be size1
                     if (state.channels[1].Length != size420 || state.channels[2].Length != size420) {
                         state.channels = null;
@@ -199,7 +198,7 @@ namespace MpegCompressor {
                     state.channels[1] = newG;
                     state.channels[2] = newB;
                     break;
-                case Samples.s411:
+                case DataBlob.Samples.s411:
                     //4:1:1 should have channels 1 and 2 be size411
                     if (state.channels[1].Length != size411 || state.channels[2].Length != size411) {
                         state.channels = null;
@@ -250,9 +249,9 @@ namespace MpegCompressor {
             byte[] newB;
 
             switch (outSamples) {
-                case Samples.s444:
+                case DataBlob.Samples.s444:
                     break; //done! :D
-                case Samples.s422:
+                case DataBlob.Samples.s422:
                     newG = new byte[size422];
                     newB = new byte[size422];
                     iNew = 0;
@@ -269,7 +268,7 @@ namespace MpegCompressor {
                     state.channels[1] = newG;
                     state.channels[2] = newB;
                     break;
-                case Samples.s420:
+                case DataBlob.Samples.s420:
                     newG = new byte[size420];
                     newB = new byte[size420];
                     iNew = 0;
@@ -286,7 +285,7 @@ namespace MpegCompressor {
                     state.channels[1] = newG;
                     state.channels[2] = newB;
                     break;
-                case Samples.s411:
+                case DataBlob.Samples.s411:
                     newG = new byte[size411];
                     newB = new byte[size411];
                     iNew = 0;

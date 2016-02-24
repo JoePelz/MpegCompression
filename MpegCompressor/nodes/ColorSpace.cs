@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MpegCompressor {
+namespace MpegCompressor.Nodes {
     public class ColorSpace : ColorNode {
         public enum Space { RGB, HSV, YCrCb };
         

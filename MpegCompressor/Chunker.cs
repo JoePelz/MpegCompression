@@ -60,6 +60,12 @@ namespace MpegCompressor {
             }
         }
 
+        public int chunkIndexToPixelIndex(int chunkIndex) {
+            int px = (chunkIndex % chunksWide) * chunkSize;
+            int py = (chunkIndex / chunksWide) * chunkSize;
+            return px * Bpp + py * stride;
+        }
+
         public void getBlock(byte[] channel, byte[] result, int iChunk) {
             int iDest = 0;
             foreach (int pixel in getChunk(iChunk)) {

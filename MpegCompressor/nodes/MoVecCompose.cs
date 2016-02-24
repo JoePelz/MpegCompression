@@ -119,10 +119,10 @@ namespace MpegCompressor.Nodes {
                         initialX + x + offX >= channelWidth ||
                         initialY + y + offY < 0 ||
                         initialX + x + offX < 0) {
-                        dest[dstPixel] = (byte)(past[srcPixel] - 127);
+                        dest[dstPixel] = (byte)(diff[dstPixel] - 127);
+                    } else {
+                        dest[dstPixel] = (byte)(past[srcPixel] + diff[dstPixel] - 127);
                     }
-
-                    dest[dstPixel] = (byte)(past[srcPixel] + diff[dstPixel] - 127);
                 }
             }
 

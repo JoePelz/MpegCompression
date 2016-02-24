@@ -28,6 +28,9 @@ namespace MpegCompressor.Nodes {
         protected override void clean() {
             base.clean();
 
+            state = null;
+            vState = null;
+
             Address upstreamNow = properties["inChannelsNow"].input;
             if (upstreamNow == null) {
                 return;
@@ -38,7 +41,7 @@ namespace MpegCompressor.Nodes {
             }
 
             DataBlob stateNow = upstreamNow.node.getData(upstreamNow.port);
-            if (state == null) {
+            if (stateNow == null) {
                 return;
             }
             DataBlob statePast = upstreamPast.node.getData(upstreamPast.port);
@@ -47,7 +50,7 @@ namespace MpegCompressor.Nodes {
             }
 
             if (stateNow.type != DataBlob.Type.Channels || stateNow.channels == null) {
-                state = null;
+                stateNow = null;
                 return;
             }
             if (statePast.type != DataBlob.Type.Channels || statePast.channels == null) {
@@ -98,9 +101,6 @@ namespace MpegCompressor.Nodes {
                 //save best match vector
                 vState.channels[0][i] = offset;
                 //update channels to be difference.
-                if (i == 11) {
-                    i = 11;
-                }
                 setDiff(state.channels[0], chNew[0], chOld[0], pixelTL, offset, state.channelWidth);
             }
 
@@ -133,7 +133,7 @@ namespace MpegCompressor.Nodes {
                 if (indexTopLeft / stride + y >= goal.Length / stride) {
                     break;
                 }
-                xMin = indexTopLeft / stride * stride + y * stride + offsetY * stride + offsetX;
+                xMin = indexTopLeft / stride * stride + y * stride + offsetY * stride;
                 xMax = xMin + stride;
 
                 for (int x = 0; x < 8; x++) {
@@ -142,10 +142,12 @@ namespace MpegCompressor.Nodes {
                     if (pixelGoal >= xLimit) {
                         continue; //out of bounds in the goal. ignore.
                     }
-                    if (pixelSearchArea < xMin || pixelSearchArea >= xMax) {
-                        continue; //out of bounds in search area. Equivalent to: goal[pixelGoal] -= 0
+                    //TODO: rework bounds-checking
+                    if (pixelSearchArea < xMin || pixelSearchArea >= xMax || pixelSearchArea < 0 || pixelSearchArea >= searchArea.Length) {
+                        diff = 127 + goal[pixelGoal];
+                    } else {
+                        diff = 127 + goal[pixelGoal] - searchArea[pixelSearchArea];
                     }
-                    diff = (127 + goal[pixelGoal] - searchArea[pixelSearchArea]);
                     dest[pixelGoal] = (byte)diff;
                 }
             }

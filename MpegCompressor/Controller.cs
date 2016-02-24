@@ -167,8 +167,12 @@ namespace MpegCompressor {
             nC.setPos(520, 50);
             nChtC.setPos(700, 50);
 
-            (nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
-            (nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
+            (nR1 as ReadImage).setPath("C:\\temp\\lena.tif");
+            (nR2 as ReadImage).setPath("C:\\temp\\uv.jpg");
+            //(nR1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
+            //(nR2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+            //(nR1 as ReadImage).setPath("C:\\temp\\sunA.bmp");
+            //(nR2 as ReadImage).setPath("C:\\temp\\sunB.bmp");
             //(nR1 as ReadImage).setPath("C:\\temp\\stripA.bmp");
             //(nR2 as ReadImage).setPath("C:\\temp\\stripB.bmp");
 

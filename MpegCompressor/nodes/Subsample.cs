@@ -15,6 +15,7 @@ namespace MpegCompressor.Nodes {
                 "4:1:1",
                 "4:2:0" };
         private DataBlob.Samples outSamples;
+        private bool pad;
 
         public Subsample(): base() { }
         public Subsample(NodeView graph) : base(graph) { }
@@ -102,6 +103,22 @@ namespace MpegCompressor.Nodes {
             p.createChoices(options, (int)outSamples, "output sample space");
             p.eValueChanged += P_eValueChanged;
             properties["outSamples"] = p;
+
+            //To pad or not to pad?
+            p = new Property(false, false);
+            p.createCheckbox("pad the channels to\na multiple of 8?");
+            p.eValueChanged += e_padded;
+            properties["padded"] = p;
+        }
+
+        private void e_padded(object sender, EventArgs e) {
+            setPadded(properties["padded"].getChecked());
+        }
+
+        public void setPadded(bool isPadded) {
+            pad = isPadded;
+            properties["padded"].setChecked(isPadded);
+            soil();
         }
 
         public void setOutSamples(DataBlob.Samples samples) {
@@ -128,6 +145,11 @@ namespace MpegCompressor.Nodes {
             convertSrcChannels();
 
             state.samplingMode = outSamples;
+            
+            //pad, if necessary
+            if (pad) {
+                padChannels();
+            }
         }
         
         private void upsample() {
@@ -310,6 +332,43 @@ namespace MpegCompressor.Nodes {
                     break;
             }
         }
-        
+
+        private void padChannels() {
+            //pad the size
+            Size ySize = new Size(state.channelWidth, state.channelHeight);
+            Size brOldSize = Subsample.deduceCbCrSize(state);
+            Size brNewSize = Subsample.getPaddedCbCrSize(ySize, state.samplingMode);
+            if (ySize.Width % 8 != 0) {
+                ySize.Width += 8 - (ySize.Width % 8);
+            }
+            if (ySize.Height % 8 != 0) {
+                ySize.Height += 8 - (ySize.Height % 8);
+            }
+
+            //create padded container
+            byte[][] newChannels = new byte[3][];
+            newChannels[0] = new byte[ySize.Width * ySize.Height];
+            newChannels[1] = new byte[brNewSize.Width * brNewSize.Height];
+            newChannels[2] = new byte[newChannels[1].Length];
+
+            //copy array into larger container
+            for (int y = 0; y < state.channelHeight; y++) {
+                Array.Copy(state.channels[0], y * state.channelWidth, newChannels[0], y * ySize.Width, state.channelWidth);
+            }
+            for (int y = 0; y < brOldSize.Height; y++) {
+                Array.Copy(state.channels[1], y * brOldSize.Width, newChannels[1], y * brNewSize.Width, brOldSize.Width);
+                Array.Copy(state.channels[2], y * brOldSize.Width, newChannels[2], y * brNewSize.Width, brOldSize.Width);
+                for (int x = brOldSize.Width; x < brNewSize.Width; x++) {
+                    newChannels[1][y * brNewSize.Width + x] = 127;
+                    newChannels[2][y * brNewSize.Width + x] = 127;
+                }
+            }
+
+            //update state
+            state.channelWidth = ySize.Width;
+            state.channelHeight = ySize.Height;
+            state.channels = newChannels;
+        }
+
     }
 }

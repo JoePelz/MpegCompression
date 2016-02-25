@@ -312,13 +312,134 @@ namespace MpegCompressor {
             (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
         }
 
+        public void readWriteMultiTest() {
+            Node nR = new ReadImage(viewNodes, 0, 0);
+            Node nCtCh = new ColorToChannels(viewNodes, 150, 0);
+            Node nMoVec = new MoVecDecompose(viewNodes, 300, 50);
+            Node nWM = new WriteMultiChannel(viewNodes, 500, 0);
+
+            Node.connect(nR, "outColor", nCtCh, "inColor");
+            Node.connect(nCtCh, "outChannels", nMoVec, "inChannelsPast");
+            Node.connect(nCtCh, "outChannels", nMoVec, "inChannelsNow");
+            Node.connect(nCtCh, "outChannels", nWM, "inChannels1");
+            Node.connect(nMoVec, "outVectors", nWM, "inVectors2");
+            Node.connect(nMoVec, "outChannels", nWM, "inChannels2");
+            Node.connect(nMoVec, "outVectors", nWM, "inVectors3");
+            Node.connect(nMoVec, "outChannels", nWM, "inChannels3");
+
+            (nWM as WriteMultiChannel).setPath("C:\\temp\\wrm.mdct");
+            
+            Node nRM = new ReadMultiChannel(viewNodes, 700, 0);
+            (nRM as ReadMultiChannel).setPath("C:\\temp\\wrm.mdct");
+
+        }
+
+        public void mpegNoDCTTest() {
+            //first frame
+            Node nRead1 = new ReadImage(viewNodes, 0, 0);
+            Node nCS1 = new ColorSpace(viewNodes, 130, 0);
+            Node nCtCh1 = new ColorToChannels(viewNodes, 260, 0);
+            Node nSS1 = new Subsample(viewNodes, 390, 0);
+
+            //second frame
+            Node nRead2 = new ReadImage(viewNodes, 0, 200);
+            Node nCS2 = new ColorSpace(viewNodes, 130, 200);
+            Node nCtCh2 = new ColorToChannels(viewNodes, 260, 200);
+            Node nSS2 = new Subsample(viewNodes, 390, 200);
+            Node nMoVec2 = new MoVecDecompose(viewNodes, 520, 200);
+            Node nIMoVec2 = new MoVecCompose(viewNodes, 680, 360);
+
+            //Third frame
+            Node nRead3 = new ReadImage(viewNodes, 0, 500);
+            Node nCS3 = new ColorSpace(viewNodes, 130, 500);
+            Node nCtCh3 = new ColorToChannels(viewNodes, 260, 500);
+            Node nSS3 = new Subsample(viewNodes, 390, 500);
+            Node nMoVec3 = new MoVecDecompose(viewNodes, 520, 500);
+
+            Node nWrite = new WriteMultiChannel(viewNodes, 1000, 200);
+            Node nRead = new ReadMultiChannel(viewNodes, 1200, 200);
+
+            Node nIMoVecR1 = new MoVecCompose(viewNodes, 1400, 200);
+            Node nIMoVecR2 = new MoVecCompose(viewNodes, 1400, 360);
+            Node nChtC1 = new ChannelsToColor(viewNodes, 1600, 100);
+            Node nChtC2 = new ChannelsToColor(viewNodes, 1600, 200);
+            Node nChtC3 = new ChannelsToColor(viewNodes, 1600, 300);
+            Node nCSR1 = new ColorSpace(viewNodes, 1750, 100);
+            Node nCSR2 = new ColorSpace(viewNodes, 1750, 200);
+            Node nCSR3 = new ColorSpace(viewNodes, 1750, 300);
+
+
+            Node.connect(nRead, "outChannels1", nIMoVecR1, "inChannelsPast");
+            Node.connect(nRead, "outVectors2", nIMoVecR1, "inVectors");
+            Node.connect(nRead, "outChannels2", nIMoVecR1, "inChannels");
+            Node.connect(nIMoVecR1, "outChannels", nIMoVecR2, "inChannelsPast");
+            Node.connect(nRead, "outVectors3", nIMoVecR2, "inVectors");
+            Node.connect(nRead, "outChannels3", nIMoVecR2, "inChannels");
+            Node.connect(nRead, "outChannels1", nChtC1, "inChannels");
+            Node.connect(nIMoVecR1, "outChannels", nChtC2, "inChannels");
+            Node.connect(nIMoVecR2, "outChannels", nChtC3, "inChannels");
+            Node.connect(nChtC1, "outColor", nCSR1, "inColor");
+            Node.connect(nChtC2, "outColor", nCSR2, "inColor");
+            Node.connect(nChtC3, "outColor", nCSR3, "inColor");
+            (nCSR1 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCSR2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCSR3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+
+
+            Node.connect(nRead1, "outColor", nCS1, "inColor");
+            Node.connect(nCS1, "outColor", nCtCh1, "inColor");
+            Node.connect(nCtCh1, "outChannels", nSS1, "inChannels");
+            Node.connect(nSS1, "outChannels", nMoVec2, "inChannelsPast");
+            Node.connect(nSS1, "outChannels", nIMoVec2, "inChannelsPast");
+
+            Node.connect(nRead2, "outColor", nCS2, "inColor");
+            Node.connect(nCS2, "outColor", nCtCh2, "inColor");
+            Node.connect(nCtCh2, "outChannels", nSS2, "inChannels");
+            Node.connect(nSS2, "outChannels", nMoVec2, "inChannelsNow");
+            Node.connect(nMoVec2, "outVectors", nIMoVec2, "inVectors");
+            Node.connect(nMoVec2, "outChannels", nIMoVec2, "inChannels");
+            Node.connect(nIMoVec2, "outChannels", nMoVec3, "inChannelsPast");
+
+            Node.connect(nRead3, "outColor", nCS3, "inColor");
+            Node.connect(nCS3, "outColor", nCtCh3, "inColor");
+            Node.connect(nCtCh3, "outChannels", nSS3, "inChannels");
+            Node.connect(nSS3, "outChannels", nMoVec3, "inChannelsNow");
+
+            Node.connect(nSS1, "outChannels", nWrite, "inChannels1");
+            Node.connect(nMoVec2, "outChannels", nWrite, "inChannels2");
+            Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
+            Node.connect(nMoVec3, "outChannels", nWrite, "inChannels3");
+            Node.connect(nMoVec3, "outVectors", nWrite, "inVectors3");
+
+
+            //(nRead1 as ReadImage).setPath("C:\\temp\\bsA.tif");
+            //(nRead2 as ReadImage).setPath("C:\\temp\\bsB.tif");
+            //(nRead3 as ReadImage).setPath("C:\\temp\\bsC.tif");
+            (nRead1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
+            (nRead2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
+            (nRead3 as ReadImage).setPath("C:\\temp\\barbieC.tif");
+            (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS1 as Subsample).setPadded(true);
+            (nSS2 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS2 as Subsample).setPadded(true);
+            (nSS3 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS3 as Subsample).setPadded(true);
+            (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nCS3 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nWrite as WriteMultiChannel).setPath("C:\\temp\\testVid.mdct");
+            (nRead as ReadMultiChannel).setPath("C:\\temp\\testVid.mdct");
+        }
+
         public void buildGraph() {
             //DCTTest();
             //readWriteTest();
             //mergeTest();
             //moVecTest();
             //mpegWriteTest();
-            mpegReadTest();
+            //mpegReadTest();
+            //readWriteMultiTest();
+            mpegNoDCTTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

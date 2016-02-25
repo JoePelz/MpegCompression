@@ -112,6 +112,9 @@ namespace MpegCompressor.Nodes {
                 //save best match vector
                 vState.channels[0][i] = offset;
                 //update channels to be difference.
+                if ( i == 20 ) {
+                    i = 20;
+                }
                 setDiff(state.channels[0], chNew[0], chOld[0], pixelTL, offset, state.channelWidth);
             }
 
@@ -135,35 +138,29 @@ namespace MpegCompressor.Nodes {
         private void setDiff(byte[] dest, byte[] goal, byte[] searchArea, int indexTopLeft, byte offset, int stride) {
             int offsetX = ((offset & 0xf0) >> 4) - 7;
             int offsetY = (offset & 0x0f) - 7;
-            int pixelGoal, pixelSearchArea;
-            int xLimit;
-            int xMax, xMin;
-            int diff = 0;
-            for(int y = 0; y < 8; y++) {
-                xLimit = indexTopLeft / stride * stride + y * stride + stride;
-                if (indexTopLeft / stride + y >= goal.Length / stride) {
-                    break;
-                }
-                xMin = indexTopLeft / stride * stride + y * stride + offsetY * stride;
-                xMax = xMin + stride;
-
-                for (int x = 0; x < 8; x++) {
-                    pixelGoal = indexTopLeft + y * stride + x;
-                    pixelSearchArea = pixelGoal + offsetY * stride + offsetX;
-                    if (pixelGoal >= xLimit) {
-                        continue; //out of bounds in the goal. ignore.
-                    }
-                    //TODO: rework bounds-checking
-                    if (pixelSearchArea < xMin || pixelSearchArea >= xMax || pixelSearchArea < 0 || pixelSearchArea >= searchArea.Length) {
-                        diff = 127 + goal[pixelGoal];
+            int x0 = indexTopLeft % stride;
+            int y0 = indexTopLeft / stride;
+            int xref, yref;
+            int yMax = dest.Length / stride;
+            int xMax = stride;
+            int targetPixel, refPixel;
+            for (int y = y0; y < y0 + 8; y++) {
+                if (y >= yMax) break;
+                yref = y + offsetY;
+                for (int x = x0; x < x0 + 8; x++) {
+                    if (x >= xMax) break;
+                    xref = x + offsetX;
+                    targetPixel = y * stride + x;
+                    refPixel = yref * stride + xref;
+                    if (xref < 0 || xref >= xMax || yref < 0 || yref >= yMax) {
+                        dest[targetPixel] = (byte)(goal[targetPixel] + 127);
                     } else {
-                        diff = 127 + goal[pixelGoal] - searchArea[pixelSearchArea];
+                        dest[targetPixel] = (byte)(goal[targetPixel] - searchArea[refPixel] + 127);
                     }
-                    dest[pixelGoal] = (byte)diff;
                 }
             }
         }
-
+        
         private byte findOffsetVector(byte[] goal, byte[] searchArea, int indexTopLeft, int stride) {
             int pixel = 0;
             int diff;
@@ -217,7 +214,7 @@ namespace MpegCompressor.Nodes {
             }
             Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int offsetX, offsetY;
-            int y = state.imageHeight - 4;
+            int y = state.channelHeight - 4;
             int x = 4;
 
             for (int i = 0; i < vState.channels[0].Length; i++) {

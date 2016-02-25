@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     public class MoVecCompose : Node {
         private const int chunkSize = 8;
+        DataBlob stateVectors;
 
         public MoVecCompose(): base() { }
         public MoVecCompose(NodeView graph) : base(graph) { }
@@ -57,7 +58,7 @@ namespace MpegCompressor.Nodes {
                 return;
             }
 
-            DataBlob stateVectors = upstreamVectors.node.getData(upstreamVectors.port);
+            stateVectors = upstreamVectors.node.getData(upstreamVectors.port);
             if (stateVectors == null) {
                 return;
             }
@@ -103,41 +104,56 @@ namespace MpegCompressor.Nodes {
             }
         }
 
-        private void restoreChunk(byte[] dest, byte[] past, byte[] diff, byte vector, int pixelTL, int channelWidth) {
-            int offX = ((vector & 0xf0) >> 4) - 7;
-            int offY = (vector & 0x0f) - 7;
-
-            int srcPixel;
-            int dstPixel;
-            int initialX = pixelTL % channelWidth;
-            int initialY = pixelTL / channelWidth;
-            int maxY = dest.Length / channelWidth;
-            int temp;
-            for (int y = 0; y < chunkSize; y++) {
-                if (initialY + y >= maxY) {
-                    break;
-                }
-                for (int x = 0; x < chunkSize; x++) {
-                    dstPixel = pixelTL + y * channelWidth + x;
-                    srcPixel = dstPixel + offY * channelWidth + offX;
-                    if (initialX + x >= channelWidth) {
-                        break;
-                    }
-
-                    if (initialY + y + offY >= maxY || 
-                        initialX + x + offX >= channelWidth ||
-                        initialY + y + offY < 0 ||
-                        initialX + x + offX < 0) {
-                        dest[dstPixel] = (byte)(diff[dstPixel] - 127);
+        private void restoreChunk(byte[] dest, byte[] past, byte[] diff, byte offset, int indexTopLeft, int stride) {
+            int offsetX = ((offset & 0xf0) >> 4) - 7;
+            int offsetY = (offset & 0x0f) - 7;
+            int x0 = indexTopLeft % stride;
+            int y0 = indexTopLeft / stride;
+            int xref, yref;
+            int yMax = dest.Length / stride;
+            int xMax = stride;
+            int targetPixel, refPixel;
+            for (int y = y0; y < y0 + 8; y++) {
+                if (y >= yMax) break;
+                yref = y + offsetY;
+                for (int x = x0; x < x0 + 8; x++) {
+                    if (x >= xMax) break;
+                    xref = x + offsetX;
+                    targetPixel = y * stride + x;
+                    refPixel = yref * stride + xref;
+                    if (xref < 0 || xref >= xMax || yref < 0 || yref >= yMax) {
+                        dest[targetPixel] = (byte)(diff[targetPixel] - 127);
                     } else {
-                        temp = past[srcPixel] + diff[dstPixel] - 127;
-                        temp = temp > 255 ? 255 : (temp < 0 ? 0 : temp);
-                        dest[dstPixel] = (byte)(temp);
+                        dest[targetPixel] = (byte)(diff[targetPixel] + past[refPixel] - 127);
                     }
                 }
             }
-
         }
-        
+
+        public override void viewExtra(Graphics g) {
+            //base.viewExtra(g);
+            if (state == null) {
+                return;
+            }
+            Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
+            int offsetX, offsetY;
+            int y = state.channelHeight - 4;
+            int x = 4;
+
+            for (int i = 0; i < stateVectors.channels[0].Length; i++) {
+                offsetX = ((stateVectors.channels[0][i] & 0xF0) >> 4) - 7;
+                offsetY = (stateVectors.channels[0][i] & 0x0F) - 7;
+                if (offsetX == 0 && offsetY == 0) {
+                    g.FillRectangle(Brushes.BlanchedAlmond, x - 1, y - 1, 2, 2);
+                } else {
+                    g.DrawLine(Pens.BlanchedAlmond, x, y, x + offsetX, y - offsetY);
+                }
+                x += 8;
+                if (x - 4 >= state.channelWidth) {
+                    x = 4;
+                    y -= 8;
+                }
+            }
+        }
     }
 }

@@ -57,7 +57,9 @@ namespace MpegCompressor.Nodes {
         }
 
         private void open(object sender, EventArgs e) {
-            using (Stream stream = new FileStream(inPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
+            Stream stream = null;
+            try {
+                stream = new FileStream(inPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
                     DataBlob metadata = readHeader(reader);
                     setupBlobs(metadata);
@@ -67,8 +69,14 @@ namespace MpegCompressor.Nodes {
                     readChannels(reader, V3);
                     readChannels(reader, C3);
                 }
+                soil();
+            } catch (FileNotFoundException ex) {
+                //who cares.
+            } finally {
+                if (stream != null) {
+                    stream.Dispose();
+                }
             }
-            soil();
         }
 
         private void readChannel(BinaryReader reader, byte[] channel, Chunker c) {
@@ -149,7 +157,7 @@ namespace MpegCompressor.Nodes {
             C2.channels[2] = new byte[cMinor];
             C3.channels[2] = new byte[cMinor];
             cMajor = V2.channelWidth * V2.channelHeight;
-            sizeMinor = Subsample.getPaddedCbCrSize(new Size(V2.channelWidth, V2.channelHeight), V2.samplingMode);
+            sizeMinor = Subsample.getCbCrSize(new Size(V2.channelWidth, V2.channelHeight), V2.samplingMode);
             cMinor = sizeMinor.Width * sizeMinor.Height;
             V2.channels[0] = new byte[cMajor];
             V3.channels[0] = new byte[cMajor];

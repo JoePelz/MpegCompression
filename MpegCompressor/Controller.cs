@@ -368,6 +368,10 @@ namespace MpegCompressor {
             Node nCSR2 = new ColorSpace(viewNodes, 1750, 200);
             Node nCSR3 = new ColorSpace(viewNodes, 1750, 300);
 
+            Node nSSTest = new Subsample(viewNodes, 1400, 0);
+            (nSSTest as Subsample).setOutSamples(DataBlob.Samples.s420);
+            Node.connect(nRead, "outChannels2", nSSTest, "inChannels");
+
 
             Node.connect(nRead, "outChannels1", nIMoVecR1, "inChannelsPast");
             Node.connect(nRead, "outVectors2", nIMoVecR1, "inVectors");

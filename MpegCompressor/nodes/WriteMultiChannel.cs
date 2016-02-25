@@ -122,7 +122,6 @@ namespace MpegCompressor.Nodes {
             byte prev, count, val;
             var indexer = Chunker.zigZag8Index();
             byte[] data = new byte[64];
-
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(channel, data, i);
                 count = 0;
@@ -156,7 +155,7 @@ namespace MpegCompressor.Nodes {
                     writer.Write(prev);
                 } else {
                     writer.Write(prev);
-                } //chunk written out
+                }//final chunk written out
             } //channel written out
         }
 

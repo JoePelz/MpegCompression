@@ -85,6 +85,8 @@ namespace MpegCompressor {
                     for (int c = 0; c < Bpp; c++) {
                         channel[pixel + c] = newBytes[iDest++];
                     }
+                } else {
+                    iDest++;
                 }
             }
         }

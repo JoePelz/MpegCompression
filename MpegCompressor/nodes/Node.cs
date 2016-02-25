@@ -131,7 +131,7 @@ namespace MpegCompressor.Nodes {
             to.removeInput(toPort);
         }
 
-        protected virtual bool addInput(string port, Node from, string fromPort) {
+        protected bool addInput(string port, Node from, string fromPort) {
             //if the port is valid
             if (properties.ContainsKey(port)) {
                 //if there's an old connection, disconnect both ends
@@ -148,7 +148,7 @@ namespace MpegCompressor.Nodes {
             return false;
         }
 
-        protected virtual bool addOutput(string port, Node to, string toPort) {
+        protected bool addOutput(string port, Node to, string toPort) {
             //if there's an old connection, doesn't matter. Output can be 1..*
             HashSet<Address> cnx;
             if (properties.ContainsKey(port)) {
@@ -159,7 +159,7 @@ namespace MpegCompressor.Nodes {
             return false;
         }
 
-        protected virtual void removeInput(string port) {
+        protected void removeInput(string port) {
             //Note: only breaks this end of the connection.
             if (properties.ContainsKey(port)) {
                 properties[port].input = null;
@@ -167,7 +167,7 @@ namespace MpegCompressor.Nodes {
             soil();
         }
 
-        protected virtual void removeOutput(string port, Node to, string toPort) {
+        protected void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
             Address match = new Address(to, toPort);
             if (properties.ContainsKey(port)) {

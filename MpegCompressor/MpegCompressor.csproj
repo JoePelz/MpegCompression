@@ -76,6 +76,7 @@
     <Compile Include="Nodes\MoVecDecompose.cs" />
     <Compile Include="Nodes\MoVecCompose.cs" />
     <Compile Include="Nodes\Node.cs" />
+    <Compile Include="Nodes\ReadMultiChannel.cs" />
     <Compile Include="Nodes\WriteMultiChannel.cs" />
     <Compile Include="NodeView.cs">
       <SubType>Component</SubType>

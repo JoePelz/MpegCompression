@@ -193,7 +193,7 @@ namespace MpegCompressor {
             (nSS2 as Subsample).setPadded(true);
         }
 
-        public void mpegTest() {
+        public void mpegWriteTest() {
             //first frame
             Node nRead1 = new ReadImage(viewNodes, 0, 0);
             Node nCS1 = new ColorSpace(viewNodes, 130, 0);
@@ -272,12 +272,53 @@ namespace MpegCompressor {
             (nWrite as WriteMultiChannel).setPath("C:\\temp\\testVid.mdct");
         }
 
+        public void mpegReadTest() {
+            Node nRM = new ReadMultiChannel(viewNodes, 0, 0);
+            Node nIDCT1 = new DCT(viewNodes, 150, -100);
+            Node nIDCT2 = new DCT(viewNodes, 150, 0);
+            Node nIDCT3 = new DCT(viewNodes, 150, 100);
+            Node nIMoVec2 = new MoVecCompose(viewNodes, 300, -50);
+            Node nIMoVec3 = new MoVecCompose(viewNodes, 300, 100);
+            Node nChtC1 = new ChannelsToColor(viewNodes, 550, -100);
+            Node nChtC2 = new ChannelsToColor(viewNodes, 550, 0);
+            Node nChtC3 = new ChannelsToColor(viewNodes, 550, 100);
+            Node nCS1 = new ColorSpace(viewNodes, 700, -100);
+            Node nCS2 = new ColorSpace(viewNodes, 700, 0);
+            Node nCS3 = new ColorSpace(viewNodes, 700, 100);
+
+            Node.connect(nRM, "outChannels1", nIDCT1, "inChannels");
+            Node.connect(nRM, "outChannels2", nIDCT2, "inChannels");
+            Node.connect(nRM, "outChannels3", nIDCT3, "inChannels");
+            Node.connect(nIDCT1, "outChannels", nIMoVec2, "inChannelsPast");
+            Node.connect(nIDCT2, "outChannels", nIMoVec2, "inChannels");
+            Node.connect(nRM, "outVectors2", nIMoVec2, "inVectors");
+            Node.connect(nIMoVec2, "outChannels", nIMoVec3, "inChannelsPast");
+            Node.connect(nIDCT3, "outChannels", nIMoVec3, "inChannels");
+            Node.connect(nRM, "outVectors3", nIMoVec3, "inVectors");
+            Node.connect(nIDCT1, "outChannels", nChtC1, "inChannels");
+            Node.connect(nIMoVec2, "outChannels", nChtC2, "inChannels");
+            Node.connect(nIMoVec3, "outChannels", nChtC3, "inChannels");
+            Node.connect(nChtC1, "outColor", nCS1, "inColor");
+            Node.connect(nChtC2, "outColor", nCS2, "inColor");
+            Node.connect(nChtC3, "outColor", nCS3, "inColor");
+
+
+            (nIDCT1 as DCT).setInverse(true);
+            (nIDCT2 as DCT).setInverse(true);
+            (nIDCT3 as DCT).setInverse(true);
+            (nRM as ReadMultiChannel).setPath("C:\\temp\\testVid.mdct");
+            (nCS1 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+        }
+
         public void buildGraph() {
             //DCTTest();
             //readWriteTest();
             //mergeTest();
             //moVecTest();
-            mpegTest();
+            //mpegWriteTest();
+            mpegReadTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

@@ -29,6 +29,9 @@ namespace MpegCompressor {
             return chunksHigh * chunksWide;
         }
 
+        public int getChunksWide() { return chunksWide; }
+        public int getChunksHigh() { return chunksHigh; }
+
         public System.Collections.IEnumerable getIterators() {
             for (int i = 0; i < getNumChunks(); i++) {
                 yield return getChunk(i);
@@ -82,6 +85,8 @@ namespace MpegCompressor {
                     for (int c = 0; c < Bpp; c++) {
                         channel[pixel + c] = newBytes[iDest++];
                     }
+                } else {
+                    iDest++;
                 }
             }
         }

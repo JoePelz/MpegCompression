@@ -10,11 +10,17 @@ using System.Windows.Forms;
 namespace MpegCompressor.Nodes {
     public class NoOp : Node {
 
-        public NoOp() {
+        public NoOp(): base() { }
+        public NoOp(NodeView graph) : base(graph) { }
+        public NoOp(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("NoOp");
         }
 
-	    protected override void createProperties() {
+        protected override void createProperties() {
             base.createProperties();
             properties.Add("inColor", new Property(true, false));
             properties.Add("outColor", new Property(false, true));

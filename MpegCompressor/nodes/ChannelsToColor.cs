@@ -9,7 +9,13 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     class ChannelsToColor : Node {
 
-        public ChannelsToColor() {
+        public ChannelsToColor(): base() { }
+        public ChannelsToColor(NodeView graph) : base(graph) { }
+        public ChannelsToColor(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("To Color");
             setExtra("from Channels");
         }

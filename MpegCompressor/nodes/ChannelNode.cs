@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     public abstract class ChannelNode : Node {
 
+        public ChannelNode(): base() { }
+        public ChannelNode(NodeView graph) : base(graph) { }
+        public ChannelNode(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
         protected override void createProperties() {
             base.createProperties();
             properties.Add("inChannels", new Property(true, false));

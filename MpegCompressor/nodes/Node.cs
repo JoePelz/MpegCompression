@@ -38,6 +38,21 @@ namespace MpegCompressor.Nodes {
         public event EventHandler eViewChanged;
 
         public Node() {
+            init();
+        }
+
+        public Node(NodeView graph) {
+            init();
+            graph.addNode(this);
+        }
+
+        public Node(NodeView graph, int posX, int posY) {
+            init();
+            graph.addNode(this);
+            setPos(posX, posY);
+        }
+
+        protected virtual void init() {
             properties = new Dictionary<string, Property>();
             state = new DataBlob();
             titleWidth = 100;
@@ -48,6 +63,7 @@ namespace MpegCompressor.Nodes {
             createProperties();
 
             nodeRect = new Rectangle(0, 0, 100, 100);
+
         }
 
         internal Rectangle getNodeRect() {
@@ -115,7 +131,7 @@ namespace MpegCompressor.Nodes {
             to.removeInput(toPort);
         }
 
-        protected virtual bool addInput(string port, Node from, string fromPort) {
+        protected bool addInput(string port, Node from, string fromPort) {
             //if the port is valid
             if (properties.ContainsKey(port)) {
                 //if there's an old connection, disconnect both ends
@@ -132,7 +148,7 @@ namespace MpegCompressor.Nodes {
             return false;
         }
 
-        protected virtual bool addOutput(string port, Node to, string toPort) {
+        protected bool addOutput(string port, Node to, string toPort) {
             //if there's an old connection, doesn't matter. Output can be 1..*
             HashSet<Address> cnx;
             if (properties.ContainsKey(port)) {
@@ -143,7 +159,7 @@ namespace MpegCompressor.Nodes {
             return false;
         }
 
-        protected virtual void removeInput(string port) {
+        protected void removeInput(string port) {
             //Note: only breaks this end of the connection.
             if (properties.ContainsKey(port)) {
                 properties[port].input = null;
@@ -151,7 +167,7 @@ namespace MpegCompressor.Nodes {
             soil();
         }
 
-        protected virtual void removeOutput(string port, Node to, string toPort) {
+        protected void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
             Address match = new Address(to, toPort);
             if (properties.ContainsKey(port)) {

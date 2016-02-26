@@ -9,7 +9,15 @@ using System.Threading.Tasks;
 namespace MpegCompressor.Nodes {
     public class MoVecCompose : Node {
         private const int chunkSize = 8;
-        public MoVecCompose() {
+        DataBlob stateVectors;
+
+        public MoVecCompose(): base() { }
+        public MoVecCompose(NodeView graph) : base(graph) { }
+        public MoVecCompose(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("Rebuild Frame");
             setExtra("from vectors");
         }
@@ -50,7 +58,7 @@ namespace MpegCompressor.Nodes {
                 return;
             }
 
-            DataBlob stateVectors = upstreamVectors.node.getData(upstreamVectors.port);
+            stateVectors = upstreamVectors.node.getData(upstreamVectors.port);
             if (stateVectors == null) {
                 return;
             }
@@ -69,6 +77,7 @@ namespace MpegCompressor.Nodes {
             newChannels[1] = new byte[state.channels[1].Length];
             newChannels[2] = new byte[state.channels[2].Length];
             state.channels = newChannels;
+            state.bmp = null;
 
             reassemble(statePast.channels, stateDiff.channels, stateVectors.channels);
         }
@@ -90,83 +99,61 @@ namespace MpegCompressor.Nodes {
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 
-                restoreChunk(state.channels[1], past[1], diff[1], vectors[1][i], pixelTL, state.channelWidth);
-                restoreChunk(state.channels[2], past[2], diff[2], vectors[2][i], pixelTL, state.channelWidth);
+                restoreChunk(state.channels[1], past[1], diff[1], vectors[1][i], pixelTL, smaller.Width);
+                restoreChunk(state.channels[2], past[2], diff[2], vectors[2][i], pixelTL, smaller.Width);
             }
         }
 
-        private void restoreChunk(byte[] dest, byte[] past, byte[] diff, byte vector, int pixelTL, int channelWidth) {
-            int offX = ((vector & 0xf0) >> 4) - 7;
-            int offY = (vector & 0x0f) - 7;
-
-            int srcPixel;
-            int dstPixel;
-            int initialX = pixelTL % channelWidth;
-            int initialY = pixelTL / channelWidth;
-            int maxY = dest.Length / channelWidth;
-            for (int y = 0; y < chunkSize; y++) {
-                if (initialY + y >= maxY) {
-                    break;
-                }
-                for (int x = 0; x < chunkSize; x++) {
-                    dstPixel = pixelTL + y * channelWidth + x;
-                    srcPixel = dstPixel + offY * channelWidth + offX;
-                    if (initialX + x >= channelWidth) {
-                        break;
-                    }
-
-                    if (initialY + y + offY >= maxY || 
-                        initialX + x + offX >= channelWidth ||
-                        initialY + y + offY < 0 ||
-                        initialX + x + offX < 0) {
-                        dest[dstPixel] = (byte)(diff[dstPixel] - 127);
+        private void restoreChunk(byte[] dest, byte[] past, byte[] diff, byte offset, int indexTopLeft, int stride) {
+            int offsetX = ((offset & 0xf0) >> 4) - 7;
+            int offsetY = (offset & 0x0f) - 7;
+            int x0 = indexTopLeft % stride;
+            int y0 = indexTopLeft / stride;
+            int xref, yref;
+            int yMax = dest.Length / stride;
+            int xMax = stride;
+            int targetPixel, refPixel;
+            for (int y = y0; y < y0 + 8; y++) {
+                if (y >= yMax) break;
+                yref = y + offsetY;
+                for (int x = x0; x < x0 + 8; x++) {
+                    if (x >= xMax) break;
+                    xref = x + offsetX;
+                    targetPixel = y * stride + x;
+                    refPixel = yref * stride + xref;
+                    if (xref < 0 || xref >= xMax || yref < 0 || yref >= yMax) {
+                        dest[targetPixel] = (byte)(diff[targetPixel] - 127);
                     } else {
-                        dest[dstPixel] = (byte)(past[srcPixel] + diff[dstPixel] - 127);
+                        dest[targetPixel] = (byte)(diff[targetPixel] + past[refPixel] - 127);
                     }
                 }
             }
-
         }
 
-        public override Bitmap view() {
-            base.view();
+        public override void viewExtra(Graphics g) {
+            //base.viewExtra(g);
             if (state == null) {
-                return null;
-            } else if (state.bmp != null) {
-                return state.bmp;
+                return;
             }
-            Bitmap bmp = new Bitmap(state.imageWidth, state.imageHeight, PixelFormat.Format24bppRgb);
-            BitmapData bmpData = bmp.LockBits(
-                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                System.Drawing.Imaging.ImageLockMode.ReadWrite,
-                bmp.PixelFormat);
+            Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
+            int offsetX, offsetY;
+            int y = state.channelHeight - 4;
+            int x = 4;
 
-            IntPtr ptr = bmpData.Scan0;
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
-
-            //order: B,G,R,  B,G,R,  ...
-            int channelIndex = 0, counter = 0;
-            for (int y = 0; y < state.imageHeight; y++) {
-                channelIndex = y * state.channelWidth;
-                counter = y * bmpData.Stride;
-                for (int x = 0; x < state.imageWidth; x++) {
-                    rgbValues[counter] = state.channels[0][channelIndex];
-                    rgbValues[counter + 1] = state.channels[0][channelIndex];
-                    rgbValues[counter + 2] = state.channels[0][channelIndex];
-                    counter += 3;
-                    channelIndex += 1;
+            for (int i = 0; i < stateVectors.channels[0].Length; i++) {
+                offsetX = ((stateVectors.channels[0][i] & 0xF0) >> 4) - 7;
+                offsetY = (stateVectors.channels[0][i] & 0x0F) - 7;
+                if (offsetX == 0 && offsetY == 0) {
+                    g.FillRectangle(Brushes.BlanchedAlmond, x - 1, y - 1, 2, 2);
+                } else {
+                    g.DrawLine(Pens.BlanchedAlmond, x, y, x + offsetX, y - offsetY);
+                }
+                x += 8;
+                if (x - 4 >= state.channelWidth) {
+                    x = 4;
+                    y -= 8;
                 }
             }
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
-            state.bmp = bmp;
-            return bmp;
         }
-
     }
 }

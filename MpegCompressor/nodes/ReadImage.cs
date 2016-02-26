@@ -10,7 +10,12 @@ namespace MpegCompressor.Nodes {
     public class ReadImage : Node {
         private string filepath;
 
-        public ReadImage() {
+        public ReadImage(): base() { }
+        public ReadImage(NodeView graph) : base(graph) { }
+        public ReadImage(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+        protected override void init() {
+            base.init();
             setPath("C:\\temp\\uv.jpg");
             rename("ReadImage");
         }

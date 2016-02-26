@@ -43,7 +43,13 @@ namespace MpegCompressor.Nodes {
         private byte[,] quantizationY;
         private byte[,] quantizationC;
 
-        public DCT() {
+        public DCT(): base() { }
+        public DCT(NodeView graph) : base(graph) { }
+        public DCT(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("DCT");
             quantizationC = new byte[8, 8];
             quantizationY = new byte[8, 8];
@@ -193,7 +199,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void padChannels() {
-            //padd the size
+            //pad the size
             Size ySize = new Size(state.channelWidth, state.channelHeight);
             Size brOldSize = Subsample.deduceCbCrSize(state);
             Size brNewSize = Subsample.getPaddedCbCrSize(ySize, state.samplingMode);

@@ -16,8 +16,14 @@ namespace MpegCompressor.Nodes {
                 "YCrCb" };
         private Space inSpace = Space.RGB;
         private Space outSpace = Space.RGB;
-        
-        public ColorSpace() {
+
+        public ColorSpace(): base() { }
+        public ColorSpace(NodeView graph) : base(graph) { }
+        public ColorSpace(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+
+
+        protected override void init() {
+            base.init();
             rename("ColorSpace");
         }
 

@@ -220,7 +220,7 @@ namespace MpegCompressor {
             Node nMoVec3 = new MoVecDecompose(viewNodes, 520, 500);
             Node nDCT3 = new DCT(viewNodes, 680, 500);
 
-            Node nWrite = new WriteMultiChannel(viewNodes, 1000, 200);
+            Node nWrite = new WriteMulti3Channel(viewNodes, 1000, 200);
 
             Node.connect(nRead1, "outColor", nCS1, "inColor");
             Node.connect(nCS1, "outColor", nCtCh1, "inColor");
@@ -254,9 +254,12 @@ namespace MpegCompressor {
             Node.connect(nMoVec3, "outVectors", nWrite, "inVectors3");
 
 
-            (nRead1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
-            (nRead2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
-            (nRead3 as ReadImage).setPath("C:\\temp\\barbieC.tif");
+            //(nRead1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
+            //(nRead2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
+            //(nRead3 as ReadImage).setPath("C:\\temp\\barbieC.tif");
+            (nRead1 as ReadImage).setPath("C:\\temp\\bmA.tif");
+            (nRead2 as ReadImage).setPath("C:\\temp\\bmB.tif");
+            (nRead3 as ReadImage).setPath("C:\\temp\\bmC.tif");
             (nIDCT1 as DCT).setInverse(true);
             (nIDCT1 as DCT).rename("IDCT");
             (nIDCT2 as DCT).setInverse(true);
@@ -269,11 +272,11 @@ namespace MpegCompressor {
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS3 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nWrite as WriteMultiChannel).setPath("C:\\temp\\testVid.mdct");
+            (nWrite as WriteMulti3Channel).setPath("C:\\temp\\testVid.mdct");
         }
 
         public void mpegReadTest() {
-            Node nRM = new ReadMultiChannel(viewNodes, 0, 0);
+            Node nRM = new ReadMulti3Channel(viewNodes, 0, 0);
             Node nIDCT1 = new DCT(viewNodes, 150, -100);
             Node nIDCT2 = new DCT(viewNodes, 150, 0);
             Node nIDCT3 = new DCT(viewNodes, 150, 100);
@@ -304,9 +307,12 @@ namespace MpegCompressor {
 
 
             (nIDCT1 as DCT).setInverse(true);
+            (nIDCT1 as DCT).rename("IDCT");
             (nIDCT2 as DCT).setInverse(true);
+            (nIDCT2 as DCT).rename("IDCT");
             (nIDCT3 as DCT).setInverse(true);
-            (nRM as ReadMultiChannel).setPath("C:\\temp\\testVid.mdct");
+            (nIDCT3 as DCT).rename("IDCT");
+            (nRM as ReadMulti3Channel).setPath("C:\\temp\\testVid.mdct");
             (nCS1 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nCS2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nCS3 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
@@ -316,7 +322,7 @@ namespace MpegCompressor {
             Node nR = new ReadImage(viewNodes, 0, 0);
             Node nCtCh = new ColorToChannels(viewNodes, 150, 0);
             Node nMoVec = new MoVecDecompose(viewNodes, 300, 50);
-            Node nWM = new WriteMultiChannel(viewNodes, 500, 0);
+            Node nWM = new WriteMulti3Channel(viewNodes, 500, 0);
 
             Node.connect(nR, "outColor", nCtCh, "inColor");
             Node.connect(nCtCh, "outChannels", nMoVec, "inChannelsPast");
@@ -327,10 +333,10 @@ namespace MpegCompressor {
             Node.connect(nMoVec, "outVectors", nWM, "inVectors3");
             Node.connect(nMoVec, "outChannels", nWM, "inChannels3");
 
-            (nWM as WriteMultiChannel).setPath("C:\\temp\\wrm.mdct");
+            (nWM as WriteMulti3Channel).setPath("C:\\temp\\wrm.mdct");
             
-            Node nRM = new ReadMultiChannel(viewNodes, 700, 0);
-            (nRM as ReadMultiChannel).setPath("C:\\temp\\wrm.mdct");
+            Node nRM = new ReadMulti3Channel(viewNodes, 700, 0);
+            (nRM as ReadMulti3Channel).setPath("C:\\temp\\wrm.mdct");
 
         }
 
@@ -356,8 +362,8 @@ namespace MpegCompressor {
             Node nSS3 = new Subsample(viewNodes, 390, 500);
             Node nMoVec3 = new MoVecDecompose(viewNodes, 520, 500);
 
-            Node nWrite = new WriteMultiChannel(viewNodes, 1000, 200);
-            Node nRead = new ReadMultiChannel(viewNodes, 1200, 200);
+            Node nWrite = new WriteMulti3Channel(viewNodes, 1000, 200);
+            Node nRead = new ReadMulti3Channel(viewNodes, 1200, 200);
 
             Node nIMoVecR1 = new MoVecCompose(viewNodes, 1400, 200);
             Node nIMoVecR2 = new MoVecCompose(viewNodes, 1400, 360);
@@ -431,8 +437,82 @@ namespace MpegCompressor {
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS3 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nWrite as WriteMultiChannel).setPath("C:\\temp\\testVid.mdct");
-            (nRead as ReadMultiChannel).setPath("C:\\temp\\testVid.mdct");
+            (nWrite as WriteMulti3Channel).setPath("C:\\temp\\testVid.mdct");
+            (nRead as ReadMulti3Channel).setPath("C:\\temp\\testVid.mdct");
+        }
+
+        public void nomadTest() {
+            //first frame
+            Node nRead1 = new ReadImage(viewNodes, 0, 0);
+            Node nCS1 = new ColorSpace(viewNodes, 130, 0);
+            Node nCtCh1 = new ColorToChannels(viewNodes, 260, 0);
+            Node nSS1 = new Subsample(viewNodes, 390, 0);
+            Node nDCT1 = new DCT(viewNodes, 520, 0);
+            Node nIDCT1 = new DCT(viewNodes, 520, 100);
+
+            //second frame
+            Node nRead2 = new ReadImage(viewNodes, 0, 200);
+            Node nCS2 = new ColorSpace(viewNodes, 130, 200);
+            Node nCtCh2 = new ColorToChannels(viewNodes, 260, 200);
+            Node nSS2 = new Subsample(viewNodes, 390, 200);
+            Node nMoVec2 = new MoVecDecompose(viewNodes, 520, 200);
+            Node nDCT2 = new DCT(viewNodes, 680, 200);
+
+            Node nWrite = new WriteMulti2Channel(viewNodes, 850, 100);
+            Node nRead = new ReadMulti2Channel(viewNodes, 1000, 100);
+            Node nIDCTR1 = new DCT(viewNodes, 1200, 100);
+            Node nIDCTR2 = new DCT(viewNodes, 1200, 200);
+            Node nIMoVec = new MoVecCompose(viewNodes, 1350, 200);
+            Node nChtCR1 = new ChannelsToColor(viewNodes, 1500, 100);
+            Node nChtCR2 = new ChannelsToColor(viewNodes, 1500, 200);
+            Node nCSR1 = new ColorSpace(viewNodes, 1650, 100);
+            Node nCSR2 = new ColorSpace(viewNodes, 1650, 200);
+            Node.connect(nRead, "outChannels1", nIDCTR1, "inChannels");
+            Node.connect(nRead, "outChannels2", nIDCTR2, "inChannels");
+            Node.connect(nRead, "outVectors2", nIMoVec, "inVectors");
+            Node.connect(nIDCTR1, "outChannels", nIMoVec, "inChannelsPast");
+            Node.connect(nIDCTR2, "outChannels", nIMoVec, "inChannels");
+            Node.connect(nIDCTR1, "outChannels", nChtCR1, "inChannels");
+            Node.connect(nIMoVec, "outChannels", nChtCR2, "inChannels");
+            Node.connect(nChtCR1, "outColor", nCSR1, "inColor");
+            Node.connect(nChtCR2, "outColor", nCSR2, "inColor");
+            (nIDCTR1 as DCT).setInverse(true);
+            (nIDCTR2 as DCT).setInverse(true);
+            (nRead as ReadMulti2Channel).setPath("C:\\temp\\testVid.mdct");
+            (nCSR1 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+            (nCSR2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
+
+            Node.connect(nRead1, "outColor", nCS1, "inColor");
+            Node.connect(nCS1, "outColor", nCtCh1, "inColor");
+            Node.connect(nCtCh1, "outChannels", nSS1, "inChannels");
+            Node.connect(nSS1, "outChannels", nDCT1, "inChannels");
+            Node.connect(nDCT1, "outChannels", nIDCT1, "inChannels");
+            Node.connect(nIDCT1, "outChannels", nMoVec2, "inChannelsPast");
+
+            Node.connect(nRead2, "outColor", nCS2, "inColor");
+            Node.connect(nCS2, "outColor", nCtCh2, "inColor");
+            Node.connect(nCtCh2, "outChannels", nSS2, "inChannels");
+            Node.connect(nSS2, "outChannels", nMoVec2, "inChannelsNow");
+            Node.connect(nMoVec2, "outChannels", nDCT2, "inChannels");
+
+            Node.connect(nDCT1, "outChannels", nWrite, "inChannels1");
+            Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
+            Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
+
+
+            //(nRead1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
+            //(nRead2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
+            //(nRead3 as ReadImage).setPath("C:\\temp\\barbieC.tif");
+            (nRead1 as ReadImage).setPath("C:\\temp\\nomadA.jpg");
+            (nRead2 as ReadImage).setPath("C:\\temp\\nomadB.jpg");
+            (nIDCT1 as DCT).setInverse(true);
+            (nIDCT1 as DCT).rename("IDCT");
+            (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS2 as Subsample).setOutSamples(DataBlob.Samples.s420);
+            (nSS2 as Subsample).setPadded(true);
+            (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
+            (nWrite as WriteMulti2Channel).setPath("C:\\temp\\testVid.mdct");
         }
 
         public void buildGraph() {
@@ -443,7 +523,8 @@ namespace MpegCompressor {
             //mpegWriteTest();
             //mpegReadTest();
             //readWriteMultiTest();
-            mpegNoDCTTest();
+            //mpegNoDCTTest();
+            nomadTest();
         }
 
         public void OnSelectionChange(object sender, EventArgs e) {

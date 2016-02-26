@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor.Nodes {
-    class ReadMultiChannel : Node {
+    class ReadMulti3Channel : Node {
         private const byte rleToken = 128;
         private string inPath;
         DataBlob C1, C2, C3, V2, V3;
 
-        public ReadMultiChannel(): base() { }
-        public ReadMultiChannel(NodeView graph) : base(graph) { }
-        public ReadMultiChannel(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+        public ReadMulti3Channel(): base() { }
+        public ReadMulti3Channel(NodeView graph) : base(graph) { }
+        public ReadMulti3Channel(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
 
         protected override void init() {
             base.init();

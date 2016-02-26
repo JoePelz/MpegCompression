@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MpegCompressor.Nodes {
-    class WriteMultiChannel : Node {
+    class WriteMulti3Channel : Node {
         private const byte rleToken = 128;
         private string outPath;
         DataBlob inC1, inC2, inC3, inV2, inV3;
 
-        public WriteMultiChannel(): base() { }
-        public WriteMultiChannel(NodeView graph) : base(graph) { }
-        public WriteMultiChannel(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
+        public WriteMulti3Channel(): base() { }
+        public WriteMulti3Channel(NodeView graph) : base(graph) { }
+        public WriteMulti3Channel(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
 
 
         protected override void init() {
@@ -95,8 +95,7 @@ namespace MpegCompressor.Nodes {
             if (!validateInput()) {
                 return;
             }
-
-
+            
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
                     writeHeader(writer);

@@ -39,9 +39,9 @@ namespace MpegCompressor.Nodes {
             state = state.clone();
 
             //create copy of channels for local use.
-            byte[][] newChannels = new byte[state.channels.Length][];
+            float[][] newChannels = new float[state.channels.Length][];
             for (int channel = 0; channel < newChannels.Length; channel++) {
-                newChannels[channel] = (byte[])state.channels[channel].Clone();
+                newChannels[channel] = (float[])state.channels[channel].Clone();
             }
             state.channels = newChannels;
             state.bmp = null;

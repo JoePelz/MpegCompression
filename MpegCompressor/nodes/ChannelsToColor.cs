@@ -82,9 +82,9 @@ namespace MpegCompressor.Nodes {
                 iY = y * channelYStride;
                 iCrb = (data.samplingMode == DataBlob.Samples.s420 ? y / 2 : y) * channelCRBStride;
                 for (int x = 0; x < data.imageWidth; x++) {
-                    rgbValues[pixel + 2] = data.channels[0][iY];
-                    rgbValues[pixel + 1] = data.channels[1][iCrb];
-                    rgbValues[pixel] = data.channels[2][iCrb];
+                    rgbValues[pixel + 2] = floatToClampedRGB(data.channels[0][iY]);
+                    rgbValues[pixel + 1] = floatToClampedRGB(data.channels[1][iCrb]);
+                    rgbValues[pixel] = floatToClampedRGB(data.channels[2][iCrb]);
                     pixel += 3;
                     iY++;
 

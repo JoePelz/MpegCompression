@@ -75,8 +75,8 @@ namespace MpegCompressor.Nodes {
             }
         }
 
-        private void readChannel(BinaryReader reader, byte[] channel, Chunker c) {
-            byte[] data = new byte[64];
+        private void readChannel(BinaryReader reader, float[] channel, Chunker c) {
+            float[] data = new float[64];
             byte count, val;
             var indexer = Chunker.zigZag8Index();
 
@@ -132,25 +132,25 @@ namespace MpegCompressor.Nodes {
             V2.samplingMode = metadata.samplingMode;
 
             //Allocate space for incoming data
-            C1.channels = new byte[3][];
-            C2.channels = new byte[3][];
-            V2.channels = new byte[3][];
+            C1.channels = new float[3][];
+            C2.channels = new float[3][];
+            V2.channels = new float[3][];
 
             int cMajor = C1.channelWidth * C1.channelHeight;
             Size sizeMinor = Subsample.getPaddedCbCrSize(new Size(C1.channelWidth, C1.channelHeight), C1.samplingMode);
             int cMinor = sizeMinor.Width * sizeMinor.Height;
-            C1.channels[0] = new byte[cMajor];
-            C2.channels[0] = new byte[cMajor];
-            C1.channels[1] = new byte[cMinor];
-            C2.channels[1] = new byte[cMinor];
-            C1.channels[2] = new byte[cMinor];
-            C2.channels[2] = new byte[cMinor];
+            C1.channels[0] = new float[cMajor];
+            C2.channels[0] = new float[cMajor];
+            C1.channels[1] = new float[cMinor];
+            C2.channels[1] = new float[cMinor];
+            C1.channels[2] = new float[cMinor];
+            C2.channels[2] = new float[cMinor];
             cMajor = V2.channelWidth * V2.channelHeight;
             sizeMinor = Subsample.getCbCrSize(new Size(V2.channelWidth, V2.channelHeight), V2.samplingMode);
             cMinor = sizeMinor.Width * sizeMinor.Height;
-            V2.channels[0] = new byte[cMajor];
-            V2.channels[1] = new byte[cMinor];
-            V2.channels[2] = new byte[cMinor];
+            V2.channels[0] = new float[cMajor];
+            V2.channels[1] = new float[cMinor];
+            V2.channels[2] = new float[cMinor];
         }
 
         private DataBlob readHeader(BinaryReader reader) {

@@ -103,7 +103,8 @@ namespace MpegCompressor.Nodes {
             //    write prev as above
             //    next chunk...
 
-            byte prev, count, val;
+            float prev, val;
+            byte count;
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
                     writer.Write((short)state.imageWidth);
@@ -112,7 +113,7 @@ namespace MpegCompressor.Nodes {
                     writer.Write((short)state.channelHeight);
                     writer.Write((byte)state.quantizeQuality);
                     writer.Write((byte)state.samplingMode);
-                    byte[] data = new byte[64];
+                    float[] data = new float[64];
                     Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
                     var indexer = Chunker.zigZag8Index();
                     for (int i = 0; i < c.getNumChunks(); i++) {
@@ -127,13 +128,10 @@ namespace MpegCompressor.Nodes {
                                 if (prev == rleToken || count >= 3) {
                                     writer.Write(rleToken);
                                     writer.Write(count);
-                                    writer.Write(prev);
                                 } else if (count == 2) {
-                                    writer.Write(prev);
-                                    writer.Write(prev);
-                                } else {
-                                    writer.Write(prev);
+                                    writer.Write(floatToClampedRGB(prev));
                                 }
+                                writer.Write(floatToClampedRGB(prev));
                                 prev = val;
                                 count = 1;
                             }
@@ -142,13 +140,11 @@ namespace MpegCompressor.Nodes {
                         if (prev == rleToken || count >= 3) {
                             writer.Write(rleToken);
                             writer.Write(count);
-                            writer.Write(prev);
                         } else if (count == 2) {
-                            writer.Write(prev);
-                            writer.Write(prev);
-                        } else {
-                            writer.Write(prev);
-                        } //chunk written out
+                            writer.Write(floatToClampedRGB(prev));
+                        }
+                        writer.Write(floatToClampedRGB(prev));
+                        //chunk written out
                     } //channel written out
 
                     //
@@ -181,13 +177,10 @@ namespace MpegCompressor.Nodes {
                                     if (prev == rleToken || count >= 3) {
                                         writer.Write(rleToken);
                                         writer.Write(count);
-                                        writer.Write(prev);
                                     } else if (count == 2) {
-                                        writer.Write(prev);
-                                        writer.Write(prev);
-                                    } else {
-                                        writer.Write(prev);
+                                        writer.Write(floatToClampedRGB(prev));
                                     }
+                                    writer.Write(floatToClampedRGB(prev));
                                     prev = val;
                                     count = 1;
                                 }
@@ -196,13 +189,11 @@ namespace MpegCompressor.Nodes {
                             if (prev == rleToken || count >= 3) {
                                 writer.Write(rleToken);
                                 writer.Write(count);
-                                writer.Write(prev);
                             } else if (count == 2) {
-                                writer.Write(prev);
-                                writer.Write(prev);
-                            } else {
-                                writer.Write(prev);
-                            } //chunk written out
+                                writer.Write(floatToClampedRGB(prev));
+                            }
+                            writer.Write(floatToClampedRGB(prev));
+                            //chunk written out
                         } //channel written out
                     } // all channels written out
                 }

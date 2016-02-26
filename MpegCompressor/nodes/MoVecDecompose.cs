@@ -73,11 +73,11 @@ namespace MpegCompressor.Nodes {
             vState = stateNow.clone();
 
             //create copy of channels for local use.
-            byte[][] diffChannels = new byte[state.channels.Length][];
-            diffChannels[0] = new byte[state.channels[0].Length];
-            diffChannels[1] = new byte[state.channels[1].Length];
-            diffChannels[2] = new byte[state.channels[2].Length];
-            byte[][] vectors = new byte[3][];
+            float[][] diffChannels = new float[state.channels.Length][];
+            diffChannels[0] = new float[state.channels[0].Length];
+            diffChannels[1] = new float[state.channels[1].Length];
+            diffChannels[2] = new float[state.channels[2].Length];
+            float[][] vectors = new float[3][];
             state.channels = diffChannels;
             vState.channels = vectors;
             state.bmp = null;
@@ -88,7 +88,7 @@ namespace MpegCompressor.Nodes {
             calcMoVec(statePast.channels, stateNow.channels);
         }
 
-        private void calcMoVec(byte[][] chOld, byte[][] chNew) {
+        private void calcMoVec(float[][] chOld, float[][] chNew) {
             //for each channel
             //chunk state.channels into 8x8 blocks
             //compare each block with blocks surrounding them in the arg channels 
@@ -101,7 +101,7 @@ namespace MpegCompressor.Nodes {
             int pixelTL;
             byte offset;
             //need to set vState.channelWidth and vState.channelHeight correctly, I think....
-            vState.channels[0] = new byte[c.getNumChunks()];
+            vState.channels[0] = new float[c.getNumChunks()];
             vState.channelWidth = c.getChunksWide();
             vState.channelHeight = c.getChunksHigh();
             
@@ -121,8 +121,8 @@ namespace MpegCompressor.Nodes {
             //Do the second two channels
             Size smaller = Subsample.deduceCbCrSize(state);
             c = new Chunker(chunkSize, smaller.Width, smaller.Height, smaller.Width, 1);
-            vState.channels[1] = new byte[c.getNumChunks()];
-            vState.channels[2] = new byte[c.getNumChunks()];
+            vState.channels[1] = new float[c.getNumChunks()];
+            vState.channels[2] = new float[c.getNumChunks()];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 offset = findOffsetVector(chNew[1], chOld[1], pixelTL, smaller.Width);
@@ -135,7 +135,7 @@ namespace MpegCompressor.Nodes {
             }
         }
 
-        private void setDiff(byte[] dest, byte[] goal, byte[] searchArea, int indexTopLeft, byte offset, int stride) {
+        private void setDiff(float[] dest, float[] goal, float[] searchArea, int indexTopLeft, byte offset, int stride) {
             int offsetX = ((offset & 0xf0) >> 4) - 7;
             int offsetY = (offset & 0x0f) - 7;
             int x0 = indexTopLeft % stride;
@@ -161,10 +161,10 @@ namespace MpegCompressor.Nodes {
             }
         }
         
-        private byte findOffsetVector(byte[] goal, byte[] searchArea, int indexTopLeft, int stride) {
+        private byte findOffsetVector(float[] goal, float[] searchArea, int indexTopLeft, int stride) {
             int pixel = 0;
-            int diff;
-            int minDiff = int.MaxValue;
+            float diff;
+            float minDiff = float.MaxValue;
             int offX = 0;
             int offY = 0;
             for (int yo = -7; yo < 8; yo++) {
@@ -184,8 +184,9 @@ namespace MpegCompressor.Nodes {
 
         }
 
-        private int SAD(byte[] a, int startA, byte[] b, int startB, int stride) {
-            int sad = 0, ia, ib, xLimit;
+        private float SAD(float[] a, int startA, float[] b, int startB, int stride) {
+            float sad = 0;
+            int ia, ib, xLimit;
             for (int y = 0; y < 8; y++) {
                 xLimit = startA / stride * stride + (y + 1) * stride;
                 if (startA / stride + y >= a.Length / stride) {
@@ -213,13 +214,14 @@ namespace MpegCompressor.Nodes {
                 return;
             }
             Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
-            int offsetX, offsetY;
+            int offset, offsetX, offsetY;
             int y = state.channelHeight - 4;
             int x = 4;
 
             for (int i = 0; i < vState.channels[0].Length; i++) {
-                offsetX = ((vState.channels[0][i] & 0xF0) >> 4) - 7;
-                offsetY = (vState.channels[0][i] & 0x0F) - 7;
+                offset = (int)vState.channels[0][i];
+                offsetX = ((offset & 0xF0) >> 4) - 7;
+                offsetY = (offset & 0x0F) - 7;
                 if (offsetX == 0 && offsetY == 0) {
                     g.FillRectangle(Brushes.BlanchedAlmond, x-1, y-1, 2, 2);
                 } else {

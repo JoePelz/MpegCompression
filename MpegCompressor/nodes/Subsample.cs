@@ -131,7 +131,7 @@ namespace MpegCompressor.Nodes {
         private void P_eValueChanged(object sender, EventArgs e) {
             setOutSamples((DataBlob.Samples)properties["outSamples"].getSelection());
         }
-        
+
         protected override void clean() {
             base.clean();
             
@@ -158,8 +158,8 @@ namespace MpegCompressor.Nodes {
             int size420 = (state.channelWidth + 1) / 2 * (state.channelHeight + 1) / 2;
             int size411 = (state.channelWidth + 3) / 4 * state.channelHeight;
 
-            byte[] newG;
-            byte[] newB;
+            float[] newG;
+            float[] newB;
 
             int iNew, iOld;
 
@@ -177,8 +177,8 @@ namespace MpegCompressor.Nodes {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size444];
-                    newB = new byte[size444];
+                    newG = new float[size444];
+                    newB = new float[size444];
                     iOld = 0;
                     for (int y = 0; y < state.channelHeight; y++) {
                         for (int x = 0; x < state.channelWidth; x++) {
@@ -205,8 +205,8 @@ namespace MpegCompressor.Nodes {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size444];
-                    newB = new byte[size444];
+                    newG = new float[size444];
+                    newB = new float[size444];
                     iOld = -1;
                     for (int y = 0; y < state.channelHeight; y++) {
                         for (int x = 0; x < state.channelWidth; x++) {
@@ -232,8 +232,8 @@ namespace MpegCompressor.Nodes {
                         state.channels = null;
                         return;
                     }
-                    newG = new byte[size444];
-                    newB = new byte[size444];
+                    newG = new float[size444];
+                    newB = new float[size444];
                     iOld = 0;
                     for (int y = 0; y < state.channelHeight; y++) {
                         for (int x = 0; x < state.channelWidth; x++) {
@@ -273,15 +273,15 @@ namespace MpegCompressor.Nodes {
             int size420 = ((state.channelWidth + 1) / 2) * ((state.channelHeight + 1) / 2);
             int size411 = ((state.channelWidth + 3) / 4) * state.channelHeight;
             int iNew, iOld;
-            byte[] newG;
-            byte[] newB;
+            float[] newG;
+            float[] newB;
 
             switch (outSamples) {
                 case DataBlob.Samples.s444:
                     break; //done! :D
                 case DataBlob.Samples.s422:
-                    newG = new byte[size422];
-                    newB = new byte[size422];
+                    newG = new float[size422];
+                    newB = new float[size422];
                     iNew = 0;
                     for (int y = 0; y < state.channelHeight; y++) {
                         for (int x = 0; x < state.channelWidth; x+= 2) {
@@ -297,8 +297,8 @@ namespace MpegCompressor.Nodes {
                     state.channels[2] = newB;
                     break;
                 case DataBlob.Samples.s420:
-                    newG = new byte[size420];
-                    newB = new byte[size420];
+                    newG = new float[size420];
+                    newB = new float[size420];
                     iNew = 0;
                     for (int y = 0; y < state.channelHeight; y += 2) {
                         for (int x = 0; x < state.channelWidth; x += 2) {
@@ -314,8 +314,8 @@ namespace MpegCompressor.Nodes {
                     state.channels[2] = newB;
                     break;
                 case DataBlob.Samples.s411:
-                    newG = new byte[size411];
-                    newB = new byte[size411];
+                    newG = new float[size411];
+                    newB = new float[size411];
                     iNew = 0;
                     for (int y = 0; y < state.channelHeight; y++) {
                         for (int x = 0; x < state.channelWidth; x += 4) {
@@ -346,10 +346,10 @@ namespace MpegCompressor.Nodes {
             }
 
             //create padded container
-            byte[][] newChannels = new byte[3][];
-            newChannels[0] = new byte[ySize.Width * ySize.Height];
-            newChannels[1] = new byte[brNewSize.Width * brNewSize.Height];
-            newChannels[2] = new byte[newChannels[1].Length];
+            float[][] newChannels = new float[3][];
+            newChannels[0] = new float[ySize.Width * ySize.Height];
+            newChannels[1] = new float[brNewSize.Width * brNewSize.Height];
+            newChannels[2] = new float[newChannels[1].Length];
 
             //copy array into larger container
             for (int y = 0; y < state.channelHeight; y++) {

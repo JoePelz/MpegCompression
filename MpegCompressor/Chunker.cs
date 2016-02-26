@@ -13,7 +13,7 @@ namespace MpegCompressor {
         private int Bpp;
         private int chunksWide;
         private int chunksHigh;
-        private byte[] buffer = new byte[64];
+        private float[] buffer = new float[64];
 
         public Chunker(int chunkSize, int width, int height, int stride, int Bpp) {
             this.chunkSize = chunkSize;
@@ -69,11 +69,33 @@ namespace MpegCompressor {
             return px * Bpp + py * stride;
         }
 
+        public void getBlock(float[] channel, float[] result, int iChunk) {
+            int iDest = 0;
+            foreach (int pixel in getChunk(iChunk)) {
+                for (int c = 0; c < Bpp; c++) {
+                    result[iDest++] = (pixel == -1 ? 0 : channel[pixel + c]);
+                }
+            }
+        }
+
         public void getBlock(byte[] channel, byte[] result, int iChunk) {
             int iDest = 0;
             foreach (int pixel in getChunk(iChunk)) {
                 for (int c = 0; c < Bpp; c++) {
-                    result[iDest++] = (pixel == -1 ? (byte)0 : channel[pixel + c]);
+                    result[iDest++] = (byte)(pixel == -1 ? 0 : channel[pixel + c]);
+                }
+            }
+        }
+
+        public void setBlock(float[] channel, float[] newBytes, int iChunk) {
+            int iDest = 0;
+            foreach (int pixel in getChunk(iChunk)) {
+                if (pixel != -1) {
+                    for (int c = 0; c < Bpp; c++) {
+                        channel[pixel + c] = newBytes[iDest++];
+                    }
+                } else {
+                    iDest++;
                 }
             }
         }
@@ -91,7 +113,7 @@ namespace MpegCompressor {
             }
         }
 
-        public void getZigZag8Block(byte[] channel, byte[] result, int iChunk) {
+        public void getZigZag8Block(float[] channel, float[] result, int iChunk) {
             getBlock(channel, buffer, iChunk);
             int iDest = 0;
             foreach (int zig in zigZag8Index()) {
@@ -99,7 +121,7 @@ namespace MpegCompressor {
             }
         }
 
-        public void setZigZag8Block(byte[] channel, byte[] newBytes, int iChunk) {
+        public void setZigZag8Block(float[] channel, float[] newBytes, int iChunk) {
             int iDest = 0;
             foreach (int zig in zigZag8Index()) {
                 buffer[zig] = newBytes[iDest++];

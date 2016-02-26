@@ -211,6 +211,10 @@ namespace MpegCompressor.Nodes {
             }
         }
         
+        internal static byte floatToClampedRGB(float val) {
+            return (byte)(val > 255.0f ? 255 : (val < 0.0f ? 0 : val));
+        }
+
         public virtual Bitmap view() {
             if (isDirty) {
                 clean();
@@ -244,10 +248,18 @@ namespace MpegCompressor.Nodes {
                     counter = y * bmpData.Stride;
 
                     for (int x = 0; x < state.imageWidth; x++) {
-                        rgbValues[counter + 2] = state.channels[0][channelIndex];
+                        /*
+                        rgbValues[counter + 2] = floatToClampedRGB(state.channels[0][channelIndex]);
                         if (y < s.Height && x < s.Width) {
-                            rgbValues[counter + 1] = state.channels[1][channelIndexRB];
-                            rgbValues[counter + 0] = state.channels[2][channelIndexRB];
+                            rgbValues[counter + 1] = floatToClampedRGB(state.channels[1][channelIndexRB]);
+                            rgbValues[counter + 0] = floatToClampedRGB(state.channels[2][channelIndexRB]);
+                            channelIndexRB++;
+                        }
+                        */
+                        rgbValues[counter + 2] = (byte)(state.channels[0][channelIndex]);
+                        if (y < s.Height && x < s.Width) {
+                            rgbValues[counter + 1] = (byte)(state.channels[1][channelIndexRB]);
+                            rgbValues[counter + 0] = (byte)(state.channels[2][channelIndexRB]);
                             channelIndexRB++;
                         }
                         counter += 3;

@@ -15,7 +15,7 @@ namespace MpegCompressor {
 
         public Bitmap bmp;
 
-        public byte[][] channels;
+        public float[][] channels;
         public int imageWidth;
         public int imageHeight;
         public int channelWidth;

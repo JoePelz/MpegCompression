@@ -69,7 +69,7 @@ namespace MpegCompressor.Nodes {
         private void open(object sender, EventArgs e) {
             state = new DataBlob();
             state.type = DataBlob.Type.Channels;
-            state.channels = new byte[3][];
+            state.channels = new float[3][];
             using (Stream stream = new FileStream(inPath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                 using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
                     state.imageWidth = reader.ReadUInt16();
@@ -79,9 +79,9 @@ namespace MpegCompressor.Nodes {
                     state.quantizeQuality = reader.ReadByte();
                     state.samplingMode = (DataBlob.Samples)reader.ReadByte();
                     
-                    state.channels[0] = new byte[state.channelWidth * state.channelHeight];
+                    state.channels[0] = new float[state.channelWidth * state.channelHeight];
 
-                    byte[] data = new byte[64];
+                    float[] data = new float[64];
                     byte count, val;
 
                     //======================
@@ -110,8 +110,8 @@ namespace MpegCompressor.Nodes {
                     //===== Cr, Cb Channels =====
                     //===========================
                     Size len = Subsample.getPaddedCbCrSize(new Size(state.channelWidth, state.channelHeight), state.samplingMode);
-                    state.channels[1] = new byte[len.Width * len.Height];
-                    state.channels[2] = new byte[state.channels[1].Length];
+                    state.channels[1] = new float[len.Width * len.Height];
+                    state.channels[2] = new float[state.channels[1].Length];
                     c = new Chunker(8, len.Width, len.Height, len.Width, 1);
                     
                     indexer = Chunker.zigZag8Index();

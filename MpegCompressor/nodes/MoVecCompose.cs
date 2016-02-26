@@ -72,17 +72,17 @@ namespace MpegCompressor.Nodes {
                 return;
 
             state = stateDiff.clone();
-            byte[][] newChannels = new byte[state.channels.Length][];
-            newChannels[0] = new byte[state.channels[0].Length];
-            newChannels[1] = new byte[state.channels[1].Length];
-            newChannels[2] = new byte[state.channels[2].Length];
+            float[][] newChannels = new float[state.channels.Length][];
+            newChannels[0] = new float[state.channels[0].Length];
+            newChannels[1] = new float[state.channels[1].Length];
+            newChannels[2] = new float[state.channels[2].Length];
             state.channels = newChannels;
             state.bmp = null;
 
             reassemble(statePast.channels, stateDiff.channels, stateVectors.channels);
         }
 
-        private void reassemble(byte[][] past, byte[][] diff, byte[][] vectors) {
+        private void reassemble(float[][] past, float[][] diff, float[][] vectors) {
 
             Chunker c = new Chunker(chunkSize, state.channelWidth, state.channelHeight, state.channelWidth, 1);
             int pixelTL;
@@ -90,7 +90,7 @@ namespace MpegCompressor.Nodes {
                 pixelTL = c.chunkIndexToPixelIndex(i);
 
                 //update channels to be difference.
-                restoreChunk(state.channels[0], past[0], diff[0], vectors[0][i], pixelTL, state.channelWidth);
+                restoreChunk(state.channels[0], past[0], diff[0], (byte)vectors[0][i], pixelTL, state.channelWidth);
             }
 
             //Do the second two channels
@@ -99,12 +99,12 @@ namespace MpegCompressor.Nodes {
             for (int i = 0; i < c.getNumChunks(); i++) {
                 pixelTL = c.chunkIndexToPixelIndex(i);
                 
-                restoreChunk(state.channels[1], past[1], diff[1], vectors[1][i], pixelTL, smaller.Width);
-                restoreChunk(state.channels[2], past[2], diff[2], vectors[2][i], pixelTL, smaller.Width);
+                restoreChunk(state.channels[1], past[1], diff[1], (byte)vectors[1][i], pixelTL, smaller.Width);
+                restoreChunk(state.channels[2], past[2], diff[2], (byte)vectors[2][i], pixelTL, smaller.Width);
             }
         }
 
-        private void restoreChunk(byte[] dest, byte[] past, byte[] diff, byte offset, int indexTopLeft, int stride) {
+        private void restoreChunk(float[] dest, float[] past, float[] diff, byte offset, int indexTopLeft, int stride) {
             int offsetX = ((offset & 0xf0) >> 4) - 7;
             int offsetY = (offset & 0x0f) - 7;
             int x0 = indexTopLeft % stride;
@@ -136,13 +136,14 @@ namespace MpegCompressor.Nodes {
                 return;
             }
             Chunker c = new Chunker(8, state.channelWidth, state.channelHeight, state.channelWidth, 1);
-            int offsetX, offsetY;
+            int offset, offsetX, offsetY;
             int y = state.channelHeight - 4;
             int x = 4;
 
             for (int i = 0; i < stateVectors.channels[0].Length; i++) {
-                offsetX = ((stateVectors.channels[0][i] & 0xF0) >> 4) - 7;
-                offsetY = (stateVectors.channels[0][i] & 0x0F) - 7;
+                offset = (byte)stateVectors.channels[0][i];
+                offsetX = ((offset & 0xF0) >> 4) - 7;
+                offsetY = (offset & 0x0F) - 7;
                 if (offsetX == 0 && offsetY == 0) {
                     g.FillRectangle(Brushes.BlanchedAlmond, x - 1, y - 1, 2, 2);
                 } else {

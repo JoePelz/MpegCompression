@@ -117,10 +117,11 @@ namespace MpegCompressor.Nodes {
             writeChannel(writer, ch.channels[2], c);
         }
 
-        private void writeChannel(BinaryWriter writer, byte[] channel, Chunker c) {
-            byte prev, count, val;
+        private void writeChannel(BinaryWriter writer, float[] channel, Chunker c) {
+            float prev, val;
+            byte count;
             var indexer = Chunker.zigZag8Index();
-            byte[] data = new byte[64];
+            float[] data = new float[64];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(channel, data, i);
                 count = 0;
@@ -133,13 +134,10 @@ namespace MpegCompressor.Nodes {
                         if (prev == rleToken || count >= 3) {
                             writer.Write(rleToken);
                             writer.Write(count);
-                            writer.Write(prev);
                         } else if (count == 2) {
-                            writer.Write(prev);
-                            writer.Write(prev);
-                        } else {
-                            writer.Write(prev);
+                            writer.Write(floatToClampedRGB(prev));
                         }
+                        writer.Write(floatToClampedRGB(prev));
                         prev = val;
                         count = 1;
                     }
@@ -148,13 +146,11 @@ namespace MpegCompressor.Nodes {
                 if (prev == rleToken || count >= 3) {
                     writer.Write(rleToken);
                     writer.Write(count);
-                    writer.Write(prev);
                 } else if (count == 2) {
-                    writer.Write(prev);
-                    writer.Write(prev);
-                } else {
-                    writer.Write(prev);
-                }//final chunk written out
+                    writer.Write(floatToClampedRGB(prev));
+                }
+                writer.Write(floatToClampedRGB(prev));
+                //final chunk written out
             } //channel written out
         }
 

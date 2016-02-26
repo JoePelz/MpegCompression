@@ -57,7 +57,7 @@ namespace MpegCompressor.Nodes {
             state.bmp = null;
         }
         
-        private void bmpToChannels(ref byte[][] channels, Bitmap bmp) {
+        private void bmpToChannels(ref float[][] channels, Bitmap bmp) {
 
             BitmapData bmpData = bmp.LockBits(
                                new Rectangle(0, 0, bmp.Width, bmp.Height),
@@ -71,10 +71,10 @@ namespace MpegCompressor.Nodes {
 
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
 
-            channels = new byte[3][];
-            channels[0] = new byte[bmp.Width * bmp.Height];
-            channels[1] = new byte[bmp.Width * bmp.Height];
-            channels[2] = new byte[bmp.Width * bmp.Height];
+            channels = new float[3][];
+            channels[0] = new float[bmp.Width * bmp.Height];
+            channels[1] = new float[bmp.Width * bmp.Height];
+            channels[2] = new float[bmp.Width * bmp.Height];
 
             int pixel;
             int iY = 0;

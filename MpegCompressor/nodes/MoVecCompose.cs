@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace MpegCompressor.Nodes {
     public class MoVecCompose : Node {
+        private int[] testData = new int[256];
         private const int chunkSize = 8;
         DataBlob stateVectors;
 
@@ -113,6 +114,7 @@ namespace MpegCompressor.Nodes {
             int yMax = dest.Length / stride;
             int xMax = stride;
             int targetPixel, refPixel;
+            int temp;
             for (int y = y0; y < y0 + 8; y++) {
                 if (y >= yMax) break;
                 yref = y + offsetY;
@@ -122,10 +124,12 @@ namespace MpegCompressor.Nodes {
                     targetPixel = y * stride + x;
                     refPixel = yref * stride + xref;
                     if (xref < 0 || xref >= xMax || yref < 0 || yref >= yMax) {
-                        dest[targetPixel] = (byte)(diff[targetPixel] - 127);
+                        temp = (diff[targetPixel] - 127);
                     } else {
-                        dest[targetPixel] = (byte)(diff[targetPixel] + past[refPixel] - 127);
+                        temp = diff[targetPixel] + past[refPixel] - 127;
                     }
+                    dest[targetPixel] = (byte)(temp > 255 ? 255 : (temp < 0 ? 0 : temp));
+                    testData[dest[targetPixel]] += 1;
                 }
             }
         }

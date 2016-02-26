@@ -9,6 +9,7 @@ using MpegCompressor.Nodes;
 
 namespace MpegCompressor.Nodes {
     public class MoVecDecompose : Node {
+        private int[] testData = new int[256];
         private const int chunkSize = 8;
         private DataBlob vState;
 
@@ -144,6 +145,7 @@ namespace MpegCompressor.Nodes {
             int yMax = dest.Length / stride;
             int xMax = stride;
             int targetPixel, refPixel;
+            int temp;
             for (int y = y0; y < y0 + 8; y++) {
                 if (y >= yMax) break;
                 yref = y + offsetY;
@@ -153,10 +155,13 @@ namespace MpegCompressor.Nodes {
                     targetPixel = y * stride + x;
                     refPixel = yref * stride + xref;
                     if (xref < 0 || xref >= xMax || yref < 0 || yref >= yMax) {
-                        dest[targetPixel] = (byte)(goal[targetPixel] + 127);
+                        temp = (goal[targetPixel] + 127);
                     } else {
-                        dest[targetPixel] = (byte)(goal[targetPixel] - searchArea[refPixel] + 127);
+                        temp = (goal[targetPixel] - searchArea[refPixel] + 127);
                     }
+                    dest[targetPixel] = (byte)(temp > 255 ? 255 : (temp < 0 ? 0 : temp));
+                    //dest[targetPixel] = (byte)temp;
+                    testData[dest[targetPixel]] += 1;
                 }
             }
         }

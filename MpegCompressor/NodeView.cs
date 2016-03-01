@@ -57,8 +57,8 @@ namespace MpegCompressor {
 
         private void recalcFocus() {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
-            foreach (Node d in nodes) {
-                Rectangle r = d.getNodeRect();
+            foreach (Node n in nodes) {
+                Rectangle r = NodeArtist.getGraphRect(n);
                 if (r.Left < left) left = r.Left;
                 if (r.Right > right) right = r.Right;
                 if (r.Top < top) top = r.Top;
@@ -94,14 +94,14 @@ namespace MpegCompressor {
                 foreach (var kvp in n.getProperties()) {
                     //This may be redundant.
                     if (kvp.Value.isInput && kvp.Value.input != null) {
-                        g.DrawLine(linePen, kvp.Value.input.node.getJointPos(kvp.Value.input.port, false), n.getJointPos(kvp.Key, true));
+                        g.DrawLine(linePen, NodeArtist.getJointPos(kvp.Value.input.node, kvp.Value.input.port, false), NodeArtist.getJointPos(n, kvp.Key, true));
                     }
                 }
             }
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 
             foreach (Node n in nodes) {
-                n.drawGraphNode(g, selectedNodes.Contains(n));
+                NodeArtist.drawGraphNode(g, n, selectedNodes.Contains(n));
             }
         }
 
@@ -164,11 +164,10 @@ namespace MpegCompressor {
             //x and y are in screen coordinates where 
             //  (0, 0) is the top left of the panel
             ScreenToCanvas(ref x, ref y);
-
+            
             foreach (Node n in nodes) {
-                if (n.hitTest(x, y)) {
+                if (NodeArtist.getGraphRect(n).Contains(x, y))
                     return n;
-                }
             }
             return null;
         }

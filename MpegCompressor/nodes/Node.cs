@@ -62,6 +62,10 @@ namespace MpegCompressor.Nodes {
             pos.Y = y;
         }
 
+        public Point getPos() {
+            return pos;
+        }
+
         public void offsetPos(int x, int y) {
             pos.X += x;
             pos.Y += y;
@@ -258,59 +262,6 @@ namespace MpegCompressor.Nodes {
             //top left
             g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
             g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
-        }
-
-        public void drawGraphNode(Graphics g, bool isSelected) {
-            Point drawPos = nodeRect.Location;
-            //draw background
-            if (isSelected) {
-                g.FillRectangle(Brushes.Wheat, nodeRect);
-            } else {
-                g.FillRectangle(Brushes.CadetBlue, nodeRect);
-            }
-            g.DrawRectangle(Pens.Black, nodeRect);
-
-            //draw title
-            g.DrawString(getName(), nodeTitleFont, Brushes.Black, drawPos.X + (nodeRect.Width - titleWidth) / 2, drawPos.Y);
-            drawPos.Y += nodeFont.Height;
-            g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
-
-
-            //draw extra
-            if (getExtra() != null) {
-                g.DrawString(getExtra(), nodeExtraFont, Brushes.Black, drawPos);
-                drawPos.Y += nodeFont.Height;
-                g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
-            }
-
-            //draw properties
-            foreach (var kvp in getProperties()) {
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    //draw bubbles
-                    if (kvp.Value.isInput) {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + ballSize / 2, drawPos.Y);
-                        if (kvp.Value.input != null) {
-                            g.FillEllipse(Brushes.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        } else {
-                            g.DrawEllipse(Pens.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        }
-                    } else if (kvp.Value.isOutput) {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width), drawPos.Y);
-                        if (kvp.Value.output.Any()) {
-                            g.FillEllipse(Brushes.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        } else {
-                            g.DrawEllipse(Pens.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        }
-                    } else {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, drawPos.Y);
-                    }
-                    drawPos.Y += nodeFont.Height;
-                }
-            }
-        }
-
-        public bool hitTest(int x, int y) {
-            return x >= nodeRect.Left && x < nodeRect.Right && y >= nodeRect.Top && y < nodeRect.Bottom;
         }
     }
 }

@@ -23,13 +23,8 @@ namespace MpegCompressor.Nodes {
             }
         }
 
-        private static Font nodeFont = new Font("Tahoma", 11.0f);
-        private static Font nodeExtraFont = new Font("Tahoma", 11.0f, FontStyle.Italic);
-        private static Font nodeTitleFont = new Font("Tahoma", 13.0f, FontStyle.Bold);
-        private static int ballSize = nodeFont.Height / 2;
-        private static int ballOffset = (nodeFont.Height - ballSize) / 2;
-        private int titleWidth;
-        private Rectangle nodeRect;
+        Point pos;
+
         private bool isDirty;
         private string extra;
         protected Dictionary<string, Property> properties;
@@ -55,55 +50,29 @@ namespace MpegCompressor.Nodes {
         protected virtual void init() {
             properties = new Dictionary<string, Property>();
             state = new DataBlob();
-            titleWidth = 100;
             Property p = new Property(false, false);
             p.createString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
-
-            nodeRect = new Rectangle(0, 0, 100, 100);
-
-        }
-
-        internal Rectangle getNodeRect() {
-            return nodeRect;
         }
 
         public void setPos(int x, int y) {
-            nodeRect.X = x;
-            nodeRect.Y = y;
+            pos.X = x;
+            pos.Y = y;
         }
 
         public void offsetPos(int x, int y) {
-            nodeRect.X += x;
-            nodeRect.Y += y;
-        }
-
-        private void updateGraphRect() {
-            nodeRect.Width = Math.Max(100, titleWidth);
-            nodeRect.Height = nodeTitleFont.Height;
-
-            //count the lines to cover with text
-            if (getExtra() != null) {
-                nodeRect.Height += nodeExtraFont.Height;
-            }
-            foreach (var kvp in getProperties()) {
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    nodeRect.Height += nodeFont.Height;
-                }
-            }
+            pos.X += x;
+            pos.Y += y;
         }
 
         public void rename(string newName) {
             properties["name"].setString(newName);
-            titleWidth = System.Windows.Forms.TextRenderer.MeasureText(newName, nodeTitleFont).Width;
-            updateGraphRect();
         }
 
         public void setExtra(string sExtra) {
             extra = sExtra;
-            updateGraphRect();
         }
 
         public string getName() {
@@ -289,28 +258,6 @@ namespace MpegCompressor.Nodes {
             //top left
             g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
             g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
-        }
-
-        public Point getJointPos(string port, bool input) {
-            Point result = new Point(nodeRect.X, nodeRect.Y);
-            result.Y += nodeTitleFont.Height;
-            if (getExtra() != null) {
-                result.Y += nodeExtraFont.Height;
-            }
-            
-            foreach (var kvp in getProperties()) {
-                if (kvp.Key == port) {
-                    break;
-                }
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    result.Y += nodeFont.Height;
-                }
-            }
-            if (!input) {
-                result.X += Math.Max(100, titleWidth);
-            }
-            result.Y += nodeFont.Height / 2 - ballSize / 2;
-            return result;
         }
 
         public void drawGraphNode(Graphics g, bool isSelected) {

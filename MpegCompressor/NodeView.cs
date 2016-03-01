@@ -16,6 +16,9 @@ namespace MpegCompressor {
         private Node selectedNode;
         private LinkedList<Node> selectedNodes;
         private static Pen linePen = new Pen(Color.Black, 3);
+        private static Pen linkChannels = new Pen(Color.Navy, 3);
+        private static Pen linkColors = new Pen(Color.Orange, 3);
+        private static Pen linkVectors = new Pen(Color.Violet, 3);
         private LinkedList<Node> nodes;
         private Point mdown;
         private bool bDragging;

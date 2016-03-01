@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NodeArtist.cs" />
     <Compile Include="Nodes\ChannelNode.cs" />
     <Compile Include="Nodes\ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />

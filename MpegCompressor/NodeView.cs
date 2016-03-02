@@ -21,6 +21,7 @@ namespace MpegCompressor {
         private bool bDragging;
         private bool bLinking;
         private Node.Address linkTo;
+        private ContextMenu nodeMenu;
 
         public NodeView() {
             InitializeComponent();
@@ -40,6 +41,21 @@ namespace MpegCompressor {
             nodes = new LinkedList<Node>();
             mdown = new Point();
             selectedNodes = new LinkedList<Node>();
+            initNodeMenu();
+        }
+        
+        private void initNodeMenu() {
+            MenuItem[] m = new MenuItem[2];
+            m[0] = new MenuItem("Hello");
+            m[1] = new MenuItem("Goodbye");
+            nodeMenu = new ContextMenu(m);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
+            if (keyData == Keys.Tab) {
+                nodeMenu.Show(this, new Point(10, 10));
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public void clearNodes() {

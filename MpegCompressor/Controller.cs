@@ -577,7 +577,6 @@ namespace MpegCompressor {
                     //load left view with selected node
                     viewLeft.setSource(n);
                     viewLeft.Invalidate();
-                    viewNodes.Invalidate();
                 }
                 return true;
             } else if (keys == Keys.D2) {
@@ -586,7 +585,6 @@ namespace MpegCompressor {
                     //load right view with selected node
                     viewRight.setSource(n);
                     viewRight.Invalidate();
-                    viewNodes.Invalidate();
                 }
                 return true;
             }

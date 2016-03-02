@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class MoVecCompose : Node {
@@ -26,10 +27,10 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            properties.Add("inVectors", new Property(true, false));
-            properties.Add("inChannels", new Property(true, false));
-            properties.Add("inChannelsPast", new Property(true, false));
-            properties.Add("outChannels", new Property(false, true));
+            properties.Add("inChannelsPast", new PropertyChannels(true, false));
+            properties.Add("inChannels", new PropertyChannels(true, false));
+            properties.Add("inVectors", new PropertyVectors(true, false));
+            properties.Add("outChannels", new PropertyChannels(false, true));
         }
 
         protected override void clean() {

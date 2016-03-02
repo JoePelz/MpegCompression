@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public abstract class ColorNode : Node {
@@ -15,8 +16,8 @@ namespace MpegCompressor.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-            properties.Add("inColor", new Property(true, false));
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("inColor", new PropertyColor(true, false));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
 
         protected override void clean() {

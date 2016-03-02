@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor {
     public partial class PropertyPage : TableLayoutPanel {
@@ -53,7 +54,7 @@ namespace MpegCompressor {
         public void addProperties(Dictionary<string, Property> props) {
             SuspendLayout();
             foreach (Property p in props.Values) {
-                if (p.getType() != Property.Type.NONE) {
+                if (p.getType() < NodeProperties.Type.CHANNELS) {
                     addProperty(p);
                 }
             }

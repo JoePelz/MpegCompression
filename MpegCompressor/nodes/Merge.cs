@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class Merge : Node {
@@ -31,19 +32,17 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            Property p = new Property(false, false);
-            p.createChoices(options, (int)method, "merge operator");
+            Property p = new PropertySelection(options, (int)method, "merge operator");
             p.eValueChanged += e_OpChanged;
             properties["mergeMethod"] = p;
 
-            p = new Property(false, false);
-            p.createButton("Swap", "Swap inputs A and B");
+            p = new PropertyButton("Swap", "Swap inputs A and B");
             p.eValueChanged += e_SwapInputs;
             properties["btnSwap"] = p;
 
-            properties.Add("inColorA", new Property(true, false));
-            properties.Add("inColorB", new Property(true, false));
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("inColorA", new PropertyColor(true, false));
+            properties.Add("inColorB", new PropertyColor(true, false));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
 
         private void e_SwapInputs(object sender, EventArgs e) {
@@ -55,13 +54,13 @@ namespace MpegCompressor.Nodes {
 
         public void setMethod(Method newMethod) {
             method = newMethod;
-            properties["mergeMethod"].setSelection((int)newMethod);
+            properties["mergeMethod"].nValue = (int)newMethod;
             soil();
             
         }
 
         private void e_OpChanged(object sender, EventArgs e) {
-            setMethod((Method)properties["mergeMethod"].getSelection());
+            setMethod((Method)properties["mergeMethod"].nValue);
         }
 
         protected override void clean() {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class ReadImage : Node {
@@ -24,17 +25,16 @@ namespace MpegCompressor.Nodes {
             base.createProperties();
 
             //create filepath property
-            Property p = new Property(false, false);
-            p.createString("", "Image file to open");
+            Property p = new PropertyString("", "Image file to open");
             p.eValueChanged += OnPathChange;
             properties.Add("path", p);
 
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
 
         public void setPath(string path) {
             filepath = path;
-            properties["path"].setString(path);
+            properties["path"].sValue = path;
 
             int lastSlash = path.LastIndexOf('\\') + 1;
             lastSlash = lastSlash == -1 ? 0 : lastSlash;
@@ -44,7 +44,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void OnPathChange(object sender, EventArgs e) {
-            setPath(properties["path"].getString());
+            setPath(properties["path"].sValue);
         }
 
         protected override void clean() {

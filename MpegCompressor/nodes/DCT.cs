@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     class DCT : ChannelNode {
@@ -89,20 +90,18 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            Property p = new Property(false, false);
-            p.createCheckbox("Inverse");
+            Property p = new PropertyCheckbox("Inverse");
             p.eValueChanged += P_eValueChanged; ;
             properties["isInverse"] = p;
 
-            p = new Property(false, false);
-            p.createInt(50, 10, 100, "Quantization quality (%)");
+            p = new PropertyInt(50, 10, 100, "Quantization quality (%)");
             p.eValueChanged += (prop, b) => { soil(); };
             properties["quality"] = p;
         }
 
         public void setInverse(bool b) {
             isInverse = b;
-            properties["isInverse"].setChecked(b);
+            properties["isInverse"].bValue = b;
             setExtra(isInverse ? "(Inverse)" : "");
             soil();
         }
@@ -112,7 +111,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void P_eValueChanged(object sender, EventArgs e) {
-            setInverse(properties["isInverse"].getChecked());
+            setInverse((bool)properties["isInverse"].bValue);
         }
 
         protected override void clean() {
@@ -122,7 +121,7 @@ namespace MpegCompressor.Nodes {
             }
 
             if (!isInverse) {
-                state.quantizeQuality = properties["quality"].getInt();
+                state.quantizeQuality = properties["quality"].nValue;
             }
             generateQTables(state.quantizeQuality);
             

@@ -552,9 +552,9 @@ namespace MpegCompressor {
             //DCTTest();
             //readWriteTest();
             //mergeTest();
-            //moVecTest();
+            moVecTest();
             //mpegWriteTest();
-            mpegReadTest();
+            //mpegReadTest();
             //readWriteMultiTest();
             //mpegNoDCTTest();
             //nomadTest();

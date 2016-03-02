@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public abstract class ChannelNode : Node {
@@ -14,8 +15,8 @@ namespace MpegCompressor.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-            properties.Add("inChannels", new Property(true, false));
-            properties.Add("outChannels", new Property(false, true));
+            properties.Add("inChannels", new PropertyChannels(true, false));
+            properties.Add("outChannels", new PropertyChannels(false, true));
         }
 
         protected override void clean() {

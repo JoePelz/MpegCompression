@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MpegCompressor.NodeProperties;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -23,13 +24,8 @@ namespace MpegCompressor.Nodes {
             }
         }
 
-        private static Font nodeFont = new Font("Tahoma", 11.0f);
-        private static Font nodeExtraFont = new Font("Tahoma", 11.0f, FontStyle.Italic);
-        private static Font nodeTitleFont = new Font("Tahoma", 13.0f, FontStyle.Bold);
-        private static int ballSize = nodeFont.Height / 2;
-        private static int ballOffset = (nodeFont.Height - ballSize) / 2;
-        private int titleWidth;
-        private Rectangle nodeRect;
+        Point pos;
+
         private bool isDirty;
         private string extra;
         protected Dictionary<string, Property> properties;
@@ -55,59 +51,36 @@ namespace MpegCompressor.Nodes {
         protected virtual void init() {
             properties = new Dictionary<string, Property>();
             state = new DataBlob();
-            titleWidth = 100;
-            Property p = new Property(false, false);
-            p.createString("default", "Name of the control");
+            PropertyString p = new PropertyString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
-
-            nodeRect = new Rectangle(0, 0, 100, 100);
-
-        }
-
-        internal Rectangle getNodeRect() {
-            return nodeRect;
         }
 
         public void setPos(int x, int y) {
-            nodeRect.X = x;
-            nodeRect.Y = y;
+            pos.X = x;
+            pos.Y = y;
+        }
+
+        public Point getPos() {
+            return pos;
         }
 
         public void offsetPos(int x, int y) {
-            nodeRect.X += x;
-            nodeRect.Y += y;
-        }
-
-        private void updateGraphRect() {
-            nodeRect.Width = Math.Max(100, titleWidth);
-            nodeRect.Height = nodeTitleFont.Height;
-
-            //count the lines to cover with text
-            if (getExtra() != null) {
-                nodeRect.Height += nodeExtraFont.Height;
-            }
-            foreach (var kvp in getProperties()) {
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    nodeRect.Height += nodeFont.Height;
-                }
-            }
+            pos.X += x;
+            pos.Y += y;
         }
 
         public void rename(string newName) {
-            properties["name"].setString(newName);
-            titleWidth = System.Windows.Forms.TextRenderer.MeasureText(newName, nodeTitleFont).Width;
-            updateGraphRect();
+            properties["name"].sValue = newName;
         }
 
         public void setExtra(string sExtra) {
             extra = sExtra;
-            updateGraphRect();
         }
 
         public string getName() {
-            return properties["name"].getString();
+            return properties["name"].sValue;
         }
 
         public string getExtra() {
@@ -169,10 +142,9 @@ namespace MpegCompressor.Nodes {
 
         protected void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
-            Address match = new Address(to, toPort);
             if (properties.ContainsKey(port)) {
-                //TODO: test this. It uses .Equals() to find the match right?
-                properties[port].output.Remove(match);  //returns false if item not found.
+                properties[port].output.RemoveWhere(x => x.node == to && x.port.Equals(toPort));
+
             }
         }
 
@@ -266,7 +238,7 @@ namespace MpegCompressor.Nodes {
         }
 
         public override string ToString() {
-            return properties["name"].getString();
+            return properties["name"].sValue;
         }
         
         public virtual void viewExtra(Graphics g) {
@@ -289,81 +261,6 @@ namespace MpegCompressor.Nodes {
             //top left
             g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
             g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
-        }
-
-        public Point getJointPos(string port, bool input) {
-            Point result = new Point(nodeRect.X, nodeRect.Y);
-            result.Y += nodeTitleFont.Height;
-            if (getExtra() != null) {
-                result.Y += nodeExtraFont.Height;
-            }
-            
-            foreach (var kvp in getProperties()) {
-                if (kvp.Key == port) {
-                    break;
-                }
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    result.Y += nodeFont.Height;
-                }
-            }
-            if (!input) {
-                result.X += Math.Max(100, titleWidth);
-            }
-            result.Y += nodeFont.Height / 2 - ballSize / 2;
-            return result;
-        }
-
-        public void drawGraphNode(Graphics g, bool isSelected) {
-            Point drawPos = nodeRect.Location;
-            //draw background
-            if (isSelected) {
-                g.FillRectangle(Brushes.Wheat, nodeRect);
-            } else {
-                g.FillRectangle(Brushes.CadetBlue, nodeRect);
-            }
-            g.DrawRectangle(Pens.Black, nodeRect);
-
-            //draw title
-            g.DrawString(getName(), nodeTitleFont, Brushes.Black, drawPos.X + (nodeRect.Width - titleWidth) / 2, drawPos.Y);
-            drawPos.Y += nodeFont.Height;
-            g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
-
-
-            //draw extra
-            if (getExtra() != null) {
-                g.DrawString(getExtra(), nodeExtraFont, Brushes.Black, drawPos);
-                drawPos.Y += nodeFont.Height;
-                g.DrawLine(Pens.Black, nodeRect.Left, drawPos.Y, nodeRect.Right, drawPos.Y);
-            }
-
-            //draw properties
-            foreach (var kvp in getProperties()) {
-                if (kvp.Value.getType() == Property.Type.NONE) {
-                    //draw bubbles
-                    if (kvp.Value.isInput) {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + ballSize / 2, drawPos.Y);
-                        if (kvp.Value.input != null) {
-                            g.FillEllipse(Brushes.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        } else {
-                            g.DrawEllipse(Pens.Black, nodeRect.Left - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        }
-                    } else if (kvp.Value.isOutput) {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width), drawPos.Y);
-                        if (kvp.Value.output.Any()) {
-                            g.FillEllipse(Brushes.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        } else {
-                            g.DrawEllipse(Pens.Black, nodeRect.Right - ballSize / 2, drawPos.Y + ballOffset, ballSize, ballSize);
-                        }
-                    } else {
-                        g.DrawString(kvp.Key, nodeFont, Brushes.Black, nodeRect.Left + (nodeRect.Width - g.MeasureString(kvp.Key, nodeFont).Width) / 2, drawPos.Y);
-                    }
-                    drawPos.Y += nodeFont.Height;
-                }
-            }
-        }
-
-        public bool hitTest(int x, int y) {
-            return x >= nodeRect.Left && x < nodeRect.Right && y >= nodeRect.Top && y < nodeRect.Bottom;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     class ChannelsToColor : Node {
@@ -23,8 +24,8 @@ namespace MpegCompressor.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-            properties.Add("inChannels", new Property(true, false));
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("inChannels", new PropertyChannels(true, false));
+            properties.Add("outColor", new PropertyChannels(false, true));
         }
 
         protected override void clean() {

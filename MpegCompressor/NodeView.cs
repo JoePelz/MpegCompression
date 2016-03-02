@@ -17,7 +17,10 @@ namespace MpegCompressor {
         private LinkedList<Node> selectedNodes;
         private LinkedList<Node> nodes;
         private Point mdown;
+        private Point mdrag;
         private bool bDragging;
+        private bool bLinking;
+        private Node.Address linkTo;
 
         public NodeView() {
             InitializeComponent();
@@ -54,7 +57,7 @@ namespace MpegCompressor {
         private void recalcFocus() {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
             foreach (Node n in nodes) {
-                Rectangle r = NodeArtist.getGraphRect(n);
+                Rectangle r = NodeArtist.getRect(n);
                 if (r.Left < left) left = r.Left;
                 if (r.Right > right) right = r.Right;
                 if (r.Top < top) top = r.Top;
@@ -94,6 +97,9 @@ namespace MpegCompressor {
             foreach (Node n in nodes) {
                 NodeArtist.drawGraphNode(g, n, selectedNodes.Contains(n));
             }
+            if (bLinking) {
+                g.DrawLine(NodeArtist.linePen, mdown, mdrag);
+            }
         }
 
         public Node getSelection() {
@@ -106,18 +112,25 @@ namespace MpegCompressor {
         }
         
         protected override void OnMouseDown(MouseEventArgs e) {
-            Node n;
+            Node.Address a;
 
             mdown = e.Location;
 
             //if the mouse is over a node, selected it and begin dragging. otherwise do base.
             //  if shift is selected, toggle selection instead of replacing
-            if ((n = hitTest(e.X, e.Y)) != null) {
-                if (!selectedNodes.Contains(n)) {
-                    select(n, Control.ModifierKeys == Keys.Shift);
+            if ((a = hitTest(e.X, e.Y, true)).node != null) {
+                if (a.port != null) {
+                    bLinking = true;
+                    ScreenToCanvas(ref mdown);
+                    mdrag = mdown;
+                    linkTo = a;
+                } else {
+                    if (!selectedNodes.Contains(a.node)) {
+                        select(a.node, Control.ModifierKeys == Keys.Shift);
+                    }
+                    bDragging = true;
+                    ScreenToCanvas(ref mdown);
                 }
-                bDragging = true;
-                ScreenToCanvas(ref mdown);
             } else {
                 base.OnMouseDown(e);
             }
@@ -126,12 +139,16 @@ namespace MpegCompressor {
         protected override void OnMouseMove(MouseEventArgs e) {
             if (bDragging) {
                 //mdown is in canvas coordinates
-                Point newPos = e.Location;
-                ScreenToCanvas(ref newPos);
+                mdrag = e.Location;
+                ScreenToCanvas(ref mdrag);
                 foreach (Node n in selectedNodes) {
-                    n.offsetPos(newPos.X - mdown.X, newPos.Y - mdown.Y);
+                    n.offsetPos(mdrag.X - mdown.X, mdrag.Y - mdown.Y);
                 }
-                mdown = newPos;
+                mdown = mdrag;
+                Invalidate();
+            } else if (bLinking) {
+                mdrag = e.Location;
+                ScreenToCanvas(ref mdrag);
                 Invalidate();
             } else {
                 base.OnMouseMove(e);
@@ -140,7 +157,7 @@ namespace MpegCompressor {
 
         protected override void OnMouseUp(MouseEventArgs e) {
             if (mdown.X == e.X && mdown.Y == e.Y) {
-                select(hitTest(e.X, e.Y), Control.ModifierKeys == Keys.Shift);
+                select(hitTest(e.X, e.Y).node, Control.ModifierKeys == Keys.Shift);
             }
 
             if (bDragging) {
@@ -148,19 +165,42 @@ namespace MpegCompressor {
                 recalcFocus();
                 return;
             }
+
+            if (bLinking) {
+                bLinking = false;
+                Node.Address a = hitTest(e.X, e.Y, false);
+                Node.Address old = linkTo.node.getProperties()[linkTo.port].input;
+                if (old != null) {
+                    Node.disconnect(old.node, old.port, linkTo.node, linkTo.port);
+                }
+                if (a.node != null && a.port != null) {
+                    Node.connect(a.node, a.port, linkTo.node, linkTo.port);
+                }
+
+                Invalidate();
+                return;
+            }
             base.OnMouseUp(e);
         }
 
-        private Node hitTest(int x, int y) {
+        private Node.Address hitTest(int x, int y) {
+            return hitTest(x, y, true);
+        }
+
+        private Node.Address hitTest(int x, int y, bool input) {
             //x and y are in screen coordinates where 
             //  (0, 0) is the top left of the panel
             ScreenToCanvas(ref x, ref y);
-            
+            string s;
+            Rectangle rect;
             foreach (Node n in nodes) {
-                if (NodeArtist.getGraphRect(n).Contains(x, y))
-                    return n;
+                rect = NodeArtist.getPaddedRect(n);
+                if (rect.Contains(x, y)) {
+                    s = NodeArtist.hitJoint(n, rect, x, y, input);
+                    return new Node.Address(n, s);
+                }
             }
-            return null;
+            return new Node.Address(null, null);
         }
     }
 }

@@ -142,10 +142,9 @@ namespace MpegCompressor.Nodes {
 
         protected void removeOutput(string port, Node to, string toPort) {
             //Note: only breaks this end of the connection.
-            Address match = new Address(to, toPort);
             if (properties.ContainsKey(port)) {
-                //TODO: test this. It uses .Equals() to find the match right?
-                properties[port].output.Remove(match);  //returns false if item not found.
+                properties[port].output.RemoveWhere(x => x.node == to && x.port.Equals(toPort));
+
             }
         }
 

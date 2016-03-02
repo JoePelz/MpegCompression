@@ -27,8 +27,8 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            properties.Add("inChannelsNow",  new PropertyChannels(true, false));
             properties.Add("inChannelsPast", new PropertyChannels(true, false));
+            properties.Add("inChannelsNow",  new PropertyChannels(true, false));
             properties.Add("outVectors",    new PropertyVectors(false, true));
             properties.Add("outChannels",   new PropertyChannels(false, true));
         }

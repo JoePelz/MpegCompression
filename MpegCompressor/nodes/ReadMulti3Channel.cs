@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     class ReadMulti3Channel : Node {
@@ -25,26 +26,24 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            Property p = new Property(false, false);
-            p.createString("", "Image path to save");
+            Property p = new PropertyString("", "Image path to save");
             p.eValueChanged += pathChanged;
             properties.Add("path", p);
 
-            p = new Property(false, false);
-            p.createButton("Read", "open image from file");
+            p = new PropertyButton("Read", "open image from file");
             p.eValueChanged += open;
             properties.Add("save", p);
 
-            properties.Add("outChannels1", new Property(false, true));
-            properties.Add("outVectors2", new Property(false, true));
-            properties.Add("outChannels2", new Property(false, true));
-            properties.Add("outVectors3", new Property(false, true));
-            properties.Add("outChannels3", new Property(false, true));
+            properties.Add("outChannels1", new PropertyChannels(false, true));
+            properties.Add("outVectors2", new PropertyVectors(false, true));
+            properties.Add("outChannels2", new PropertyChannels(false, true));
+            properties.Add("outVectors3", new PropertyVectors(false, true));
+            properties.Add("outChannels3", new PropertyChannels(false, true));
         }
 
         public void setPath(string path) {
             inPath = path;
-            properties["path"].setString(path);
+            properties["path"].sValue = path;
 
             int lastSlash = path.LastIndexOf('\\') + 1;
             lastSlash = lastSlash == -1 ? 0 : lastSlash;
@@ -53,7 +52,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void pathChanged(object sender, EventArgs e) {
-            setPath(properties["path"].getString());
+            setPath(properties["path"].sValue);
         }
 
         private void open(object sender, EventArgs e) {
@@ -70,8 +69,8 @@ namespace MpegCompressor.Nodes {
                     readChannels(reader, C3);
                 }
                 soil();
-            } catch (FileNotFoundException ex) {
-                //who cares.
+            } catch (FileNotFoundException) {
+                //silently fail
             } finally {
                 if (stream != null) {
                     stream.Dispose();

@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class Subsample : ChannelNode {
@@ -99,37 +100,35 @@ namespace MpegCompressor.Nodes {
             base.createProperties();
             
             //Will need to choose output sample space.
-            Property p = new Property(false, false);
-            p.createChoices(options, (int)outSamples, "output sample space");
+            Property p = new PropertySelection(options, (int)outSamples, "output sample space");
             p.eValueChanged += P_eValueChanged;
             properties["outSamples"] = p;
 
             //To pad or not to pad?
-            p = new Property(false, false);
-            p.createCheckbox("pad the channels to\na multiple of 8?");
+            p = new PropertyCheckbox("pad the channels to\na multiple of 8?");
             p.eValueChanged += e_padded;
             properties["padded"] = p;
         }
 
         private void e_padded(object sender, EventArgs e) {
-            setPadded(properties["padded"].getChecked());
+            setPadded(properties["padded"].bValue);
         }
 
         public void setPadded(bool isPadded) {
             pad = isPadded;
-            properties["padded"].setChecked(isPadded);
+            properties["padded"].bValue = isPadded;
             soil();
         }
 
         public void setOutSamples(DataBlob.Samples samples) {
             outSamples = samples;
-            properties["outSamples"].setSelection((int)samples);
+            properties["outSamples"].nValue = (int)samples;
             setExtra(options[(int)samples] + " to " + options[(int)outSamples]);
             soil();
         }
         
         private void P_eValueChanged(object sender, EventArgs e) {
-            setOutSamples((DataBlob.Samples)properties["outSamples"].getSelection());
+            setOutSamples((DataBlob.Samples)properties["outSamples"].nValue);
         }
         
         protected override void clean() {

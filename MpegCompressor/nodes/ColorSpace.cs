@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class ColorSpace : ColorNode {
@@ -34,33 +35,31 @@ namespace MpegCompressor.Nodes {
 
             //Will need to choose input color space
             //and output color space.
-            Property p = new Property(false, false);
-            p.createChoices(options, (int)inSpace, "input color space");
+            Property p = new PropertySelection(options, (int)inSpace, "input color space");
             p.eValueChanged += P_eValueChanged;
             properties["inSpace"] = p;
-            p = new Property(false, false);
-            p.createChoices(options, (int)outSpace, "output color space");
+            p = new PropertySelection(options, (int)outSpace, "output color space");
             p.eValueChanged += P_eValueChanged;
             properties["outSpace"] = p;
         }
 
         public void setInSpace(Space space) {
             inSpace = space;
-            properties["inSpace"].setSelection((int)space);
+            properties["inSpace"].nValue = (int)space;
             setExtra(inSpace.ToString() + " to " + outSpace.ToString());
             soil();
         }
 
         public void setOutSpace(Space space) {
             outSpace = space;
-            properties["outSpace"].setSelection((int)space);
+            properties["outSpace"].nValue = (int)space;
             setExtra(inSpace.ToString() + " to " + outSpace.ToString());
             soil();
         }
 
         private void P_eValueChanged(object sender, EventArgs e) {
-            inSpace = (Space)properties["inSpace"].getSelection();
-            outSpace = (Space)properties["outSpace"].getSelection();
+            inSpace = (Space)properties["inSpace"].nValue;
+            outSpace = (Space)properties["outSpace"].nValue;
 
             setExtra(inSpace.ToString() + " to " + outSpace.ToString());
 

@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     class TestChunker : ColorNode {
@@ -23,21 +24,20 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            Property p = new Property(false, false);
-            p.createInt(4, 2, 16, "Chunk size to use");
+            Property p = new PropertyInt(4, 2, 16, "Chunk size to use");
             p.eValueChanged += P_eValueChanged;
             properties["chunkSize"] = p;
         }
 
         public void setChunkSize(int size) {
             chunkSize = Math.Min(Math.Max(2, size), 16);
-            properties["chunkSize"].setInt(chunkSize);
+            properties["chunkSize"].nValue = chunkSize;
             setExtra("Chunk Size: " + chunkSize);
             soil();
         }
 
         private void P_eValueChanged(object sender, EventArgs e) {
-            setChunkSize(properties["chunkSize"].getInt());
+            setChunkSize(properties["chunkSize"].nValue);
         }
 
         protected override void clean() {

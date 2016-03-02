@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class NoOp : Node {
@@ -22,8 +23,8 @@ namespace MpegCompressor.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-            properties.Add("inColor", new Property(true, false));
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("inColor", new PropertyColor(true, false));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
         
         protected override void clean() {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class WriteChannels : ChannelNode {
@@ -25,18 +26,15 @@ namespace MpegCompressor.Nodes {
             base.createProperties();
 
             //create filepath property
-            Property p = new Property(false, false);
-            p.createString("", "Image path to save");
+            Property p = new PropertyString("", "Image path to save");
             p.eValueChanged += pathChanged;
             properties.Add("path", p);
 
-            p = new Property(false, false);
-            p.createButton("Save", "save image to file");
+            p = new PropertyButton("Save", "save image to file");
             p.eValueChanged += save;
             properties.Add("save", p);
 
-            p = new Property(false, false);
-            p.createButton("Check", "check file stats");
+            p = new PropertyButton("Check", "check file stats");
             p.eValueChanged += check;
             properties.Add("check", p);
 
@@ -211,7 +209,7 @@ namespace MpegCompressor.Nodes {
 
         public void setPath(string path) {
             outPath = path;
-            properties["path"].setString(path);
+            properties["path"].sValue = path;
 
             int lastSlash = path.LastIndexOf('\\') + 1;
             lastSlash = lastSlash == -1 ? 0 : lastSlash;
@@ -220,7 +218,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void pathChanged(object sender, EventArgs e) {
-            setPath(properties["path"].getString());
+            setPath(properties["path"].sValue);
         }
     }
 }

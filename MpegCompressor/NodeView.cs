@@ -15,10 +15,6 @@ namespace MpegCompressor {
 
         private Node selectedNode;
         private LinkedList<Node> selectedNodes;
-        private static Pen linePen = new Pen(Color.Black, 3);
-        private static Pen linkChannels = new Pen(Color.Navy, 3);
-        private static Pen linkColors = new Pen(Color.Orange, 3);
-        private static Pen linkVectors = new Pen(Color.Violet, 3);
         private LinkedList<Node> nodes;
         private Point mdown;
         private bool bDragging;
@@ -91,12 +87,7 @@ namespace MpegCompressor {
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
-                foreach (var kvp in n.getProperties()) {
-                    //This may be redundant.
-                    if (kvp.Value.isInput && kvp.Value.input != null) {
-                        g.DrawLine(linePen, NodeArtist.getJointPos(kvp.Value.input.node, kvp.Value.input.port, false), NodeArtist.getJointPos(n, kvp.Key, true));
-                    }
-                }
+                NodeArtist.drawLinks(g, n);
             }
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 

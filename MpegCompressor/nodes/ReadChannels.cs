@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     class ReadChannels : Node {
@@ -27,22 +28,19 @@ namespace MpegCompressor.Nodes {
             base.createProperties();
 
             //create filepath property
-            Property p = new Property(false, false);
-            p.createString("", "Image path to save");
+            Property p = new PropertyString("", "Image path to save");
             p.eValueChanged += pathChanged;
             properties.Add("path", p);
 
-            p = new Property(false, false);
-            p.createButton("open", "load channels from file");
+            p = new PropertyButton("open", "load channels from file");
             p.eValueChanged += open;
             properties.Add("open", p);
 
-            p = new Property(false, false);
-            p.createButton("info", "stats on the file read");
+            p = new PropertyButton("info", "stats on the file read");
             p.eValueChanged += (a, b) => { check();  };
             properties.Add("info", p);
 
-            properties.Add("outChannels", new Property(false, true));
+            properties.Add("outChannels", new PropertyChannels(false, true));
         }
 
         protected override void clean() {
@@ -140,7 +138,7 @@ namespace MpegCompressor.Nodes {
 
         public void setPath(string path) {
             inPath = path;
-            properties["path"].setString(path);
+            properties["path"].sValue = path;
 
             int lastSlash = path.LastIndexOf('\\') + 1;
             lastSlash = lastSlash == -1 ? 0 : lastSlash;
@@ -149,7 +147,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void pathChanged(object sender, EventArgs e) {
-            setPath(properties["path"].getString());
+            setPath(properties["path"].sValue);
         }
     }
 }

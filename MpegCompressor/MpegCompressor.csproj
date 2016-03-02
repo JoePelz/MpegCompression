@@ -62,6 +62,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NodeArtist.cs" />
+    <Compile Include="NodeProperties\PropertyButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyChannels.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyCheckbox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyColor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyFloat.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyInt.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertySelection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyString.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NodeProperties\PropertyVectors.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Nodes\ChannelNode.cs" />
     <Compile Include="Nodes\ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
@@ -89,7 +116,7 @@
     </Compile>
     <Compile Include="Nodes\NoOp.cs" />
     <Compile Include="Nodes\ColorNode.cs" />
-    <Compile Include="Property.cs">
+    <Compile Include="NodeProperties\Property.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PropertyPage.cs">

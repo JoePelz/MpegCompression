@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
     public class Mix : Node {
@@ -24,19 +25,17 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
-            Property p = new Property(false, false);
-            p.createFloat(ratio, 0.0f, 1.0f, "Mix ratio");
+            Property p = new PropertyFloat(ratio, 0.0f, 1.0f, "Mix ratio");
             p.eValueChanged += e_RatioChanged;
             properties["mixRatio"] = p;
 
-            p = new Property(false, false);
-            p.createButton("Swap", "Swap inputs A and B");
+            p = new PropertyButton("Swap", "Swap inputs A and B");
             p.eValueChanged += e_SwapInputs;
             properties["btnSwap"] = p;
 
-            properties.Add("inColorA", new Property(true, false));
-            properties.Add("inColorB", new Property(true, false));
-            properties.Add("outColor", new Property(false, true));
+            properties.Add("inColorA", new PropertyColor(true, false));
+            properties.Add("inColorB", new PropertyColor(true, false));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
 
         private void e_SwapInputs(object sender, EventArgs e) {
@@ -48,13 +47,13 @@ namespace MpegCompressor.Nodes {
 
         public void setRatio(float newRatio) {
             ratio = newRatio;
-            properties["mixRatio"].setFloat(newRatio);
+            properties["mixRatio"].fValue = newRatio;
             soil();
 
         }
 
         private void e_RatioChanged(object sender, EventArgs e) {
-            setRatio(properties["mergeMethod"].getFloat());
+            setRatio(properties["mergeMethod"].fValue);
         }
 
         protected override void clean() {

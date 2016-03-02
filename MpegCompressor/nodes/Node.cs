@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MpegCompressor.NodeProperties;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -50,8 +51,7 @@ namespace MpegCompressor.Nodes {
         protected virtual void init() {
             properties = new Dictionary<string, Property>();
             state = new DataBlob();
-            Property p = new Property(false, false);
-            p.createString("default", "Name of the control");
+            PropertyString p = new PropertyString("default", "Name of the control");
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
@@ -72,7 +72,7 @@ namespace MpegCompressor.Nodes {
         }
 
         public void rename(string newName) {
-            properties["name"].setString(newName);
+            properties["name"].sValue = newName;
         }
 
         public void setExtra(string sExtra) {
@@ -80,7 +80,7 @@ namespace MpegCompressor.Nodes {
         }
 
         public string getName() {
-            return properties["name"].getString();
+            return properties["name"].sValue;
         }
 
         public string getExtra() {
@@ -239,7 +239,7 @@ namespace MpegCompressor.Nodes {
         }
 
         public override string ToString() {
-            return properties["name"].getString();
+            return properties["name"].sValue;
         }
         
         public virtual void viewExtra(Graphics g) {

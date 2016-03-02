@@ -550,9 +550,9 @@ namespace MpegCompressor {
 
         public void buildGraph() {
             //DCTTest();
-            readWriteTest();
+            //readWriteTest();
             //mergeTest();
-            //moVecTest();
+            moVecTest();
             //mpegWriteTest();
             //mpegReadTest();
             //readWriteMultiTest();

@@ -79,6 +79,8 @@ namespace MpegCompressor {
                 mdown = PointToClient(mdown);
                 nodeMenu.Show(this, mdown);
                 ScreenToCanvas(ref mdown);
+            } else if (keyData == Keys.Delete) {
+                deleteSelection();
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -88,6 +90,27 @@ namespace MpegCompressor {
             Controls.Clear();
             nodes.Clear();
             ResumeLayout();
+        }
+
+        public void deleteSelection() {
+            Node.Address other;
+            foreach (Node n in selectedNodes) {
+                foreach(var kvp in n.getProperties()) {
+                    if (kvp.Value.isInput) {
+                        other = kvp.Value.input;
+                        if (other != null) {
+                            Node.disconnect(other.node, other.port, n, kvp.Key);
+                        }
+                    } else if (kvp.Value.isOutput) {
+                        var outputs = kvp.Value.output.ToArray();
+                        foreach (var oc in outputs) {
+                            Node.disconnect(n, kvp.Key, oc.node, oc.port);
+                        }
+                    }
+                }
+                nodes.Remove(n);
+            }
+            Invalidate();
         }
 
         public void addNode(Node n) {

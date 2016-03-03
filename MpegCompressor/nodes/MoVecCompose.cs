@@ -28,8 +28,8 @@ namespace MpegCompressor.Nodes {
             base.createProperties();
 
             properties.Add("inChannelsPast", new PropertyChannels(true, false));
-            properties.Add("inChannels", new PropertyChannels(true, false));
             properties.Add("inVectors", new PropertyVectors(true, false));
+            properties.Add("inChannels", new PropertyChannels(true, false));
             properties.Add("outChannels", new PropertyChannels(false, true));
         }
 

@@ -29,7 +29,7 @@ namespace MpegCompressor {
             nodeRect.Height = nodeTitleFont.Height;
 
             //count the lines to cover with text
-            if (n.getExtra() != null) {
+            if (n.getExtra() != null && n.getExtra() != "") {
                 nodeRect.Height += nodeExtraFont.Height;
             }
             foreach (var kvp in n.getProperties()) {
@@ -91,7 +91,9 @@ namespace MpegCompressor {
                 if ((kvp.Value.isInput && inputsOnly) || (kvp.Value.isOutput && !inputsOnly)) {
                     pos = getJointPos(n, kvp.Key, inputsOnly);
                     pos.X -= x; pos.Y -= y;
-                    if (pos.X * pos.X + pos.Y * pos.Y < ballSize * ballSize / 4) {
+
+                    //intentionally dividing by 2 instead of 4 to expand the 'okay' selection radius.
+                    if (pos.X * pos.X + pos.Y * pos.Y < ballSize * ballSize / 2) {
                         return kvp.Key;
                     }
                 }
@@ -134,7 +136,7 @@ namespace MpegCompressor {
             g.DrawLine(Pens.Black, nodeRect.Left, nodeRect.Y, nodeRect.Right, nodeRect.Y);
             
             //draw extra
-            if (n.getExtra() != null) {
+            if (n.getExtra() != null && n.getExtra() != "") {
                 g.DrawString(n.getExtra(), nodeExtraFont, Brushes.Black, nodeRect.Location);
                 nodeRect.Y += nodeFont.Height;
                 g.DrawLine(Pens.Black, nodeRect.Left, nodeRect.Y, nodeRect.Right, nodeRect.Y);

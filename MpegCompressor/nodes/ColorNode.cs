@@ -22,6 +22,7 @@ namespace MpegCompressor.Nodes {
 
         protected override void clean() {
             base.clean();
+            state = null;
 
             Address upstream = properties["inColor"].input;
             if (upstream == null) {
@@ -33,12 +34,12 @@ namespace MpegCompressor.Nodes {
                 return;
             }
 
-            state = state.clone();
-
             if (state.type != DataBlob.Type.Image || state.bmp == null) {
                 state = null;
                 return;
             }
+
+            state = state.clone();
 
             state.bmp = state.bmp.Clone(new Rectangle(0, 0, state.bmp.Width, state.bmp.Height), state.bmp.PixelFormat);
         }

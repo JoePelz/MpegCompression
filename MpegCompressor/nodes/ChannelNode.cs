@@ -21,6 +21,7 @@ namespace MpegCompressor.Nodes {
 
         protected override void clean() {
             base.clean();
+            state = null;
 
             //Acquire source
             Address upstream = properties["inChannels"].input;

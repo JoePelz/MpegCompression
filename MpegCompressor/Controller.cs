@@ -130,33 +130,33 @@ namespace MpegCompressor {
         }
 
         public void moVecTest() {
-            Node nR1 = new ReadImage(viewNodes, 0, -50);
-            Node nCtCh1 = new ColorToChannels(viewNodes, 180, -50);
-            Node nR2 = new ReadImage(viewNodes, 0, 50);
-            Node nCtCh2 = new ColorToChannels(viewNodes, 180, 50);
-            Node nM = new MoVecDecompose(viewNodes, 330, 0);
-            Node nC = new MoVecCompose(viewNodes, 520, 20);
+            Node nR1 = new ReadImage(viewNodes, -50, -50);
+            Node nCtCh1 = new ColorToChannels(viewNodes, 130, -50);
+            Node nR2 = new ReadImage(viewNodes, -50, 50);
+            Node nCtCh2 = new ColorToChannels(viewNodes, 130, 50);
+            Node nM = new MoVecDecompose(viewNodes, 330, 10);
+            Node nC = new MoVecCompose(viewNodes, 520, -50);
 
             Node nSS1 = new Subsample(viewNodes, 330, 150);
             Node nSS2 = new Subsample(viewNodes, 330, 250);
-            Node nM2 = new MoVecDecompose(viewNodes, 470, 150);
-            Node nC2 = new MoVecCompose(viewNodes, 650, 200);
+            Node nM2 = new MoVecDecompose(viewNodes, 500, 250);
+            Node nC2 = new MoVecCompose(viewNodes, 700, 200);
 
             Node.connect(nR1, "outColor", nCtCh1, "inColor");
             Node.connect(nR2, "outColor", nCtCh2, "inColor");
-            Node.connect(nCtCh1, "outChannels", nM, "inChannelsNow");
-            Node.connect(nCtCh2, "outChannels", nM, "inChannelsPast");
+            Node.connect(nCtCh1, "outChannels", nM, "inChannelsPast");
+            Node.connect(nCtCh2, "outChannels", nM, "inChannelsNow");
             Node.connect(nM, "outVectors", nC, "inVectors");
+            Node.connect(nCtCh1, "outChannels", nC, "inChannelsPast");
             Node.connect(nM, "outChannels", nC, "inChannels");
-            Node.connect(nCtCh2, "outChannels", nC, "inChannelsPast");
 
             Node.connect(nCtCh1, "outChannels", nSS1, "inChannels");
             Node.connect(nCtCh2, "outChannels", nSS2, "inChannels");
-            Node.connect(nSS1, "outChannels", nM2, "inChannelsNow");
-            Node.connect(nSS2, "outChannels", nM2, "inChannelsPast");
+            Node.connect(nSS1, "outChannels", nM2, "inChannelsPast");
+            Node.connect(nSS2, "outChannels", nM2, "inChannelsNow");
             Node.connect(nM2, "outVectors", nC2, "inVectors");
             Node.connect(nM2, "outChannels", nC2, "inChannels");
-            Node.connect(nSS2, "outChannels", nC2, "inChannelsPast");
+            Node.connect(nSS1, "outChannels", nC2, "inChannelsPast");
 
             (nR1 as ReadImage).setPath("C:\\temp\\barbieA.tif");
             (nR2 as ReadImage).setPath("C:\\temp\\barbieB.tif");
@@ -577,7 +577,6 @@ namespace MpegCompressor {
                     //load left view with selected node
                     viewLeft.setSource(n);
                     viewLeft.Invalidate();
-                    viewNodes.Invalidate();
                 }
                 return true;
             } else if (keys == Keys.D2) {
@@ -586,7 +585,6 @@ namespace MpegCompressor {
                     //load right view with selected node
                     viewRight.setSource(n);
                     viewRight.Invalidate();
-                    viewNodes.Invalidate();
                 }
                 return true;
             }

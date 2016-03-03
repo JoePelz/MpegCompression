@@ -144,7 +144,6 @@ namespace MpegCompressor.Nodes {
             //Note: only breaks this end of the connection.
             if (properties.ContainsKey(port)) {
                 properties[port].output.RemoveWhere(x => x.node == to && x.port.Equals(toPort));
-
             }
         }
 
@@ -162,11 +161,10 @@ namespace MpegCompressor.Nodes {
         protected void soil() {
             isDirty = true;
             foreach (KeyValuePair<string, Property> kvp in properties) {
-                if (!kvp.Value.isOutput) {
-                    continue;
-                }
-                foreach (Address a in kvp.Value.output) {
-                    a.node.soil();
+                if (kvp.Value.isOutput) {
+                    foreach (Address a in kvp.Value.output) {
+                        a.node.soil();
+                    }
                 }
             }
             fireOutputChanged(new EventArgs());

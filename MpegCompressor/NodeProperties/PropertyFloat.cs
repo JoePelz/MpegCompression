@@ -39,6 +39,8 @@ namespace MpegCompressor.NodeProperties {
             nUpDown = new NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.nUpDown)).BeginInit();
             nUpDown.Size = new System.Drawing.Size(120, 20);
+            nUpDown.Increment = (decimal)0.001;
+            nUpDown.DecimalPlaces = 3;
             nUpDown.Name = "fUpDown";
             nUpDown.Value = (decimal)min;
             nUpDown.ValueChanged += fireEvent;

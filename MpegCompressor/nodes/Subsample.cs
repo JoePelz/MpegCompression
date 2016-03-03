@@ -258,7 +258,7 @@ namespace MpegCompressor.Nodes {
         
         private void convertSrcChannels() {
 
-            if (state.channels == null || state.samplingMode == outSamples) {
+            if (state.samplingMode == outSamples) {
                 return;
             }
 

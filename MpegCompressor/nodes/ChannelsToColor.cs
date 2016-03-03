@@ -25,7 +25,7 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
             properties.Add("inChannels", new PropertyChannels(true, false));
-            properties.Add("outColor", new PropertyChannels(false, true));
+            properties.Add("outColor", new PropertyColor(false, true));
         }
 
         protected override void clean() {

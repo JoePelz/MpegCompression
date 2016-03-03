@@ -45,15 +45,40 @@ namespace MpegCompressor {
         }
         
         private void initNodeMenu() {
-            MenuItem[] m = new MenuItem[2];
-            m[0] = new MenuItem("Hello");
-            m[1] = new MenuItem("Goodbye");
+            MenuItem[] m = new MenuItem[4];
+            m[0] = new MenuItem("IO");
+            m[0].MenuItems.Add(new MenuItem("ReadImage", createNode));
+            m[0].MenuItems.Add(new MenuItem("ReadChannels", createNode));
+            m[0].MenuItems.Add(new MenuItem("ReadMulti2Channel", createNode));
+            m[0].MenuItems.Add(new MenuItem("ReadMulti3Channel", createNode));
+            m[0].MenuItems.Add(new MenuItem("WriteChannels", createNode));
+            m[0].MenuItems.Add(new MenuItem("WriteMulti2Channel", createNode));
+            m[0].MenuItems.Add(new MenuItem("WriteMulti3Channel", createNode));
+            m[1] = new MenuItem("Color");
+            m[1].MenuItems.Add(new MenuItem("ColorSpace", createNode));
+            m[1].MenuItems.Add(new MenuItem("ColorToChannels", createNode));
+            m[1].MenuItems.Add(new MenuItem("ChannelsToColor", createNode));
+            m[1].MenuItems.Add(new MenuItem("Merge", createNode));
+            m[1].MenuItems.Add(new MenuItem("Mix", createNode));
+            m[2] = new MenuItem("Channels");
+            m[2].MenuItems.Add(new MenuItem("ColorToChannels", createNode));
+            m[2].MenuItems.Add(new MenuItem("ChannelsToColor", createNode));
+            m[2].MenuItems.Add(new MenuItem("DCT", createNode));
+            m[2].MenuItems.Add(new MenuItem("MoVecCompose", createNode));
+            m[2].MenuItems.Add(new MenuItem("MoVecDecompose", createNode));
+            m[2].MenuItems.Add(new MenuItem("Subsample", createNode));
+            m[3] = new MenuItem("Other");
+            m[3].MenuItems.Add(new MenuItem("NoOp", createNode));
+            m[3].MenuItems.Add(new MenuItem("TestChunker", createNode));
             nodeMenu = new ContextMenu(m);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             if (keyData == Keys.Tab) {
-                nodeMenu.Show(this, new Point(10, 10));
+                mdown = Cursor.Position;
+                mdown = PointToClient(mdown);
+                nodeMenu.Show(this, mdown);
+                ScreenToCanvas(ref mdown);
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -68,6 +93,20 @@ namespace MpegCompressor {
         public void addNode(Node n) {
             nodes.AddLast(n);
             recalcFocus();
+        }
+
+        public void createNode(object Sender, EventArgs e) {
+            MenuItem m = (Sender as MenuItem);
+            string name = "MpegCompressor.Nodes." + m.Text;
+            Type type = Type.GetType(name);
+            object instance = Activator.CreateInstance(type);
+            if (instance == null) {
+                return;
+            }
+            Node newNode = (Node)instance;
+            newNode.setPos(mdown.X, mdown.Y);
+            addNode(newNode);
+            Invalidate();
         }
 
         private void recalcFocus() {

@@ -172,6 +172,7 @@ namespace MpegCompressor.Nodes {
 
         protected virtual void clean() {
             isDirty = false;
+            state = null;
         }
         
         private void fireOutputChanged(EventArgs e) {

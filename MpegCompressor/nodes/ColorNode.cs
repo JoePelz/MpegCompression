@@ -22,7 +22,6 @@ namespace MpegCompressor.Nodes {
 
         protected override void clean() {
             base.clean();
-            state = null;
 
             Address upstream = properties["inColor"].input;
             if (upstream == null) {

@@ -19,7 +19,7 @@ namespace MpegCompressor.Nodes {
         protected override void init() {
             base.init();
             ratio = 0.5f;
-            rename("Merge");
+            rename("Mix");
         }
 
         protected override void createProperties() {
@@ -53,7 +53,7 @@ namespace MpegCompressor.Nodes {
         }
 
         private void e_RatioChanged(object sender, EventArgs e) {
-            setRatio(properties["mergeMethod"].fValue);
+            setRatio(properties["mixRatio"].fValue);
         }
 
         protected override void clean() {
@@ -132,9 +132,9 @@ namespace MpegCompressor.Nodes {
                     Br = rgbValuesB[pixel + 2];
                     Bg = rgbValuesB[pixel + 1];
                     Bb = rgbValuesB[pixel];
-                    rgbValuesA[pixel + 2] = (byte)(Ar * ratio + Br * xratio / 2);
-                    rgbValuesA[pixel + 1] = (byte)(Ag * ratio + Bg * xratio / 2);
-                    rgbValuesA[pixel + 0] = (byte)(Ab * ratio + Bb * xratio / 2);
+                    rgbValuesA[pixel + 2] = (byte)(Ar * ratio + Br * xratio);
+                    rgbValuesA[pixel + 1] = (byte)(Ag * ratio + Bg * xratio);
+                    rgbValuesA[pixel + 0] = (byte)(Ab * ratio + Bb * xratio);
                 }
             }
 

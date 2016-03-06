@@ -568,7 +568,7 @@ namespace MpegCompressor {
 
         public bool HotKeys(Keys keys) {
             Node n;
-            if (keys == Keys.D1) {
+            if (keys == Keys.D1 && viewNodes.Focused) {
                 n = viewNodes.getSelection();
                 if (n != null) {
                     //load left view with selected node
@@ -576,7 +576,7 @@ namespace MpegCompressor {
                     viewLeft.Invalidate();
                 }
                 return true;
-            } else if (keys == Keys.D2) {
+            } else if (keys == Keys.D2 && viewNodes.Focused) {
                 n = viewNodes.getSelection();
                 if (n != null) {
                     //load right view with selected node

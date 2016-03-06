@@ -183,13 +183,9 @@ namespace MpegCompressor {
         public Node getSelection() {
             return selectedNode;
         }
-
-        protected override void OnMouseEnter(EventArgs e) {
-            this.Focus();
-            base.OnMouseEnter(e);
-        }
         
         protected override void OnMouseDown(MouseEventArgs e) {
+            this.Focus();
             Node.Address a;
 
             mdown = e.Location;

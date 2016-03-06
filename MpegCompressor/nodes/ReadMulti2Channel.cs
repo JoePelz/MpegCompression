@@ -54,6 +54,8 @@ namespace MpegCompressor.Nodes {
         }
 
         private void open(object sender, EventArgs e) {
+            soil();
+            clean();
             Stream stream = null;
             try {
                 stream = new FileStream(inPath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -64,7 +66,6 @@ namespace MpegCompressor.Nodes {
                     readChannels(reader, V2);
                     readChannels(reader, C2);
                 }
-                soil();
             } catch (FileNotFoundException) {
                 //silently fail.
             } finally {

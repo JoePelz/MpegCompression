@@ -173,6 +173,10 @@ namespace MpegCompressor.Nodes {
             int minDiff = int.MaxValue;
             int offX = 0;
             int offY = 0;
+            //Calibrate to center first
+            diff = SAD(goal, indexTopLeft, searchArea, indexTopLeft, stride);
+            minDiff = diff;
+            //Test radius
             for (int yo = -7; yo < 8; yo++) {
                 for (int xo = -7; xo < 8; xo++) {
                     pixel = indexTopLeft + yo * stride + xo;

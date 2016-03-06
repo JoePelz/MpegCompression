@@ -65,6 +65,8 @@ namespace MpegCompressor.Nodes {
 
 
         private void open(object sender, EventArgs e) {
+            soil();
+            clean();
             state = new DataBlob();
             state.type = DataBlob.Type.Channels;
             state.channels = new byte[3][];
@@ -133,7 +135,6 @@ namespace MpegCompressor.Nodes {
                     }
                 }
             } //close file
-            soil();
         }
 
         public void setPath(string path) {

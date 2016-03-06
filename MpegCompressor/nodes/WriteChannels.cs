@@ -88,6 +88,7 @@ namespace MpegCompressor.Nodes {
             //[(width + 1) / 2 + (height + 1) / 2] bytes for Cr channel
             //[(width + 1) / 2 + (height + 1) / 2] bytes for Cb channel
 
+            //RLE:
             //for each channel
             //  for each chunk
             //    for each value
@@ -205,6 +206,16 @@ namespace MpegCompressor.Nodes {
                     } // all channels written out
                 }
             }
+
+            FileInfo fi = new FileInfo(outPath);
+
+            String msgBox = String.Format("Image as bitmap: {0} Bytes\nImage compressed: {1} Bytes\nCompression ratio: {2:0.00} : 1\nor {3:0.00}% smaller.", 
+                (state.imageHeight * state.imageWidth * 3), 
+                fi.Length, 
+                (state.imageHeight * state.imageWidth * 3.0) / fi.Length, 
+                ((state.imageHeight * state.imageWidth * 3.0) - fi.Length) / (state.imageHeight * state.imageWidth * 3.0) * 100);
+
+            System.Windows.Forms.MessageBox.Show(msgBox, "Compression Info");
         }
 
         public void setPath(string path) {

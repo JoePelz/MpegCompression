@@ -55,6 +55,23 @@ namespace MpegCompressor.Nodes {
             quantizationC = new byte[8, 8];
             quantizationY = new byte[8, 8];
             generateQTables(50);
+
+
+            byte[] input = {
+                9, 8, 7, 6, 5, 4, 3, 2,
+                8, 7, 6, 5, 4, 3, 2, 1,
+                7, 6, 5, 4, 3, 2, 1, 0,
+                6, 5, 4, 3, 2, 1, 0, 0,
+                5, 4, 3, 2, 1, 0, 0, 0,
+                4, 3, 2, 1, 0, 0, 0, 0,
+                3, 2, 1, 0, 0, 0, 0, 0,
+                2, 1, 0, 0, 0, 0, 0, 0
+            };
+            //byte[] temp = doDCT(input, quantizationY_orig);
+
+            //byte[] temp2 = doIDCT(temp, quantizationY_orig);
+
+
         }
 
         private void generateQTables(int qf) {
@@ -169,7 +186,7 @@ namespace MpegCompressor.Nodes {
                         bin = 255;
                     if (bin < 0)
                         bin = 0;
-                    result[j * chunkSize + i] = (byte)bin;
+                    result[j * chunkSize + i] = (byte)Math.Round(bin);
                 }
             }
             return result;

@@ -93,17 +93,42 @@ namespace MpegCompressor.Nodes {
             if (!validateInput()) {
                 return;
             }
-            
+
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
                     writeHeader(writer);
                     writeChannels(writer, inC1);
+                }
+            }
+
+            long sizeIFrame = (new FileInfo(outPath)).Length;
+
+            using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Append, FileAccess.Write, FileShare.None))) {
+                using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
                     writeChannels(writer, inV2);
                     writeChannels(writer, inC2);
                     writeChannels(writer, inV3);
                     writeChannels(writer, inC3);
                 }
             }
+
+
+            long sizeAll = new FileInfo(outPath).Length;
+            int bitmaps = inC1.imageHeight * inC1.imageWidth * 9;
+
+            String msgBox = String.Format(
+                "3 Frames as bitmaps: {0} Bytes\n"
+                + "3 Frames as 3 jpegs: {1} Bytes\n"
+                + "3 Frames as mpeg: {2} Bytes\n"
+                + "Bitmap to mpeg: {3:0.00} : 1\n"
+                + "mpeg is {4:0.00}% smaller than bitmaps.",
+                bitmaps,
+                sizeIFrame * 3,
+                sizeAll,
+                (double)bitmaps / sizeAll,
+                (double)(bitmaps - sizeAll) / bitmaps * 100);
+
+            System.Windows.Forms.MessageBox.Show(msgBox, "Compression Info");
         }
 
         private void writeChannels(BinaryWriter writer, DataBlob ch) {

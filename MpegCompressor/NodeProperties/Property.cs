@@ -14,6 +14,7 @@ namespace MpegCompressor.NodeProperties {
         CHECKBOX,
         SELECTION,
         BUTTON,
+        CUSTOM,
         //Place linking types below channels, display types above.
         CHANNELS,
         COLOR,

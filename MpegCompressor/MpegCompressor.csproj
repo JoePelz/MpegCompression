@@ -96,6 +96,7 @@
     <Compile Include="Nodes\ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
+    <Compile Include="Nodes\Convolve.cs" />
     <Compile Include="Nodes\DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />

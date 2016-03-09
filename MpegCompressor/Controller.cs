@@ -225,7 +225,7 @@ namespace MpegCompressor {
             Node.connect(nSS3, "outChannels", nMoVec3, "inChannelsNow");
             Node.connect(nMoVec3, "outChannels", nDCT3, "inChannels");
 
-            Node.connect(nDCT1, "outChannels", nWrite, "inChannels1");
+            Node.connect(nDCT1, "outChannels", nWrite, "inChannels");
             Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
             Node.connect(nDCT3, "outChannels", nWrite, "inChannels3");
@@ -301,7 +301,7 @@ namespace MpegCompressor {
             Node.connect(nR, "outColor", nCtCh, "inColor");
             Node.connect(nCtCh, "outChannels", nMoVec, "inChannelsPast");
             Node.connect(nCtCh, "outChannels", nMoVec, "inChannelsNow");
-            Node.connect(nCtCh, "outChannels", nWM, "inChannels1");
+            Node.connect(nCtCh, "outChannels", nWM, "inChannels");
             Node.connect(nMoVec, "outVectors", nWM, "inVectors2");
             Node.connect(nMoVec, "outChannels", nWM, "inChannels2");
             Node.connect(nMoVec, "outVectors", nWM, "inVectors3");
@@ -389,7 +389,7 @@ namespace MpegCompressor {
             Node.connect(nCtCh3, "outChannels", nSS3, "inChannels");
             Node.connect(nSS3, "outChannels", nMoVec3, "inChannelsNow");
 
-            Node.connect(nSS1, "outChannels", nWrite, "inChannels1");
+            Node.connect(nSS1, "outChannels", nWrite, "inChannels");
             Node.connect(nMoVec2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
             Node.connect(nMoVec3, "outChannels", nWrite, "inChannels3");
@@ -442,7 +442,7 @@ namespace MpegCompressor {
             Node.connect(nCtCh2, "outChannels", nSS2, "inChannels");
             Node.connect(nSS2, "outChannels", nMoVec2, "inChannelsNow");
             Node.connect(nMoVec2, "outChannels", nDCT2, "inChannels");
-            Node.connect(nDCT1, "outChannels", nWrite, "inChannels1");
+            Node.connect(nDCT1, "outChannels", nWrite, "inChannels");
             Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
             
@@ -550,9 +550,7 @@ namespace MpegCompressor {
             //moVecTest();
             //readWriteMultTest();
             //mpegNoDCTTest();
-
-            bmABTest();
-            
+            //bmABTest();
             //bmABCWriteTest();
             //bmABCReadTest();
             //nomadTest();

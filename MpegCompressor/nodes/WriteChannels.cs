@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MpegCompressor.NodeProperties;
+using System.Drawing;
 
 namespace MpegCompressor.Nodes {
-    public class WriteChannels : ChannelNode {
-        private string outPath;
+    public class WriteChannels : Node {
+        protected string outPath;
         //byte values are -128 to 127, but stored in a uint type
-        private const byte rleToken = 128;
+        protected const byte rleToken = 128;
 
         public WriteChannels(): base() { }
         public WriteChannels(NodeView graph) : base(graph) { }
@@ -20,6 +21,20 @@ namespace MpegCompressor.Nodes {
             base.init();
             setPath("C:\\temp\\testfile.dct");
             rename("WriteChannels");
+        }
+
+        public void setPath(string path) {
+            outPath = path;
+            properties["path"].sValue = path;
+
+            int lastSlash = path.LastIndexOf('\\') + 1;
+            lastSlash = lastSlash == -1 ? 0 : lastSlash;
+
+            setExtra(path.Substring(lastSlash));
+        }
+
+        private void pathChanged(object sender, EventArgs e) {
+            setPath(properties["path"].sValue);
         }
 
         protected override void createProperties() {
@@ -38,10 +53,10 @@ namespace MpegCompressor.Nodes {
             p.eValueChanged += check;
             properties.Add("check", p);
 
-            properties.Remove("outChannels");
+            properties.Add("inChannels", new PropertyChannels(true, false));
         }
 
-        private void check(object sender, EventArgs e) {
+        protected virtual void check(object sender, EventArgs e) {
             int read_width = 0;
             int read_height = 0;
             int read_cwidth = 0;
@@ -71,7 +86,98 @@ namespace MpegCompressor.Nodes {
 
         }
 
-        private void save(object sender, EventArgs e) {
+        protected virtual void save(object sender, EventArgs e) {
+            if (!readAndValidateInput()) {
+                return;
+            }
+
+            using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
+                using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
+                    writeHeader(writer, state);
+                    writeChannels(writer, state);
+                }
+            }
+
+            
+            long sizeAll = new FileInfo(outPath).Length;
+            int sizeBmp = (state.imageHeight * state.imageWidth * 3);
+
+            String msgBox = String.Format("Image as bitmap: {0} Bytes\nImage compressed: {1} Bytes\nCompression ratio: {2:0.00} : 1\nor {3:0.00}% smaller.",
+                sizeBmp,
+                sizeAll,
+                (double)sizeBmp / sizeAll,
+                ((double)sizeBmp - sizeAll) / sizeBmp * 100);
+
+            System.Windows.Forms.MessageBox.Show(msgBox, "Compression Info");
+        }
+
+        protected static void writeChannels(BinaryWriter writer, DataBlob ch) {
+            Chunker c = new Chunker(8, ch.channelWidth, ch.channelHeight, ch.channelWidth, 1);
+            writeChannel(writer, ch.channels[0], c);
+            Size s = Subsample.deduceCbCrSize(ch);
+            c = new Chunker(8, s.Width, s.Height, s.Width, 1);
+            writeChannel(writer, ch.channels[1], c);
+            writeChannel(writer, ch.channels[2], c);
+        }
+
+        protected static void writeChannel(BinaryWriter writer, byte[] channel, Chunker c) {
+            byte count, prev, val;
+            var indexer = Chunker.zigZag8Index();
+            byte[] data = new byte[64];
+            for (int i = 0; i < c.getNumChunks(); i++) {
+                c.getBlock(channel, data, i);
+                count = 0;
+                prev = data[0];
+                foreach (int index in indexer) {
+                    val = data[index];
+                    if (val == prev) {
+                        count++;
+                    } else {
+                        if (prev == rleToken || count >= 3) {
+                            writer.Write(rleToken);
+                            writer.Write(count);
+                        } else if (count == 2) {
+                            writer.Write((prev));
+                        }
+                        writer.Write((prev));
+                        prev = val;
+                        count = 1;
+                    }
+                }
+                //write out the last token
+                if (prev == rleToken || count >= 3) {
+                    writer.Write(rleToken);
+                    writer.Write(count);
+                } else if (count == 2) {
+                    writer.Write(prev);
+                }
+                writer.Write(prev);
+                //final chunk written out
+            } //channel written out
+        }
+
+        protected static void writeHeader(BinaryWriter writer, DataBlob info) {
+            writer.Write((short)info.imageWidth);
+            writer.Write((short)info.imageHeight);
+            writer.Write((short)info.channelWidth);
+            writer.Write((short)info.channelHeight);
+            writer.Write((byte)info.quantizeQuality);
+            writer.Write((byte)info.samplingMode);
+        }
+
+        private bool readAndValidateInput() {
+            Address upstream = properties["inChannels"].input;
+            if (upstream == null) return false;
+
+            state = upstream.node.getData(upstream.port);
+
+            if (state == null || state.type != DataBlob.Type.Channels || state.channels == null)
+                return false;
+            
+            return true;
+        }
+
+        private void save_old(object sender, EventArgs e) {
             clean();
 
             if (state == null || state.channels == null) {
@@ -209,27 +315,14 @@ namespace MpegCompressor.Nodes {
 
             FileInfo fi = new FileInfo(outPath);
 
-            String msgBox = String.Format("Image as bitmap: {0} Bytes\nImage compressed: {1} Bytes\nCompression ratio: {2:0.00} : 1\nor {3:0.00}% smaller.", 
-                (state.imageHeight * state.imageWidth * 3), 
-                fi.Length, 
-                (state.imageHeight * state.imageWidth * 3.0) / fi.Length, 
+            String msgBox = String.Format("Image as bitmap: {0} Bytes\nImage compressed: {1} Bytes\nCompression ratio: {2:0.00} : 1\nor {3:0.00}% smaller.",
+                (state.imageHeight * state.imageWidth * 3),
+                fi.Length,
+                (state.imageHeight * state.imageWidth * 3.0) / fi.Length,
                 ((state.imageHeight * state.imageWidth * 3.0) - fi.Length) / (state.imageHeight * state.imageWidth * 3.0) * 100);
 
             System.Windows.Forms.MessageBox.Show(msgBox, "Compression Info");
         }
 
-        public void setPath(string path) {
-            outPath = path;
-            properties["path"].sValue = path;
-
-            int lastSlash = path.LastIndexOf('\\') + 1;
-            lastSlash = lastSlash == -1 ? 0 : lastSlash;
-
-            setExtra(path.Substring(lastSlash));
-        }
-
-        private void pathChanged(object sender, EventArgs e) {
-            setPath(properties["path"].sValue);
-        }
     }
 }

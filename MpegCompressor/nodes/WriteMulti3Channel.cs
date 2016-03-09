@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using MpegCompressor.NodeProperties;
 
 namespace MpegCompressor.Nodes {
-    class WriteMulti3Channel : Node {
-        private const byte rleToken = 128;
-        private string outPath;
+    class WriteMulti3Channel : WriteChannels {
         DataBlob inC1, inC2, inC3, inV2, inV3;
 
         public WriteMulti3Channel(): base() { }
@@ -26,41 +24,13 @@ namespace MpegCompressor.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-
-            Property p = new PropertyString("", "Image path to save");
-            p.eValueChanged += pathChanged;
-            properties.Add("path", p);
-
-            p = new PropertyButton("Save", "save image to file");
-            p.eValueChanged += save;
-            properties.Add("save", p);
-
-            p = new PropertyButton("Check", "check file stats");
-            p.eValueChanged += check;
-            properties.Add("check", p);
-
-            properties.Add("inChannels1", new PropertyChannels(true, false));
             properties.Add("inVectors2",  new PropertyVectors(true, false));
             properties.Add("inChannels2", new PropertyChannels(true, false));
             properties.Add("inVectors3",  new PropertyVectors(true, false));
             properties.Add("inChannels3", new PropertyChannels(true, false));
         }
 
-        public void setPath(string path) {
-            outPath = path;
-            properties["path"].sValue = path;
-
-            int lastSlash = path.LastIndexOf('\\') + 1;
-            lastSlash = lastSlash == -1 ? 0 : lastSlash;
-
-            setExtra(path.Substring(lastSlash));
-        }
-
-        private void pathChanged(object sender, EventArgs e) {
-            setPath(properties["path"].sValue);
-        }
-
-        private void check(object sender, EventArgs e) {
+        protected override void check(object sender, EventArgs e) {
             int read_width = 0;
             int read_height = 0;
             int read_cwidth = 0;
@@ -89,14 +59,14 @@ namespace MpegCompressor.Nodes {
                 , "File Information");
         }
 
-        private void save(object sender, EventArgs e) {
+        protected override void save(object sender, EventArgs e) {
             if (!validateInput()) {
                 return;
             }
 
             using (Stream stream = new BufferedStream(new FileStream(outPath, FileMode.Create, FileAccess.Write, FileShare.None))) {
                 using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Default)) {
-                    writeHeader(writer);
+                    writeHeader(writer, inC1);
                     writeChannels(writer, inC1);
                 }
             }
@@ -130,75 +100,9 @@ namespace MpegCompressor.Nodes {
 
             System.Windows.Forms.MessageBox.Show(msgBox, "Compression Info");
         }
-
-        private void writeChannels(BinaryWriter writer, DataBlob ch) {
-            Chunker c = new Chunker(8, ch.channelWidth, ch.channelHeight, ch.channelWidth, 1);
-            writeChannel(writer, ch.channels[0], c);
-            Size s = Subsample.deduceCbCrSize(ch);
-            c = new Chunker(8, s.Width, s.Height, s.Width, 1);
-            writeChannel(writer, ch.channels[1], c);
-            writeChannel(writer, ch.channels[2], c);
-        }
-
-        private void writeChannel(BinaryWriter writer, byte[] channel, Chunker c) {
-            byte prev, count, val;
-            var indexer = Chunker.zigZag8Index();
-            byte[] data = new byte[64];
-            for (int i = 0; i < c.getNumChunks(); i++) {
-                c.getBlock(channel, data, i);
-                count = 0;
-                prev = data[0];
-                foreach (int index in indexer) {
-                    val = data[index];
-                    if (val == prev) {
-                        count++;
-                    } else {
-                        if (prev == rleToken || count >= 3) {
-                            writer.Write(rleToken);
-                            writer.Write(count);
-                            writer.Write(prev);
-                        } else if (count == 2) {
-                            writer.Write(prev);
-                            writer.Write(prev);
-                        } else {
-                            writer.Write(prev);
-                        }
-                        prev = val;
-                        count = 1;
-                    }
-                }
-                //write out the last token
-                if (prev == rleToken || count >= 3) {
-                    writer.Write(rleToken);
-                    writer.Write(count);
-                    writer.Write(prev);
-                } else if (count == 2) {
-                    writer.Write(prev);
-                    writer.Write(prev);
-                } else {
-                    writer.Write(prev);
-                }//final chunk written out
-            } //channel written out
-        }
-
-        private void writeHeader(BinaryWriter writer) {
-            writer.Write((short)inC1.imageWidth);
-            writer.Write((short)inC1.imageHeight);
-            writer.Write((short)inC1.channelWidth);
-            writer.Write((short)inC1.channelHeight);
-            writer.Write((byte)inC1.quantizeQuality);
-            writer.Write((byte)inC1.samplingMode);
-        }
-
+        
         private bool validateInput() {
-            /*
-            properties.Add("inChannels1", new Property(true, false));
-            properties.Add("inVectors2",  new Property(true, false));
-            properties.Add("inChannels2", new Property(true, false));
-            properties.Add("inVectors3",  new Property(true, false));
-            properties.Add("inChannels3", new Property(true, false));
-            */
-            Address upC1 = properties["inChannels1"].input;
+            Address upC1 = properties["inChannels"].input;
             if (upC1 == null) return false;
             Address upC2 = properties["inChannels2"].input;
             if (upC2 == null) return false;

@@ -182,7 +182,7 @@ namespace MpegCompressor.Nodes {
             }
 
             private void onElementFocus(object sender, EventArgs e) {
-                (sender as NumericUpDown).Select(0, 5);
+                (sender as NumericUpDown).Select(0, 6);
             }
 
             private void updateLayout() {

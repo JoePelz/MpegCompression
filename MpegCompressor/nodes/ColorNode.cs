@@ -5,9 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MpegCompressor.NodeProperties;
+using System.Drawing.Imaging;
 
 namespace MpegCompressor.Nodes {
     public abstract class ColorNode : Node {
+        protected const int r = 2;
+        protected const int g = 1;
+        protected const int b = 0;
 
         public ColorNode(): base() { }
         public ColorNode(NodeView graph) : base(graph) { }
@@ -41,6 +45,34 @@ namespace MpegCompressor.Nodes {
             state = state.clone();
 
             state.bmp = state.bmp.Clone(new Rectangle(0, 0, state.bmp.Width, state.bmp.Height), state.bmp.PixelFormat);
+
+            processBitmap();
+        }
+
+        protected void processBitmap() {
+            BitmapData bmpData = state.bmp.LockBits(
+                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
+                                ImageLockMode.ReadWrite,
+                                state.bmp.PixelFormat);
+
+            IntPtr ptr = bmpData.Scan0;
+
+            //copy bytes
+            int nBytes = Math.Abs(bmpData.Stride) * state.bmp.Height;
+            byte[] inValues = new byte[nBytes];
+            byte[] outValues = new byte[nBytes];
+
+            System.Runtime.InteropServices.Marshal.Copy(ptr, inValues, 0, nBytes);
+
+            processPixels(inValues, outValues, bmpData.Width, bmpData.Height, 3, bmpData.Stride);
+
+            System.Runtime.InteropServices.Marshal.Copy(outValues, 0, ptr, nBytes);
+
+            state.bmp.UnlockBits(bmpData);
+        }
+
+        protected virtual void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+            Array.Copy(inValues, outValues, outValues.Length);
         }
     }
 }

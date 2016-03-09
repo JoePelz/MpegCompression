@@ -38,57 +38,31 @@ namespace MpegCompressor.Nodes {
             properties["add"] = p;
         }
 
-        protected override void clean() {
-            base.clean();
-
-            if (state == null) {
-                return;
-            }
-
-            BitmapData bmpData = state.bmp.LockBits(
-                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                state.bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * state.bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
+        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             float black = properties["black"].fValue;
             float white = properties["white"].fValue;
-            float mult  = properties["mult" ].fValue;
-            float add   = properties[ "add" ].fValue;
+            float mult = properties["mult"].fValue;
+            float add = properties["add"].fValue;
             float val;
-            int bands = 3;
             int pixel;
-            for (int band = 0; band < bands; band++) {
-                //the non-edge pixels
-                for (int y = 0; y < bmpData.Height; y++) {
-                    for (int x = 0; x < bmpData.Width; x++) {
-                        pixel = y * bmpData.Stride + x * bands; //assuming 3 channels. Sorry.
-                        val = rgbValues[pixel + band];
+            for (int band = 0; band < xstep; band++) {
+                for (int y = 0; y < h; y++) {
+                    for (int x = 0; x < w; x++) {
+                        pixel = y * ystep + x * xstep;
+                        val = inValues[pixel + band];
 
                         val /= 255;
                         val -= black;
                         val /= (white - black);
-
-
+                        
                         val *= mult;
                         val += add;
 
                         val = val > 1 ? 1 : val < 0 ? 0 : val;
-                        rgbValues[pixel + band] = (byte)(val * 255);
+                        outValues[pixel + band] = (byte)(val * 255);
                     }
                 }
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            state.bmp.UnlockBits(bmpData);
         }
     }
 }

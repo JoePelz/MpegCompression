@@ -40,31 +40,7 @@ namespace MpegCompressor.Nodes {
             setChunkSize(properties["chunkSize"].nValue);
         }
 
-        protected override void clean() {
-            base.clean();
-
-            if (state == null || state.bmp == null) {
-                return;
-            }
-
-            drawChunks();
-        }
-
-        private void drawChunks() {
-            BitmapData bmpData = state.bmp.LockBits(
-                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                state.bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmpData.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
-
+        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             //Using the iterator method
             /*
             Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
@@ -84,19 +60,15 @@ namespace MpegCompressor.Nodes {
             */
 
             //Using the chunk pull/push method
-            Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
+            Chunker c = new Chunker(chunkSize, w, h, ystep, xstep);
             byte[] data = new byte[chunkSize * chunkSize * 3];
-            for(int i = 0; i < c.getNumChunks(); i++) {
-                c.getBlock(rgbValues, data, i);
-                for(int j = 0; j < data.Length; j++) {
+            for (int i = 0; i < c.getNumChunks(); i++) {
+                c.getBlock(inValues, data, i);
+                for (int j = 0; j < data.Length; j++) {
                     data[j] = (byte)(j * 255 / (data.Length - 1));
                 }
-                c.setBlock(rgbValues, data, i);
+                c.setBlock(outValues, data, i);
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            state.bmp.UnlockBits(bmpData);
         }
     }
 }

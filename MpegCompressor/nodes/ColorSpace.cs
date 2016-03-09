@@ -10,19 +10,15 @@ using MpegCompressor.NodeProperties;
 namespace MpegCompressor.Nodes {
     public class ColorSpace : ColorNode {
         public enum Space { RGB, HSV, YCrCb };
+        private static string[] options = new string[3] {"RGB", "HSV", "YCrCb" };
         
-        private static string[] options = new string[3] {
-                "RGB",
-                "HSV",
-                "YCrCb" };
         private Space inSpace = Space.RGB;
         private Space outSpace = Space.RGB;
 
         public ColorSpace(): base() { }
         public ColorSpace(NodeView graph) : base(graph) { }
         public ColorSpace(NodeView graph, int posX, int posY) : base(graph, posX, posY) { }
-
-
+        
         protected override void init() {
             base.init();
             rename("ColorSpace");
@@ -66,163 +62,67 @@ namespace MpegCompressor.Nodes {
             soil();
         }
 
-        protected override void clean() {
-            base.clean();
-            
-            if (state == null || state.bmp == null || inSpace == outSpace)
-                return;
-
+        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             switch (inSpace) {
                 case Space.RGB:
+                    Array.Copy(inValues, outValues, outValues.Length);
                     break;
                 case Space.HSV:
-                    HSVtoRGB(state.bmp);
+                    HSVtoRGB(inValues, outValues, w, h, xstep, ystep);
                     break;
                 case Space.YCrCb:
-                    YCrCbtoRGB(state.bmp);
+                    YCrCbtoRGB(inValues, outValues, w, h, xstep, ystep);
                     break;
             }
-            switch(outSpace) {
+            switch (outSpace) {
                 case Space.RGB:
                     break;
                 case Space.HSV:
-                    RGBtoHSV(state.bmp);
+                    RGBtoHSV(outValues, outValues, w, h, xstep, ystep);
                     break;
                 case Space.YCrCb:
-                    RGBtoYCrCb(state.bmp);
+                    RGBtoYCrCb(outValues, outValues, w, h, xstep, ystep);
                     break;
             }
         }
-
-        private static void RGBtoYCrCb(Bitmap bmp) {
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
-            float r, g, b;
-            byte Y, Cr, Cb;
-
-            int pixel;
-            //It is necessary to do width and height separately because
-            //  there may be padding bytes at the edge of the image to
-            //  make each row fit into a multiple of 4 bytes
-            //  e.g. image is 3 pixels wide, 24bpp. 
-            //       that's 9 bytes per row, but stride would be 12
-            for (int y = 0; y < bmpData.Height; y++) {
-                for (int x = 0; x < bmpData.Width; x++) {
-                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
-
-                    b = rgbValues[pixel];
-                    g = rgbValues[pixel + 1];
-                    r = rgbValues[pixel + 2];
-
-                    /*
-                    Y = (byte)((0.299 * r) + (0.587 * g) + (0.114 * b));
-                    Cb = (byte)(128 - (0.168736 * r) - (0.331264 * g) + (0.500000 * b));
-                    Cr = (byte)(128 + (0.500000 * r) - (0.418688 * g) - (0.081312 * b));
-                    */
-                    Y  = (byte)(      ( 0.299 * r) + ( 0.587 * g) + ( 0.114 * b));
-                    Cb = (byte)(128 + (-0.169 * r) + (-0.331 * g) + ( 0.500 * b));
-                    Cr = (byte)(128 + ( 0.500 * r) + (-0.419 * g) + (-0.081 * b));
-
-                    rgbValues[pixel] = Cb;
-                    rgbValues[pixel + 1] = Cr;
-                    rgbValues[pixel + 2] = Y;
-                }
-            }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
-        }
         
-        private static void YCrCbtoRGB(Bitmap bmp) {
-            if (bmp == null) {
-                return;
-            }
-
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
+        private static void YCrCbtoRGB(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             float Y, Cr, Cb;
             int r, g, b;
             int pixel;
-            for (int y = 0; y < bmpData.Height; y++) {
-                for (int x = 0; x < bmpData.Width; x++) {
-                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixel = y * ystep + x * xstep;
 
-                    Cb = rgbValues[pixel] - 128;
-                    Cr = rgbValues[pixel + 1] - 128;
-                    Y = rgbValues[pixel + 2];
-
-                    /*
-                    r = (int)(Y + 1.40200 * Cr);  //-4
-                    g = (int)(Y - 0.34414 * Cb - 0.71414 * Cr); //
-                    b = (int)(Y + 1.77200 * Cb);  //-5
-                    */
+                    Cb = inValues[pixel] - 128;
+                    Cr = inValues[pixel + 1] - 128;
+                    Y = inValues[pixel + 2];
                     
-                    r = (int)(Y + 1.400 * Cr);  //
-                    g = (int)(Y - 0.343 * Cb - 0.711 * Cr); //
-                    b = (int)(Y + 1.765 * Cb);  //-5
+                    r = (int)(Y + 1.400 * Cr);
+                    g = (int)(Y - 0.343 * Cb - 0.711 * Cr);
+                    b = (int)(Y + 1.765 * Cb);
                     
                     r = r < 0 ? 0 : (r > 255 ? 255 : r);
                     g = g < 0 ? 0 : (g > 255 ? 255 : g);
                     b = b < 0 ? 0 : (b > 255 ? 255 : b);
-                    rgbValues[pixel] = (byte)b;
-                    rgbValues[pixel + 1] = (byte)g;
-                    rgbValues[pixel + 2] = (byte)r;
+                    outValues[pixel] = (byte)b;
+                    outValues[pixel + 1] = (byte)g;
+                    outValues[pixel + 2] = (byte)r;
                 }
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
         }
-
-        private static void HSVtoRGB(Bitmap bmp) {
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
+        private static void HSVtoRGB(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             float H, S, V;
             float C, X, m;
             float r, g, b;
             int pixel;
-            for (int y = 0; y < bmpData.Height; y++) {
-                for (int x = 0; x < bmpData.Width; x++) {
-                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixel = y * ystep + x * xstep;
 
-                    V = rgbValues[pixel] / 255.0f;
-                    S = rgbValues[pixel + 1] / 255.0f;
-                    H = rgbValues[pixel + 2] / 255.0f * 359.0f;
+                    V = inValues[pixel] / 255.0f;
+                    S = inValues[pixel + 1] / 255.0f;
+                    H = inValues[pixel + 2] / 255.0f * 359.0f;
 
                     C = V * S;
                     X = C * (1 - Math.Abs((H / 60.0f) % 2 - 1));
@@ -241,69 +141,75 @@ namespace MpegCompressor.Nodes {
                         r = C; g = 0; b = X;
                     }
 
-                    rgbValues[pixel] = (byte)((b + m) * 255);
-                    rgbValues[pixel + 1] = (byte)((g + m) * 255);
-                    rgbValues[pixel + 2] = (byte)((r + m) * 255);
+                    outValues[pixel] = (byte)((b + m) * 255);
+                    outValues[pixel + 1] = (byte)((g + m) * 255);
+                    outValues[pixel + 2] = (byte)((r + m) * 255);
                 }
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
         }
 
-        private static void RGBtoHSV(Bitmap bmp) {
-            BitmapData bmpData = bmp.LockBits(
-                                new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                bmp.PixelFormat);
 
-            IntPtr ptr = bmpData.Scan0;
+        private static void RGBtoYCrCb(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+            float r, g, b;
+            byte Y, Cr, Cb;
 
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
+            int pixel;
+            //It is necessary to do width and height separately because
+            //  there may be padding bytes at the edge of the image to
+            //  make each row fit into a multiple of 4 bytes
+            //  e.g. image is 3 pixels wide, 24bpp. 
+            //       that's 9 bytes per row, but stride would be 12
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixel = y * ystep + x * xstep;
 
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
+                    b = inValues[pixel];
+                    g = inValues[pixel + 1];
+                    r = inValues[pixel + 2];
 
-            byte min;
-            byte delta;
-            byte V;
+                    Y  = (byte)(      ( 0.299 * r) + ( 0.587 * g) + ( 0.114 * b));
+                    Cb = (byte)(128 + (-0.169 * r) + (-0.331 * g) + ( 0.500 * b));
+                    Cr = (byte)(128 + ( 0.500 * r) + (-0.419 * g) + (-0.081 * b));
+
+                    outValues[pixel] = Cb;
+                    outValues[pixel + 1] = Cr;
+                    outValues[pixel + 2] = Y;
+                }
+            }
+        }
+        private static void RGBtoHSV(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+            byte min, delta, V;
             byte r, g, b;
             int pixel;
-            for (int y = 0; y < bmpData.Height; y++) {
-                for (int x = 0; x < bmpData.Width; x++) {
-                    pixel = y * bmpData.Stride + x * 3; //assuming 3 channels. Sorry.
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    pixel = y * ystep + x * xstep;
 
-                    b = rgbValues[pixel];
-                    g = rgbValues[pixel + 1];
-                    r = rgbValues[pixel + 2];
+                    b = inValues[pixel];
+                    g = inValues[pixel + 1];
+                    r = inValues[pixel + 2];
 
                     V = Math.Max(r, Math.Max(g, b));
-                    rgbValues[pixel] = V;
+                    outValues[pixel] = V;
 
                     min = Math.Min(r, Math.Min(g, b));
                     delta = (byte)(V - min);
 
                     if (delta == 0) {
-                        rgbValues[pixel + 1] = 0;
-                        rgbValues[pixel + 2] = 0;
+                        outValues[pixel + 1] = 0;
+                        outValues[pixel + 2] = 0;
                     } else {
-                        rgbValues[pixel + 1] = (byte)(delta * 255 / V);
+                        outValues[pixel + 1] = (byte)(delta * 255 / V);
                         if (r == V) {
-                            rgbValues[pixel + 2] = (byte)(60.0 * ((g - b) / (double)delta % 6) / 359 * 255);
+                            outValues[pixel + 2] = (byte)(60.0 * ((g - b) / (double)delta % 6) / 359 * 255);
                         } else if (g == V) {
-                            rgbValues[pixel + 2] = (byte)(60.0 * ((b - r) / (double)delta + 2) / 359 * 255);
+                            outValues[pixel + 2] = (byte)(60.0 * ((b - r) / (double)delta + 2) / 359 * 255);
                         } else if (b == V) {
-                            rgbValues[pixel + 2] = (byte)(60.0 * ((r - g) / (double)delta + 4) / 359 * 255);
+                            outValues[pixel + 2] = (byte)(60.0 * ((r - g) / (double)delta + 4) / 359 * 255);
                         }
                     }
                 }
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValues, 0, ptr, nBytes);
-
-            bmp.UnlockBits(bmpData);
         }
     }
 }

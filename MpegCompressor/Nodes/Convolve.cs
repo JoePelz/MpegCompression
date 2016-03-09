@@ -50,109 +50,83 @@ namespace MpegCompressor.Nodes {
             soil();
         }
 
-        protected override void clean() {
-            base.clean();
-
-            if (state == null) {
-                return;
-            }
-
-            BitmapData bmpData = state.bmp.LockBits(
-                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                state.bmp.PixelFormat);
-
-            IntPtr ptr = bmpData.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpData.Stride) * state.bmp.Height;
-            byte[] rgbValues = new byte[nBytes];
-            byte[] resultValues = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, nBytes);
-
+        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
             float val;
-            int bands = 3;
             int pixel;
             int index;
-            for (int band = 0; band < bands; band++) {
+            for (int band = 0; band < xstep; band++) {
                 //the non-edge pixels
-                for (int y = 1; y < bmpData.Height - 1; y++) {
-                    for (int x = 1; x < bmpData.Width - 1; x++) {
-                        pixel = (y-1) * bmpData.Stride + (x-1) * bands; //assuming 3 channels. Sorry.
+                for (int y = 1; y < h - 1; y++) {
+                    for (int x = 1; x < w - 1; x++) {
+                        pixel = (y - 1) * ystep + (x - 1) * xstep; //assuming 3 channels. Sorry.
 
                         val = 0;
-                        for(int row = 0; row < 3; row++) {
+                        for (int row = 0; row < 3; row++) {
                             for (int col = 0; col < 3; col++) {
-                                val += rgbValues[(pixel + band) + row * bmpData.Stride + col * bands] * kernel[row, col];
+                                val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
                             }
                         }
 
                         val = val > 255 ? 255 : val < 0 ? 0 : val;
-                        resultValues[pixel + band + bands + bmpData.Stride] = (byte)val;
+                        outValues[pixel + band + xstep + ystep] = (byte)val;
                     }
                 }
                 //top & bottom pixels
-                for (int x = 1; x < bmpData.Width-1; x++) {
+                for (int x = 1; x < w - 1; x++) {
                     //top
-                    pixel = (0 - 1) * bmpData.Stride + (x - 1) * bands; //assuming 3 channels. Sorry.
+                    pixel = (0 - 1) * ystep + (x - 1) * xstep; 
                     val = 0;
                     for (int row = 1; row < 3; row++) {
                         for (int col = 0; col < 3; col++) {
-                            val += rgbValues[(pixel + band) + row * bmpData.Stride + col * bands] * kernel[row, col];
+                            val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    resultValues[pixel + band + bands + bmpData.Stride] = (byte)val;
+                    outValues[pixel + band + xstep + ystep] = (byte)val;
 
                     //bottom
-                    pixel = (bmpData.Height - 2) * bmpData.Stride + (x - 1) * bands; //assuming 3 channels. Sorry.
+                    pixel = (h - 2) * ystep + (x - 1) * xstep;
                     val = 0;
                     for (int row = 0; row < 2; row++) {
                         for (int col = 0; col < 3; col++) {
-                            val += rgbValues[(pixel + band) + row * bmpData.Stride + col * bands] * kernel[row, col];
+                            val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    resultValues[pixel + band + bands + bmpData.Stride] = (byte)val;
+                    outValues[pixel + band + xstep + ystep] = (byte)val;
                 }
 
                 //left and right pixels
-                for (int y = 0; y < bmpData.Height; y++) {
+                for (int y = 0; y < h; y++) {
                     //LEFT
-                    pixel = (y - 1) * bmpData.Stride + (0 - 1) * bands; //assuming 3 channels. Sorry.
+                    pixel = (y - 1) * ystep + (0 - 1) * xstep; //assuming 3 channels. Sorry.
                     val = 0;
                     for (int row = 0; row < 3; row++) {
                         for (int col = 1; col < 3; col++) {
-                            index = (pixel + band) + row * bmpData.Stride + col * bands;
-                            if (index >= 0 && index < rgbValues.Length) {
-                                val += rgbValues[index] * kernel[row, col];
+                            index = (pixel + band) + row * ystep + col * xstep;
+                            if (index >= 0 && index < inValues.Length) {
+                                val += inValues[index] * kernel[row, col];
                             }
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    resultValues[pixel + band + bands + bmpData.Stride] = (byte)val;
+                    outValues[pixel + band + xstep + ystep] = (byte)val;
 
                     //RIGHT
-                    pixel = (y - 1) * bmpData.Stride + (bmpData.Width - 2) * bands; //assuming 3 channels. Sorry.
+                    pixel = (y - 1) * ystep + (w - 2) * xstep; //assuming 3 channels. Sorry.
                     val = 0;
                     for (int row = 0; row < 3; row++) {
                         for (int col = 0; col < 2; col++) {
-                            index = (pixel + band) + row * bmpData.Stride + col * bands;
-                            if (index >= 0 && index < rgbValues.Length) {
-                                val += rgbValues[index] * kernel[row, col];
+                            index = (pixel + band) + row * ystep + col * xstep;
+                            if (index >= 0 && index < inValues.Length) {
+                                val += inValues[index] * kernel[row, col];
                             }
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    resultValues[pixel + band + bands + bmpData.Stride] = (byte)val;
+                    outValues[pixel + band + xstep + ystep] = (byte)val;
                 }
             }
-
-
-            System.Runtime.InteropServices.Marshal.Copy(resultValues, 0, ptr, nBytes);
-
-            state.bmp.UnlockBits(bmpData);
         }
 
         private class PropertyMatrix : MpegCompressor.NodeProperties.Property {
@@ -182,7 +156,7 @@ namespace MpegCompressor.Nodes {
             }
 
             private void onElementFocus(object sender, EventArgs e) {
-                (sender as NumericUpDown).Select(0, 6);
+                (sender as NumericUpDown).Select(0, 6); //select everything, really. 
             }
 
             private void updateLayout() {

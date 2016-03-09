@@ -27,6 +27,10 @@ namespace MpegCompressor.Nodes {
         protected override void createProperties() {
             base.createProperties();
 
+            Property p = new PropertyInt(7, 0, 7, "Vector search radius");
+            p.eValueChanged += (sender, e) => { soil(); };
+            properties.Add("radius", p);
+
             properties.Add("inChannelsPast", new PropertyChannels(true, false));
             properties.Add("inChannelsNow",  new PropertyChannels(true, false));
             properties.Add("outVectors",    new PropertyVectors(false, true));
@@ -177,8 +181,11 @@ namespace MpegCompressor.Nodes {
             diff = SAD(goal, indexTopLeft, searchArea, indexTopLeft, stride);
             minDiff = diff;
             //Test radius
-            for (int yo = -7; yo < 8; yo++) {
-                for (int xo = -7; xo < 8; xo++) {
+            int radius = 7;
+            radius = properties["radius"].nValue;
+
+            for (int yo = -radius; yo <= radius; yo++) {
+                for (int xo = -radius; xo <= radius; xo++) {
                     pixel = indexTopLeft + yo * stride + xo;
                     diff = SAD(goal, indexTopLeft, searchArea, pixel, stride);
                     if (diff < minDiff) {
@@ -188,7 +195,7 @@ namespace MpegCompressor.Nodes {
                     }
                 }
             }
-            offX += 7; //-7..7 => 0..14
+            offX += 7; //-7..7 => 0..14 (15 values)
             offY += 7;
             return (byte)((offX << 4) | offY);
 

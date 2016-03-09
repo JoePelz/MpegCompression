@@ -55,9 +55,11 @@ namespace MpegCompressor {
             m[0].MenuItems.Add(new MenuItem("WriteMulti2Channel", createNode));
             m[0].MenuItems.Add(new MenuItem("WriteMulti3Channel", createNode));
             m[1] = new MenuItem("Color");
-            m[1].MenuItems.Add(new MenuItem("ColorSpace", createNode));
             m[1].MenuItems.Add(new MenuItem("ColorToChannels", createNode));
             m[1].MenuItems.Add(new MenuItem("ChannelsToColor", createNode));
+            m[1].MenuItems.Add(new MenuItem("ColorSpace", createNode));
+            m[1].MenuItems.Add(new MenuItem("Convolve", createNode));
+            m[1].MenuItems.Add(new MenuItem("Grade", createNode));
             m[1].MenuItems.Add(new MenuItem("Merge", createNode));
             m[1].MenuItems.Add(new MenuItem("Mix", createNode));
             m[2] = new MenuItem("Channels");

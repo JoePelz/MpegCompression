@@ -25,11 +25,6 @@ namespace MpegCompressor {
 
         }
 
-        protected override void OnMouseEnter(EventArgs e) {
-            this.Focus();
-            base.OnMouseEnter(e);
-        }
-
         public void clearProperties() {
             SuspendLayout();
             Controls.Clear();

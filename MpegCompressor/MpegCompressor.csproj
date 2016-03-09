@@ -96,9 +96,11 @@
     <Compile Include="Nodes\ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
+    <Compile Include="Nodes\Convolve.cs" />
     <Compile Include="Nodes\DCT.cs" />
     <Compile Include="IProperties.cs" />
     <Compile Include="IViewable.cs" />
+    <Compile Include="Nodes\Grade.cs" />
     <Compile Include="Nodes\Merge.cs" />
     <Compile Include="Nodes\Mix.cs" />
     <Compile Include="Nodes\MoVecDecompose.cs" />

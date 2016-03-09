@@ -446,8 +446,8 @@ namespace MpegCompressor {
             Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
             
-            (nRead1 as ReadImage).setPath("C:\\temp\\bmA.tif");
-            (nRead2 as ReadImage).setPath("C:\\temp\\bmB.tif");
+            (nRead1 as ReadImage).setPath("..\\..\\bmA.tif");
+            (nRead2 as ReadImage).setPath("..\\..\\bmB.tif");
             (nIDCT1 as DCT).setInverse(true);
             (nIDCT1 as DCT).rename("IDCT");
             (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);
@@ -455,7 +455,7 @@ namespace MpegCompressor {
             (nSS2 as Subsample).setPadded(true);
             (nCS1 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
             (nCS2 as ColorSpace).setOutSpace(ColorSpace.Space.YCrCb);
-            (nWrite as WriteMulti2Channel).setPath("C:\\temp\\testVid.mdct");
+            (nWrite as WriteMulti2Channel).setPath("..\\..\\testVid.mdct");
 
             Node nRead = new ReadMulti2Channel(viewNodes, 1000, 100);
             Node nIDCTR1 = new DCT(viewNodes, 1200, 100);
@@ -476,7 +476,7 @@ namespace MpegCompressor {
             Node.connect(nChtCR2, "outColor", nCSR2, "inColor");
             (nIDCTR1 as DCT).setInverse(true);
             (nIDCTR2 as DCT).setInverse(true);
-            (nRead as ReadMulti2Channel).setPath("C:\\temp\\testVid.mdct");
+            (nRead as ReadMulti2Channel).setPath("..\\..\\testVid.mdct");
             (nCSR1 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
             (nCSR2 as ColorSpace).setInSpace(ColorSpace.Space.YCrCb);
         }
@@ -550,7 +550,7 @@ namespace MpegCompressor {
             //moVecTest();
             //readWriteMultTest();
             //mpegNoDCTTest();
-            //bmABTest();
+            bmABTest();
             //bmABCWriteTest();
             //bmABCReadTest();
             //nomadTest();
@@ -566,6 +566,8 @@ namespace MpegCompressor {
 
         public bool HotKeys(Keys keys) {
             Node n;
+            //The hotkeys for viewing a node are here instead of in the NodeView because
+            //the controller has necessary access to both the NodeView and the Viewport
             if (keys == Keys.D1 && viewNodes.Focused) {
                 n = viewNodes.getSelection();
                 if (n != null) {

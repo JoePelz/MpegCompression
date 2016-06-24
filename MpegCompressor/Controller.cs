@@ -446,8 +446,8 @@ namespace MpegCompressor {
             Node.connect(nDCT2, "outChannels", nWrite, "inChannels2");
             Node.connect(nMoVec2, "outVectors", nWrite, "inVectors2");
             
-            (nRead1 as ReadImage).setPath("..\\..\\bmA.tif");
-            (nRead2 as ReadImage).setPath("..\\..\\bmB.tif");
+            (nRead1 as ReadImage).setPath("c:\\temp\\bmA.tif");
+            (nRead2 as ReadImage).setPath("c:\\temp\\bmB.tif");
             (nIDCT1 as DCT).setInverse(true);
             (nIDCT1 as DCT).rename("IDCT");
             (nSS1 as Subsample).setOutSamples(DataBlob.Samples.s420);

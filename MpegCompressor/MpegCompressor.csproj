@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialogs.cs" />
     <Compile Include="NodeArtist.cs" />
     <Compile Include="NodeProperties\PropertyButton.cs">
       <SubType>Component</SubType>
@@ -121,6 +122,7 @@
     <Compile Include="NodeProperties\Property.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Project.cs" />
     <Compile Include="PropertyPage.cs">
       <SubType>Component</SubType>
     </Compile>

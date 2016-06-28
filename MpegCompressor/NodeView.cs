@@ -13,9 +13,7 @@ namespace MpegCompressor {
     public partial class NodeView : TransformPanel {
         public event EventHandler eSelectionChanged;
 
-        private Node selectedNode;
-        private LinkedList<Node> selectedNodes;
-        private LinkedList<Node> nodes;
+        private Project project;
         private Point mdown;
         private Point mdrag;
         private bool bDragging;
@@ -38,9 +36,7 @@ namespace MpegCompressor {
         private void init() {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
-            nodes = new LinkedList<Node>();
             mdown = new Point();
-            selectedNodes = new LinkedList<Node>();
             initNodeMenu();
         }
         
@@ -75,6 +71,10 @@ namespace MpegCompressor {
             nodeMenu = new ContextMenu(m);
         }
 
+        public void setProject(Project p) {
+            project = p;
+        }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             if (keyData == Keys.Tab) {
                 mdown = Cursor.Position;
@@ -87,16 +87,16 @@ namespace MpegCompressor {
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        public void clearNodes() {
-            SuspendLayout();
-            Controls.Clear();
-            nodes.Clear();
-            ResumeLayout();
+        public void addNode(Node n) {
+            project.addNode(n);
+            recalcFocus();
         }
 
         public void deleteSelection() {
+            var nodes = project.getNodes();
+            var selection = project.selectedNodes;
             Node.Address other;
-            foreach (Node n in selectedNodes) {
+            foreach (Node n in selection) {
                 foreach(var kvp in n.getProperties()) {
                     if (kvp.Value.isInput) {
                         other = kvp.Value.input;
@@ -115,11 +115,6 @@ namespace MpegCompressor {
             Invalidate();
         }
 
-        public void addNode(Node n) {
-            nodes.AddLast(n);
-            recalcFocus();
-        }
-
         public void createNode(object Sender, EventArgs e) {
             MenuItem m = (Sender as MenuItem);
             string name = "MpegCompressor.Nodes." + m.Text;
@@ -135,6 +130,7 @@ namespace MpegCompressor {
         }
 
         private void recalcFocus() {
+            var nodes = project.getNodes();
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
             foreach (Node n in nodes) {
                 Rectangle r = NodeArtist.getRect(n);
@@ -149,25 +145,25 @@ namespace MpegCompressor {
         private void select(Node sel, bool toggle) {
             if (toggle) {
                 if (sel != null)
-                    selectedNodes.AddLast(sel);
+                    project.selectedNodes.Add(sel);
             } else {
-                selectedNodes.Clear();
+                project.selectedNodes.Clear();
                 if (sel != null)
-                    selectedNodes.AddLast(sel);
+                    project.selectedNodes.Add(sel);
             }
-            if (selectedNodes.Count() == 1) {
-                selectedNode = sel;
-                EventHandler handler = eSelectionChanged;
-                if (handler != null) {
-                    handler(this, new EventArgs());
-                }
+            if (project.selectedNodes.Count() == 1) {
+                project.selectedNode = sel;
+                eSelectionChanged?.Invoke(this, new EventArgs());
             }
             Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs e) {
             base.OnPaint(e);
+            var nodes = project.getNodes();
+            var selectedNodes = project.selectedNodes;
             Graphics g = e.Graphics;
+
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             foreach (Node n in nodes) {
                 NodeArtist.drawLinks(g, n);
@@ -183,7 +179,7 @@ namespace MpegCompressor {
         }
 
         public Node getSelection() {
-            return selectedNode;
+            return project.selectedNode;
         }
         
         protected override void OnMouseDown(MouseEventArgs e) {
@@ -201,7 +197,7 @@ namespace MpegCompressor {
                     mdrag = mdown;
                     linkTo = a;
                 } else {
-                    if (!selectedNodes.Contains(a.node)) {
+                    if (!project.selectedNodes.Contains(a.node)) {
                         select(a.node, Control.ModifierKeys == Keys.Shift);
                     }
                     bDragging = true;
@@ -217,7 +213,7 @@ namespace MpegCompressor {
                 //mdown is in canvas coordinates
                 mdrag = e.Location;
                 ScreenToCanvas(ref mdrag);
-                foreach (Node n in selectedNodes) {
+                foreach (Node n in project.selectedNodes) {
                     n.offsetPos(mdrag.X - mdown.X, mdrag.Y - mdown.Y);
                 }
                 mdown = mdrag;
@@ -264,6 +260,7 @@ namespace MpegCompressor {
         }
 
         private Node.Address hitTest(int x, int y, bool input) {
+            var nodes = project.getNodes();
             //x and y are in screen coordinates where 
             //  (0, 0) is the top left of the panel
             ScreenToCanvas(ref x, ref y);

@@ -25,6 +25,7 @@ namespace MpegCompressor.NodeProperties {
         protected Type type;
         protected string sLabel;
         protected Label lblName;
+        public bool isWriteable = true;
         public bool isInput { get; private set; }
         public bool isOutput { get; private set; }
 
@@ -89,5 +90,7 @@ namespace MpegCompressor.NodeProperties {
             get { return false; }
             set { }
         }
+
+        public abstract void FromString(string data);
     }
 }

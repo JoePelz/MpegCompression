@@ -23,6 +23,14 @@ namespace MpegCompressor.NodeProperties {
             }
         }
 
+        public override string ToString() {
+            return ((int)nUpDown.Value).ToString();
+        }
+
+        public override void FromString(string data) {
+            nValue = int.Parse(data);
+        }
+
         public PropertyInt(int val, int min, int max, string label) : base(false, false, Type.INTEGER) {
             sLabel = label;
             nMin = min;

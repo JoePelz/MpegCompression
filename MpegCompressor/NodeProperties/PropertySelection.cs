@@ -21,6 +21,14 @@ namespace MpegCompressor.NodeProperties {
             set { comboBox.SelectedIndex = value; }
         }
 
+        public override string ToString() {
+            return comboBox.SelectedIndex.ToString();
+        }
+
+        public override void FromString(string data) {
+            nValue = int.Parse(data);
+        }
+
         private void updateLayout(string[] choices) {
             SuspendLayout();
 

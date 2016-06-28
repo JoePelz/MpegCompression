@@ -198,6 +198,23 @@ namespace MpegCompressor.Nodes {
 
 
             }
+
+            public override string ToString() {
+                StringBuilder sb = new StringBuilder(rows * cols * 2);
+                for (int row = 0; row < rows; row++)
+                    for (int col = 0; col < cols; col++)
+                        sb.Append(((float)floaters[row, col].Value).ToString() + ",");
+                sb.Length = sb.Length - 1;
+                return sb.ToString();
+            }
+
+            public override void FromString(string data) {
+                string[] entries = data.Split(',');
+                for (int row = 0; row < rows; row++)
+                    for (int col = 0; col < cols; col++)
+                        floaters[row, col].Value = decimal.Parse(entries[row * rows + col]);
+
+            }
         }
     }
 }

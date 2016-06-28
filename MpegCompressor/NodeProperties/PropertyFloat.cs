@@ -22,6 +22,14 @@ namespace MpegCompressor.NodeProperties {
                 nUpDown.Value = (decimal)newVal;
             }
         }
+        
+        public override string ToString() {
+            return ((float)nUpDown.Value).ToString();
+        }
+
+        public override void FromString(string data) {
+            fValue = float.Parse(data);
+        }
 
         public PropertyFloat(float val, float min, float max, string label) : base(false, false, Type.FLOAT) {
             sLabel = label;

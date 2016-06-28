@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace MpegCompressor.NodeProperties {
             sLabel = label;
             updateLayout();
             sValue = text;
+            isWriteable = false;
         }
 
         public override string sValue
@@ -33,6 +35,10 @@ namespace MpegCompressor.NodeProperties {
             Controls.Add(btn, 0, 0);
 
             ResumeLayout();
+        }
+
+        public override void FromString(string data) {
+            throw new NotImplementedException();
         }
     }
 }

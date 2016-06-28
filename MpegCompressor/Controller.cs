@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MpegCompressor.Nodes;
+using System.IO;
 
 namespace MpegCompressor {
     class Controller {
@@ -12,14 +13,17 @@ namespace MpegCompressor {
         private Viewport viewLeft;
         private Viewport viewRight;
         private NodeView viewNodes;
+        private Project project;
 
         public Controller(PropertyPage props, NodeView nodes, Viewport left, Viewport right) {
-            
+            project = new Project();
             viewProps = props;
             viewLeft  = left;
             viewRight = right;
             viewNodes = nodes;
             viewNodes.eSelectionChanged += OnSelectionChange;
+
+            viewNodes.setProject(project);
 
             buildGraph();
             viewLeft.focusView();
@@ -555,7 +559,81 @@ namespace MpegCompressor {
             //bmABCReadTest();
             //nomadTest();
         }
+        
+        //Open existing project from file
+        public void open(string path = "") {
+            //Are you sure you want to discard changes in the current project?
+            if (project.isDirty() && Dialogs.discardChanges() == false) {
+                return;
+            }
 
+            //out with the old...
+            viewLeft.setSource(null);
+            viewRight.setSource(null);
+            string oldPath = project.path;
+            project.newProject();
+
+            if (path.Length == 0) {
+                if (oldPath.Length != 0)
+                    path = Dialogs.open(oldPath);
+                else
+                    path = Dialogs.open();
+            }
+            if (path.Length != 0) {
+                // Check file is readable and
+                // Open the selected file to read.
+                Stream fileStream = null;
+                try {
+                    fileStream = File.OpenRead(path);
+                    using (System.IO.StreamReader reader = new System.IO.StreamReader(fileStream)) {
+                        //call readProject to read in that file.
+                        project.readProject(reader);
+                        int fnameIndex = path.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
+                        project.path = path.Substring(0, fnameIndex + 1);
+                        project.filename = path.Substring(fnameIndex + 1);
+                    }
+                } catch (Exception e) {
+                    MessageBox.Show("Error: " + e.Message);
+                } finally {
+                    if (fileStream != null)
+                        fileStream.Close();
+                }
+            }
+        }
+
+        //Save current project
+        public void save(string path = "") {
+            if (path.Length == 0) {
+                if (project.path.Length != 0)
+                    path = Dialogs.save(project.path);
+                else
+                    path = Dialogs.save();
+            }
+            if (path.Length != 0) {
+                Stream fileStream = File.OpenWrite(path);
+
+                using (StreamWriter writer = new StreamWriter(fileStream)) {
+                    //call readProject to read in that file.
+                    project.writeProject(writer);
+                    int fnameIndex = path.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
+                    project.path = path.Substring(0, fnameIndex + 1);
+                    project.filename = path.Substring(fnameIndex + 1);
+                }
+                fileStream.Close();
+            }
+        }
+
+        //New project
+        public void newProject() {
+            if (Dialogs.discardChanges()) {
+                viewLeft.setSource(null);
+                viewRight.setSource(null);
+                project.newProject();
+                viewRight.Invalidate();
+                viewLeft.Invalidate();
+                viewNodes.Invalidate();
+            }
+        }
         public void OnSelectionChange(object sender, EventArgs e) {
             viewProps.clearProperties();
             Node selection = viewNodes.getSelection();
@@ -566,34 +644,52 @@ namespace MpegCompressor {
 
         public bool HotKeys(Keys keys) {
             Node n;
+            bool handled = true;  //has this function handled the hotkey?
+
             //The hotkeys for viewing a node are here instead of in the NodeView because
             //the controller has necessary access to both the NodeView and the Viewport
-            if (keys == Keys.D1 && viewNodes.Focused) {
-                n = viewNodes.getSelection();
-                if (n != null) {
-                    //load left view with selected node
-                    viewLeft.setSource(n);
-                    viewLeft.Invalidate();
-                }
-                return true;
-            } else if (keys == Keys.D2 && viewNodes.Focused) {
-                n = viewNodes.getSelection();
-                if (n != null) {
-                    //load right view with selected node
-                    viewRight.setSource(n);
-                    viewRight.Invalidate();
-                }
-                return true;
-            }
-
-            /*  Also available:
             switch (keys) {
-                case Keys.C | Keys.Control:
-                    doStuff();
-                    return true;
+                case Keys.D1:
+                    if (viewNodes.Focused) {
+                        n = viewNodes.getSelection();
+                        if (n != null) {
+                            //load left view with selected node
+                            viewLeft.setSource(n);
+                            viewLeft.Invalidate();
+                        }
+                    } else {
+                        handled = false;
+                    }
+                    break;
+                case Keys.D2:
+                    if (viewNodes.Focused) {
+                        n = viewNodes.getSelection();
+                        if (n != null) {
+                            //load right view with selected node
+                            viewRight.setSource(n);
+                            viewRight.Invalidate();
+                        }
+                    } else {
+                        handled = false;
+                    }
+                    break;
+                case Keys.S | Keys.Control | Keys.Shift:
+                    save("");
+                    break;
+                case Keys.S | Keys.Control:
+                    save(project.path + project.filename);
+                    break;
+                case Keys.O | Keys.Control:
+                    open();
+                    break;
+                case Keys.N | Keys.Control:
+                    newProject();
+                    break;
+                default:
+                    handled = false;
+                    break;
             }
-            */
-            return false;
+            return handled;
         }
     }
 }

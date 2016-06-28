@@ -20,6 +20,14 @@ namespace MpegCompressor.NodeProperties {
             sValue = value;
         }
 
+        public override string ToString() {
+            return sTextBox.Text;
+        }
+
+        public override void FromString(string data) {
+            sValue = data;
+        }
+
         private void updateLayout() {
             SuspendLayout();
 

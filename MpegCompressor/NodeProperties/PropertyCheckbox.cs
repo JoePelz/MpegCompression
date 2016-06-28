@@ -20,6 +20,10 @@ namespace MpegCompressor.NodeProperties {
             set { checkbox.Checked = value; }
         }
 
+        public override string ToString() {
+            return bValue ? "true" : "false";
+        }
+
         private void updateLayout() {
             SuspendLayout();
 
@@ -31,6 +35,14 @@ namespace MpegCompressor.NodeProperties {
             Controls.Add(checkbox, 0, 0);
 
             ResumeLayout();
+        }
+
+        public override void FromString(string data) {
+            if (data == "true") {
+                bValue = true;
+            } else {
+                bValue = false;
+            }
         }
     }
 }

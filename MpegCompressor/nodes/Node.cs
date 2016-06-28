@@ -24,8 +24,11 @@ namespace MpegCompressor.Nodes {
             }
         }
 
+        private static Random rng = new Random(Environment.TickCount);
+
         Point pos;
 
+        private string id;
         private bool isDirty;
         private string extra;
         protected Dictionary<string, Property> properties;
@@ -55,6 +58,41 @@ namespace MpegCompressor.Nodes {
             p.eValueChanged += (s, e) => fireOutputChanged(e);
             properties.Add("name", p);
             createProperties();
+            id = generateID();
+        }
+
+        /// <summary>
+        /// Generates a random alphanumeric (ascii only) code.
+        /// </summary>
+        /// <param name="length">How many characters long the code is.</param>
+        /// <returns>a randomly generated id code</returns>
+        private string generateID(int length = 6) {
+            StringBuilder s = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                int next = rng.Next(48, 110); //48-57 are numbers
+                if (next > 57) next += 7; //65-90 are A-Z
+                if (next > 90) next += 6; //97-122 are a-z
+                s.Append((char)next);
+            }
+            return s.ToString();
+        }
+
+        public void writeNode(System.IO.StreamWriter writer) {
+            writer.WriteLine(this.GetType().Name + " {");
+            writer.WriteLine("  id = " + id);
+            writer.WriteLine("  t.posx = " + pos.X);
+            writer.WriteLine("  t.posy = " + pos.Y);
+            //for each property, write key and value
+            foreach (string k in properties.Keys) {
+                if (properties[k].isWriteable == false) continue;
+                if (properties[k].isOutput == true) continue;
+                writer.WriteLine(String.Format("  {0} = {1}", k, properties[k].ToString()));
+            }
+            writer.WriteLine("}");
+        }
+
+        public string getID() {
+            return id;
         }
 
         public void setPos(int x, int y) {
@@ -260,6 +298,41 @@ namespace MpegCompressor.Nodes {
             //top left
             g.DrawLine(Pens.BlanchedAlmond, -0.5f, state.bmp.Height - 10, -0.5f, state.bmp.Height + 10);
             g.DrawLine(Pens.BlanchedAlmond, -10, state.bmp.Height + 0.5f, +10, state.bmp.Height + 0.5f);
+
+        }
+
+        public static Node spawnNode(string nodetype, Dictionary<string, string> props, List<string[]> connections) {
+            string name = "MpegCompressor.Nodes." + nodetype;
+            System.Type type = System.Type.GetType(name);
+            object instance = Activator.CreateInstance(type);
+            if (instance == null) {
+                return null;
+            }
+
+            Node newNode = (Nodes.Node)instance;
+
+            newNode.id = props["id"];
+            newNode.pos.X = int.Parse(props["t.posx"]);
+            newNode.pos.Y = int.Parse(props["t.posy"]);    
+            newNode.isDirty = true;
+            
+            foreach(string key in newNode.properties.Keys) {
+                if (!newNode.properties[key].isWriteable) continue;
+                if (newNode.properties[key].isOutput) continue;
+                if (newNode.properties[key].isInput) {
+                    if (props.ContainsKey(key)) {
+                        //save connections for later, once all nodes have been instantiated.
+                        string[] outputAddress = props[key].Split('.');
+                        connections.Add(new string[] { outputAddress[0], outputAddress[1], props["id"], key, });
+                    }
+                    continue;
+                }
+                if (props.ContainsKey(key)) {
+                    newNode.properties[key].FromString(props[key]); //restore the property value from the saved file.
+                }
+            }
+
+            return newNode;
         }
     }
 }

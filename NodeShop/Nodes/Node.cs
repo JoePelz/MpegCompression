@@ -302,7 +302,7 @@ namespace NodeShop.Nodes {
         }
 
         public static Node spawnNode(string nodetype, Dictionary<string, string> props, List<string[]> connections) {
-            string name = "MpegCompressor.Nodes." + nodetype;
+            string name = "NodeShop.Nodes." + nodetype;
             System.Type type = System.Type.GetType(name);
             object instance = Activator.CreateInstance(type);
             if (instance == null) {

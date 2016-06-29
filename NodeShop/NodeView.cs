@@ -117,7 +117,7 @@ namespace NodeShop {
 
         public void createNode(object Sender, EventArgs e) {
             MenuItem m = (Sender as MenuItem);
-            string name = "MpegCompressor.Nodes." + m.Text;
+            string name = "NodeShop.Nodes." + m.Text;
             Type type = Type.GetType(name);
             object instance = Activator.CreateInstance(type);
             if (instance == null) {

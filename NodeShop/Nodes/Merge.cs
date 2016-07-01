@@ -40,9 +40,9 @@ namespace NodeShop.Nodes {
             p.eValueChanged += e_SwapInputs;
             properties["btnSwap"] = p;
 
-            properties.Add("inColorA", new PropertyColor(true, false));
-            properties.Add("inColorB", new PropertyColor(true, false));
-            properties.Add("outColor", new PropertyColor(false, true));
+            properties.Add("inColorA", new PropertyChannels(true, false));
+            properties.Add("inColorB", new PropertyChannels(true, false));
+            properties.Add("outColor", new PropertyChannels(false, true));
         }
 
         private void e_SwapInputs(object sender, EventArgs e) {
@@ -86,11 +86,11 @@ namespace NodeShop.Nodes {
 
             state = state.clone();
 
-            if (state.type != DataBlob.Type.Image || state.bmp == null) {
+            if (state.type != DataBlob.Type.Channels || state.channels == null) {
                 state = null;
                 return;
             }
-            if (stateB.type != DataBlob.Type.Image || stateB.bmp == null) {
+            if (stateB.type != DataBlob.Type.Channels || stateB.channels == null) {
                 stateB = null;
                 return;
             }
@@ -100,106 +100,47 @@ namespace NodeShop.Nodes {
                 return;
             }
 
-            state.bmp = state.bmp.Clone(new Rectangle(0, 0, state.bmp.Width, state.bmp.Height), state.bmp.PixelFormat);
-            merge(stateB.bmp);
+            byte[][] newChannels = new byte[state.channels.Length][];
+            for (int channel = 0; channel < newChannels.Length; channel++) {
+                newChannels[channel] = (byte[])state.channels[channel].Clone();
+            }
+            state.channels = newChannels;
+            state.bmp = null;
+
+            merge(state.channels, stateB.channels, state.channels, method);
         }
 
-        public void merge(Bitmap B) {
-            BitmapData bmpDataA = state.bmp.LockBits(
-                                new Rectangle(0, 0, state.bmp.Width, state.bmp.Height),
-                                ImageLockMode.ReadWrite,
-                                state.bmp.PixelFormat);
-            BitmapData bmpDataB = B.LockBits(
-                                new Rectangle(0, 0, B.Width, B.Height),
-                                ImageLockMode.ReadWrite,
-                                B.PixelFormat);
-
-            IntPtr ptrA = bmpDataA.Scan0;
-            IntPtr ptrB = bmpDataB.Scan0;
-
-            //copy bytes
-            int nBytes = Math.Abs(bmpDataA.Stride) * bmpDataA.Height;
-            byte[] rgbValuesA = new byte[nBytes];
-            byte[] rgbValuesB = new byte[nBytes];
-
-            System.Runtime.InteropServices.Marshal.Copy(ptrA, rgbValuesA, 0, nBytes);
-            System.Runtime.InteropServices.Marshal.Copy(ptrB, rgbValuesB, 0, nBytes);
-
-            int Ar, Ag, Ab;
-            int Br, Bg, Bb;
-
-            int pixel;
-            switch(method) {
+        public void merge(byte[][] A, byte[][] B, byte[][] outChannels, Method operation) {
+            switch(operation) {
                 case Method.Multiply:
-                    for (int y = 0; y < bmpDataA.Height; y++) {
-                        for (int x = 0; x < bmpDataA.Width; x++) {
-                            pixel = y * bmpDataA.Stride + x * 3;
-                            Ar = rgbValuesA[pixel + 2];
-                            Ag = rgbValuesA[pixel + 1];
-                            Ab = rgbValuesA[pixel];
-                            Br = rgbValuesB[pixel + 2];
-                            Bg = rgbValuesB[pixel + 1];
-                            Bb = rgbValuesB[pixel];
-                            rgbValuesA[pixel + 2] = (byte)(Ar * Br / 255);
-                            rgbValuesA[pixel + 1] = (byte)(Ag * Bg / 255);
-                            rgbValuesA[pixel + 0] = (byte)(Ab * Bb / 255);
+                    for (int band = 0; band < B.Length; band++) {
+                        for (int pixel = 0; pixel < B[band].Length; pixel++) {
+                            outChannels[band][pixel] = (byte)(A[band][pixel] * B[band][pixel] / 255);
                         }
                     }
                     break;
                 case Method.Divide:
-                    for (int y = 0; y < bmpDataA.Height; y++) {
-                        for (int x = 0; x < bmpDataA.Width; x++) {
-                            pixel = y * bmpDataA.Stride + x * 3;
-                            Ar = rgbValuesA[pixel + 2];
-                            Ag = rgbValuesA[pixel + 1];
-                            Ab = rgbValuesA[pixel];
-                            Br = rgbValuesB[pixel + 2];
-                            Bg = rgbValuesB[pixel + 1];
-                            Bb = rgbValuesB[pixel];
-                            rgbValuesA[pixel + 2] = (byte)(Math.Min(255, (double)Ar / Br * 255.0));
-                            rgbValuesA[pixel + 1] = (byte)(Math.Min(255, (double)Ag / Bg * 255.0));
-                            rgbValuesA[pixel + 0] = (byte)(Math.Min(255, (double)Ab / Bb * 255.0));
+                    for (int band = 0; band < B.Length; band++) {
+                        for (int pixel = 0; pixel < B[band].Length; pixel++) {
+                            outChannels[band][pixel] = (byte)(Math.Min(255, (double)A[band][pixel] / B[band][pixel] * 255.0));
                         }
                     }
                     break;
                 case Method.Add:
-                    for (int y = 0; y < bmpDataA.Height; y++) {
-                        for (int x = 0; x < bmpDataA.Width; x++) {
-                            pixel = y * bmpDataA.Stride + x * 3;
-                            Ar = rgbValuesA[pixel + 2];
-                            Ag = rgbValuesA[pixel + 1];
-                            Ab = rgbValuesA[pixel];
-                            Br = rgbValuesB[pixel + 2];
-                            Bg = rgbValuesB[pixel + 1];
-                            Bb = rgbValuesB[pixel];
-                            rgbValuesA[pixel + 2] = (byte)(Math.Min(Ar + Br, 255));
-                            rgbValuesA[pixel + 1] = (byte)(Math.Min(Ag + Bg, 255));
-                            rgbValuesA[pixel + 0] = (byte)(Math.Min(Ab + Bb, 255));
+                    for (int band = 0; band < B.Length; band++) {
+                        for (int pixel = 0; pixel < B[band].Length; pixel++) {
+                            outChannels[band][pixel] = (byte)(Math.Min(255, A[band][pixel] + B[band][pixel]));
                         }
                     }
                     break;
                 case Method.Subtract:
-                    for (int y = 0; y < bmpDataA.Height; y++) {
-                        for (int x = 0; x < bmpDataA.Width; x++) {
-                            pixel = y * bmpDataA.Stride + x * 3;
-                            Ar = rgbValuesA[pixel + 2];
-                            Ag = rgbValuesA[pixel + 1];
-                            Ab = rgbValuesA[pixel];
-                            Br = rgbValuesB[pixel + 2];
-                            Bg = rgbValuesB[pixel + 1];
-                            Bb = rgbValuesB[pixel];
-                            rgbValuesA[pixel + 2] = (byte)(Math.Max(Ar - Br, 0));
-                            rgbValuesA[pixel + 1] = (byte)(Math.Max(Ag - Bg, 0));
-                            rgbValuesA[pixel + 0] = (byte)(Math.Max(Ab - Bb, 0));
+                    for (int band = 0; band < B.Length; band++) {
+                        for (int pixel = 0; pixel < B[band].Length; pixel++) {
+                            outChannels[band][pixel] = (byte)(Math.Max(0, A[band][pixel] - B[band][pixel]));
                         }
                     }
                     break;
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(rgbValuesA, 0, ptrA, nBytes);
-
-            state.bmp.UnlockBits(bmpDataA);
-            B.UnlockBits(bmpDataB);
         }
     }
 }

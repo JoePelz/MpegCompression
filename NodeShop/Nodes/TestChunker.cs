@@ -40,7 +40,7 @@ namespace NodeShop.Nodes {
             setChunkSize(properties["chunkSize"].nValue);
         }
 
-        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+        protected override void processChannels(byte[][] inValues, byte[][] outValues, int w, int h) {
             //Using the iterator method
             /*
             Chunker c = new Chunker(chunkSize, bmpData.Width, bmpData.Height, bmpData.Stride, 3);
@@ -60,7 +60,8 @@ namespace NodeShop.Nodes {
             */
 
             //Using the chunk pull/push method
-            Chunker c = new Chunker(chunkSize, w, h, ystep, xstep);
+            /*
+            Chunker c = new Chunker(chunkSize, w, h, w, 1);
             byte[] data = new byte[chunkSize * chunkSize * 3];
             for (int i = 0; i < c.getNumChunks(); i++) {
                 c.getBlock(inValues, data, i);
@@ -69,6 +70,7 @@ namespace NodeShop.Nodes {
                 }
                 c.setBlock(outValues, data, i);
             }
+            */
         }
     }
 }

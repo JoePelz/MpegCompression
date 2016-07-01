@@ -224,11 +224,8 @@ namespace NodeShop.Nodes {
             if (isDirty) {
                 clean();
             }
-            if (state != null && (state.type == DataBlob.Type.Image || state.bmp != null)) {
-                return state.bmp;
-            }
             if (state != null && state.type == DataBlob.Type.Channels && state.channels != null) {
-                Size s = Subsample.deduceCbCrSize(state);
+                Size subsampledSize = Subsample.deduceCbCrSize(state);
 
                 Bitmap bmp = new Bitmap(state.channelWidth, state.channelHeight, PixelFormat.Format24bppRgb);
                 BitmapData bmpData = bmp.LockBits(
@@ -249,12 +246,12 @@ namespace NodeShop.Nodes {
                 int channelIndexRB = 0;
                 for (int y = 0; y < state.imageHeight; y++) {
                     channelIndex = y * state.channelWidth;
-                    channelIndexRB = y * s.Width;
+                    channelIndexRB = y * subsampledSize.Width;
                     counter = y * bmpData.Stride;
 
                     for (int x = 0; x < state.imageWidth; x++) {
                         rgbValues[counter + 2] = state.channels[0][channelIndex];
-                        if (y < s.Height && x < s.Width) {
+                        if (y < subsampledSize.Height && x < subsampledSize.Width) {
                             rgbValues[counter + 1] = state.channels[1][channelIndexRB];
                             rgbValues[counter + 0] = state.channels[2][channelIndexRB];
                             channelIndexRB++;

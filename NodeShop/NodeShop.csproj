@@ -72,9 +72,6 @@
     <Compile Include="NodeProperties\PropertyCheckbox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="NodeProperties\PropertyColor.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="NodeProperties\PropertyFloat.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -91,10 +88,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Nodes\ChannelNode.cs" />
-    <Compile Include="Nodes\ChannelsToColor.cs" />
     <Compile Include="Chunker.cs" />
+    <Compile Include="Nodes\ColorNode.cs" />
     <Compile Include="Nodes\ColorSpace.cs" />
-    <Compile Include="Nodes\ColorToChannels.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="DataBlob.cs" />
     <Compile Include="Nodes\Convolve.cs" />
@@ -118,7 +114,6 @@
       <DependentUpon>NodeView.cs</DependentUpon>
     </Compile>
     <Compile Include="Nodes\NoOp.cs" />
-    <Compile Include="Nodes\ColorNode.cs" />
     <Compile Include="NodeProperties\Property.cs">
       <SubType>Component</SubType>
     </Compile>

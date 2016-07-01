@@ -50,81 +50,81 @@ namespace NodeShop.Nodes {
             soil();
         }
 
-        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+        protected override void processChannels(byte[][] inValues, byte[][] outValues, int w, int h) {
             float val;
             int pixel;
             int index;
-            for (int band = 0; band < xstep; band++) {
+            for (int band = 0; band < 3; band++) {
                 //the non-edge pixels
                 for (int y = 1; y < h - 1; y++) {
                     for (int x = 1; x < w - 1; x++) {
-                        pixel = (y - 1) * ystep + (x - 1) * xstep; //assuming 3 channels. Sorry.
+                        pixel = (y - 1) * w + (x - 1); //assuming 3 channels. Sorry.
 
                         val = 0;
                         for (int row = 0; row < 3; row++) {
                             for (int col = 0; col < 3; col++) {
-                                val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
+                                val += inValues[band][pixel + row * w + col] * kernel[row, col];
                             }
                         }
 
                         val = val > 255 ? 255 : val < 0 ? 0 : val;
-                        outValues[pixel + band + xstep + ystep] = (byte)val;
+                        outValues[band][pixel + 1 + w] = (byte)val;
                     }
                 }
                 //top & bottom pixels
                 for (int x = 1; x < w - 1; x++) {
                     //top
-                    pixel = (0 - 1) * ystep + (x - 1) * xstep; 
+                    pixel = (0 - 1) * w + (x - 1); 
                     val = 0;
                     for (int row = 1; row < 3; row++) {
                         for (int col = 0; col < 3; col++) {
-                            val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
+                            val += inValues[band][pixel + row * w + col] * kernel[row, col];
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    outValues[pixel + band + xstep + ystep] = (byte)val;
+                    outValues[band][pixel + 1 + w] = (byte)val;
 
                     //bottom
-                    pixel = (h - 2) * ystep + (x - 1) * xstep;
+                    pixel = (h - 2) * w + (x - 1);
                     val = 0;
                     for (int row = 0; row < 2; row++) {
                         for (int col = 0; col < 3; col++) {
-                            val += inValues[(pixel + band) + row * ystep + col * xstep] * kernel[row, col];
+                            val += inValues[band][pixel + row * w + col] * kernel[row, col];
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    outValues[pixel + band + xstep + ystep] = (byte)val;
+                    outValues[band][pixel + 1 + w] = (byte)val;
                 }
 
                 //left and right pixels
                 for (int y = 0; y < h; y++) {
                     //LEFT
-                    pixel = (y - 1) * ystep + (0 - 1) * xstep; //assuming 3 channels. Sorry.
+                    pixel = (y - 1) * w + (0 - 1);
                     val = 0;
                     for (int row = 0; row < 3; row++) {
                         for (int col = 1; col < 3; col++) {
-                            index = (pixel + band) + row * ystep + col * xstep;
-                            if (index >= 0 && index < inValues.Length) {
-                                val += inValues[index] * kernel[row, col];
+                            index = pixel + row * w + col * 1;
+                            if (index >= 0 && index < inValues[band].Length) {
+                                val += inValues[band][index] * kernel[row, col];
                             }
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    outValues[pixel + band + xstep + ystep] = (byte)val;
+                    outValues[band][pixel + 1 + w] = (byte)val;
 
                     //RIGHT
-                    pixel = (y - 1) * ystep + (w - 2) * xstep; //assuming 3 channels. Sorry.
+                    pixel = (y - 1) * w + (w - 2);
                     val = 0;
                     for (int row = 0; row < 3; row++) {
                         for (int col = 0; col < 2; col++) {
-                            index = (pixel + band) + row * ystep + col * xstep;
-                            if (index >= 0 && index < inValues.Length) {
-                                val += inValues[index] * kernel[row, col];
+                            index = pixel + row * w + col * 1;
+                            if (index >= 0 && index < inValues[band].Length) {
+                                val += inValues[band][index] * kernel[row, col];
                             }
                         }
                     }
                     val = val > 255 ? 255 : val < 0 ? 0 : val;
-                    outValues[pixel + band + xstep + ystep] = (byte)val;
+                    outValues[band][pixel + 1 + w] = (byte)val;
                 }
             }
         }

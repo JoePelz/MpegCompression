@@ -37,30 +37,26 @@ namespace NodeShop.Nodes {
             p.eValueChanged += (s, e) => { soil(); };
             properties["add"] = p;
         }
-
-        protected override void processPixels(byte[] inValues, byte[] outValues, int w, int h, int xstep, int ystep) {
+        
+        protected override void processChannels(byte[][] inValues, byte[][] outValues, int w, int h) {
             float black = properties["black"].fValue;
             float white = properties["white"].fValue;
             float mult = properties["mult"].fValue;
             float add = properties["add"].fValue;
             float val;
-            int pixel;
-            for (int band = 0; band < xstep; band++) {
-                for (int y = 0; y < h; y++) {
-                    for (int x = 0; x < w; x++) {
-                        pixel = y * ystep + x * xstep;
-                        val = inValues[pixel + band];
+            for (int band = 0; band < 3; band++) {
+                for (int pixel = 0; pixel < inValues[band].Length; pixel++) {
+                    val = inValues[band][pixel];
 
-                        val /= 255;
-                        val -= black;
-                        val /= (white - black);
+                    val /= 255;
+                    val -= black;
+                    val /= (white - black);
                         
-                        val *= mult;
-                        val += add;
+                    val *= mult;
+                    val += add;
 
-                        val = val > 1 ? 1 : val < 0 ? 0 : val;
-                        outValues[pixel + band] = (byte)(val * 255);
-                    }
+                    val = val > 1 ? 1 : val < 0 ? 0 : val; //clamp 0..1
+                    outValues[band][pixel] = (byte)(val * 255);
                 }
             }
         }

@@ -23,8 +23,8 @@ namespace NodeShop.Nodes {
 
         protected override void createProperties() {
             base.createProperties();
-            properties.Add("inColor", new PropertyColor(true, false));
-            properties.Add("outColor", new PropertyColor(false, true));
+            properties.Add("inColor", new PropertyChannels(true, false));
+            properties.Add("outColor", new PropertyChannels(false, true));
         }
         
         protected override void clean() {

@@ -7,14 +7,13 @@ using System.Drawing;
 
 namespace NodeShop {
     public class DataBlob {
-        public enum Type { Image, Channels, Vectors };
+        public enum Type { Channels, Vectors };
         public enum Samples { s444, s422, s411, s420 };
 
 
         public Type type;
 
         public Bitmap bmp;
-
         public byte[][] channels;
         public int imageWidth;
         public int imageHeight;
@@ -26,7 +25,6 @@ namespace NodeShop {
         public DataBlob clone() {
             DataBlob d = new DataBlob();
             d.type = type;
-            d.bmp = bmp;
             d.channels = channels;
             d.imageWidth = imageWidth;
             d.imageHeight = imageHeight;
@@ -34,6 +32,7 @@ namespace NodeShop {
             d.channelWidth = channelWidth;
             d.quantizeQuality = quantizeQuality;
             d.samplingMode = samplingMode;
+            d.bmp = bmp;
             return d;
         }
     }
